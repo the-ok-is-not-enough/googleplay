@@ -1,51 +1,29 @@
-# Android
+# Google Play
 
-APK apps
+Using Android API 24 fails, but API 25 or higher works. It applies to all
+devices, not just Virtual Devices.
 
-You can download APKs from different sites [1][2]. If you encounter an XAPK,
-this is a Zip format file, so you will need to extract the APK using 7-Zip or
-similar. To install, drag file to emulator home screen. To uninstall, long press
-on the app, and drag to **Uninstall**. To force stop, long press on the app, and
-drag to **App info**.
+https://accounts.google.com/EmbeddedSetup
 
-1. https://apkpure.com
-2. https://apkmirror.com
+## Protocol buffer
 
-## Java
+I have implemented a parser for unknown bytes.
 
-- https://adoptium.net
-- https://jdk.java.net
-- https://sap.github.io/SapMachine
+## EncryptedPasswd
 
-## Mozilla Firefox
+I have an implemention of the algorithm in Python, need to convert to Go.
 
-Open a new tab. Click **Open menu**, **Web Developer**, **Network**. Then click
-**Network Settings**, **Persist Logs**. Also check **Disable Cache**. Then
-browse to the page you want to capture. Once you are ready, click **Pause**,
-then click **Network Settings**, **Save All As HAR**.
+## TLS fingerprint
 
-## Stack Exchange
+I have a hand created hello struct, better would be to parse a JA3 string. I
+found a JA3 that works. Need to finish the JA3 encoder.
 
-Check questions, and ask question if need be:
+https://github.com/Danny-Dasilva/CycleTLS/issues/39
 
-https://android.stackexchange.com/search?q=certificate+pinning
+## Old APKs
 
-## EdXposed
+Its possible to get an old APK if you have the version code, but what if you
+dont? Do they just start at 1 and go up? Is it possible to get a list of the
+versions?
 
-- https://github.com/ElderDrivers/EdXposed
-- https://github.com/ViRb3/TrustMeAlready
-
-First need to get Magisk:
-
-https://github.com/topjohnwu/Magisk
-
-## APK MITM
-
-CLI application that automatically removes certificate pinning from Android APK
-files:
-
-https://github.com/shroudedcode/apk-mitm/issues/72
-
-## JustTrustMe
-
-https://github.com/Fuzion24/JustTrustMe/issues/61
+https://github.com/Juby210/gplayapi-go/issues/3
