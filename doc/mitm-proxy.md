@@ -32,20 +32,3 @@ the Android certificate. Under **Certificate name** enter **MITM**, then click
 ~~~
 https://example.com
 ~~~
-
-## Certificate pinning
-
-https://github.com/mitmproxy/mitmproxy/issues/4838
-
-but might be able to get it working:
-
-> adding client certificates to the system-wide trust store, which is by default
-> trusted by all apps
-
-~~~
-C:\Users\Steven\.mitmproxy
-~~~
-
-- https://blog.nviso.eu/2017/12/22/intercepting-https-traffic-from-apps-on-android-7-using-magisk-burp
-- https://docs.mitmproxy.org/stable/concepts-certificates
-- https://stackoverflow.com/questions/44942851/install-user-certificate-via-adb

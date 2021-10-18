@@ -17,4 +17,3 @@ jarsigner -verbose -keystore keys app_patched.apk keys
 - https://github.com/iBotPeaches/Apktool/issues/1978
 - https://github.com/iBotPeaches/Apktool/issues/731
 - https://ibotpeaches.github.io/Apktool/documentation
-- https://stackoverflow.com/questions/52862256/charles-proxy-for-mobile-apps

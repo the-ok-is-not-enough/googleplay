@@ -1,4 +1,8 @@
-# Google Play
+# googleplay
+
+Google Play APK apps
+
+https://godocs.io/github.com/89z/googleplay
 
 Using Android API 24 fails, but API 25 or higher works. It applies to all
 devices, not just Virtual Devices.
