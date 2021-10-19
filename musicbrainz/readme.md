@@ -1,5 +1,5 @@
-# Bandcamp
+# MusicBrainz
 
 Install MITM Proxy CA certificate to Trusted credentials (SYSTEM).
 
-https://apkpure.com/bandcamp/com.bandcamp.android
+https://apkpure.com/musicbrainz/org.metabrainz.android

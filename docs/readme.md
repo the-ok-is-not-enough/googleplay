@@ -37,7 +37,8 @@ https://android.stackexchange.com/search?q=certificate+pinning
 
 First need to get Magisk:
 
-https://github.com/topjohnwu/Magisk
+- https://blog.nviso.eu/2017/12/22/intercepting-https-traffic-from-apps-on-android-7-using-magisk-burp
+- https://github.com/topjohnwu/Magisk
 
 ## APK MITM
 
