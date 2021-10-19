@@ -1,7 +1,5 @@
 # Vimeo
 
-Requires Android 26.
-
 https://apkpure.com/vimeo/com.vimeo.android.videoapp
 
 so, where are the exceptions?
@@ -36,4 +34,21 @@ Ljava/util/List;
 
 smali_classes2\g0\r.smali
 V
+~~~
+
+## adb
+
+Requires Android 26. Start emulator:
+
+~~~
+adb start-server
+emulator -writable-system -avd Pixel_2_API_26
+~~~
+
+Push new file:
+
+~~~ps1
+adb root
+adb remount
+adb push c8750f0d.0 /system/etc/security/cacerts
 ~~~
