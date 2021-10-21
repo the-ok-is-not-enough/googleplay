@@ -2,9 +2,9 @@ package main
 
 import (
    "bytes"
-   "github.com/89z/mech"
    "io"
    "net/http"
+   "net/http/httputil"
    "net/url"
    "os"
    "strings"
@@ -16,7 +16,6 @@ func main() {
       panic(err)
    }
    ac2 := Ac2dm{val}
-   mech.Verbose(true)
    auth, err := ac2.OAuth2()
    if err != nil {
       panic(err)
@@ -55,7 +54,7 @@ func (a Ac2dm) OAuth2() (*OAuth2, error) {
    req.Header = http.Header{
       "Content-Type": {"application/x-www-form-urlencoded"},
    }
-   res, err := mech.RoundTrip(req)
+   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
@@ -88,7 +87,12 @@ func (o OAuth2) Details(device, app string) ([]byte, error) {
       "doc": {app},
    }
    req.URL.RawQuery = val.Encode()
-   res, err := mech.RoundTrip(req)
+   dum, err := httputil.DumpRequest(req, false)
+   if err != nil {
+      return nil, err
+   }
+   os.Stdout.Write(dum)
+   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }

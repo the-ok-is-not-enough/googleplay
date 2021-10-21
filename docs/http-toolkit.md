@@ -14,10 +14,11 @@ start.
 1. https://github.com/httptoolkit/httptoolkit-desktop/releases
 2. https://github.com/httptoolkit/httptoolkit/issues/171
 
-
 ## Is HTTP Toolkit open source?
 
-No.
+Yes:
+
+https://github.com/httptoolkit/httptoolkit-server
 
 ## Issues
 
