@@ -19,7 +19,15 @@ I have implemented a parser for unknown bytes.
 
 ## TLS fingerprint
 
-I have a hand created hello struct, better would be to parse a JA3 string. I
-found a JA3 that works. Need to finish the JA3 encoder.
+Use this:
+
+https://github.com/emanuele-f/PCAPdroid
+
+Then parse with this:
+
+https://github.com/google/gopacket
+
+Then use the resultant handshake in request to Google. Need to encode the
+handshake as JA3, so need to finish the JA3 encoder.
 
 https://github.com/Danny-Dasilva/CycleTLS/issues/39
