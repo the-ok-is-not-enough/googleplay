@@ -23,10 +23,6 @@ Use this:
 
 https://github.com/emanuele-f/PCAPdroid
 
-Then parse with this:
-
-https://github.com/google/gopacket
-
 Then use the resultant handshake in request to Google. Need to encode the
 handshake as JA3, so need to finish the JA3 encoder.
 
