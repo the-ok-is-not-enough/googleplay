@@ -1,5 +1,10 @@
 # Smali
 
+- https://github.com/Shosta/androSecTest
+- https://github.com/httptoolkit/frida-android-unpinning
+- https://github.com/ryanking13/android-SSL-unpinning
+- https://httptoolkit.tech/blog/frida-certificate-pinning
+
 so, where are the exceptions?
 
 ~~~
@@ -35,8 +40,3 @@ V
 ~~~
 
 https://apkpure.com/vimeo/com.vimeo.android.videoapp
-
-- https://github.com/Shosta/androSecTest
-- https://github.com/httptoolkit/frida-android-unpinning
-- https://github.com/ryanking13/android-SSL-unpinning
-- https://httptoolkit.tech/blog/frida-certificate-pinning
