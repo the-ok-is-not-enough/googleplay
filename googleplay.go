@@ -11,7 +11,9 @@ import (
    "io"
    "math/big"
    "net/http"
+   "net/http/httputil"
    "net/url"
+   "os"
    "strings"
 )
 
@@ -82,6 +84,11 @@ func Token(email, encryptedPasswd string) (url.Values, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   dum, err := httputil.DumpRequest(req, true)
+   if err != nil {
+      return nil, err
+   }
+   os.Stdout.Write(append(dum, '\n'))
    res, err := tls.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
    if err != nil {
       panic(err)

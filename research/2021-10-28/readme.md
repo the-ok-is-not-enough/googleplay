@@ -1,10 +1,11 @@
 # October 28 2021
 
 ~~~
+done
 language:go android.clients.google.com sdk_version
+android.clients.google.com sdk_version -EncryptedPasswd
 
-"Email": {"srpen6@gmail.com"},
-"EncryptedPasswd": {encryptedPasswd},
-https://android.clients.google.com/auth
-"sdk_version": {"17"},
+BadAuthentication
 ~~~
+
+https://github.com/4thel00z/google-play/blob/dev/crypto.go

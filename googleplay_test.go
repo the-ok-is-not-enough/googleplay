@@ -16,9 +16,9 @@ func TestAuth(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   val, err := Token(email, sig)
+   tok, err := Token(email, sig)
    if err != nil {
       t.Fatal(err)
    }
-   fmt.Println(val)
+   fmt.Println(tok)
 }
