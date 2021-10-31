@@ -1,4 +1,4 @@
-# October 28 2021
+# October 31 2021
 
 ~~~
 done
@@ -7,5 +7,3 @@ android.clients.google.com sdk_version -EncryptedPasswd
 
 BadAuthentication
 ~~~
-
-https://github.com/4thel00z/google-play/blob/dev/crypto.go
