@@ -1,1 +1,2 @@
-password.go
+*.har
+secret.go

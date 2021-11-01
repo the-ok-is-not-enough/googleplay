@@ -1,7 +1,9 @@
 package googleplay
 
 import (
+   "bytes"
    "fmt"
+   "net/url"
    "testing"
 )
 
@@ -11,7 +13,31 @@ const (
    email = "srpen6@gmail.com"
 )
 
-func TestAuth(t *testing.T) {
+func TestDetails(t *testing.T) {
+   tok := Token{
+      url.Values{
+         "Token": {token},
+      },
+   }
+   auth, err := tok.Auth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   det, err := auth.Details(device, app)
+   if err != nil {
+      t.Fatal(err)
+   }
+   vers := []string{"16.", "16.4", "16.42.", "16.42.3", "16.42.34"}
+   for _, ver := range vers {
+      if bytes.Contains(det, []byte(ver)) {
+         fmt.Println("pass", ver)
+      } else {
+         fmt.Println("fail", ver)
+      }
+   }
+}
+
+func TestToken(t *testing.T) {
    tok, err := NewToken(email, password)
    if err != nil {
       t.Fatal(err)

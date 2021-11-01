@@ -14,7 +14,11 @@ import (
    "strings"
 )
 
-const android =
+const androidJA3 =
+   "769,49195-49196-52393-49199-49200-52392-158-159-49161-49162-49171-49172-" +
+   "51-57-156-157-47-53,65281-0-23-35-13-16-11-10,23,0"
+
+const androidKey =
    "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
@@ -36,7 +40,7 @@ func ParseQuery(query []byte) url.Values {
 }
 
 func signature(email, password string) (string, error) {
-   data, err := base64.StdEncoding.DecodeString(android)
+   data, err := base64.StdEncoding.DecodeString(androidKey)
    if err != nil {
       return "", err
    }
@@ -93,6 +97,9 @@ func (a Auth) Details(device, app string) ([]byte, error) {
       return nil, err
    }
    defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return nil, fmt.Errorf("status %q", res.Status)
+   }
    return io.ReadAll(res.Body)
 }
 
@@ -102,7 +109,7 @@ type Token struct {
 
 // Request refresh token.
 func NewToken(email, password string) (*Token, error) {
-   hello, err := crypto.ParseJA3(crypto.Android)
+   hello, err := crypto.ParseJA3(androidJA3)
    if err != nil {
       return nil, err
    }
