@@ -12,11 +12,7 @@ const (
 )
 
 func TestAuth(t *testing.T) {
-   sig, err := Signature(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
-   tok, err := Token(email, sig)
+   tok, err := NewToken(email, password)
    if err != nil {
       t.Fatal(err)
    }

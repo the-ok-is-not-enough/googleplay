@@ -1,101 +1,47 @@
 package googleplay
 
 import (
+   "bytes"
    "crypto/rsa"
    "crypto/sha1"
    "encoding/base64"
    "fmt"
-   "github.com/89z/parse/bytes"
-   "github.com/89z/parse/tls"
+   "github.com/89z/parse/crypto"
    "io"
    "math/big"
    "net/http"
-   "net/http/httputil"
    "net/url"
-   "os"
    "strings"
-   stdbytes "bytes"
 )
 
-const (
-   Origin = "https://android.clients.google.com"
-   androidKey = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-)
+const android =
+   "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
+   "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
+   "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
 
-// device is Google Service Framework.
-func Details(oauth url.Values, device, app string) ([]byte, error) {
-   req, err := http.NewRequest("GET", Origin + "/fdfe/details", nil)
-   if err != nil {
-      return nil, err
-   }
-   req.Header = http.Header{
-      "Authorization": {
-         "Bearer " + oauth.Get("Auth"),
-      },
-      "X-DFE-Device-Id": {device},
-   }
-   val := url.Values{
-      "doc": {app},
-   }
-   req.URL.RawQuery = val.Encode()
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   return io.ReadAll(res.Body)
-}
-
-// Exchange refresh token (aas_et) for access token (Auth).
-func OAuth2(aas_et url.Values) (url.Values, error) {
-   val := url.Values{
-      "Token": {
-         aas_et.Get("Token"),
-      },
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }
-   req, err := http.NewRequest(
-      "POST", Origin + "/auth", strings.NewReader(val.Encode()),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header = http.Header{
-      "Content-Type": {"application/x-www-form-urlencoded"},
-   }
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   return ParseQuery(query)
-}
+const origin = "https://android.clients.google.com"
 
 // text/plain encoding algorithm
 // html.spec.whatwg.org/multipage/form-control-infrastructure.html
-func ParseQuery(query []byte) (url.Values, error) {
+func ParseQuery(query []byte) url.Values {
    res := make(url.Values)
-   for _, pair := range stdbytes.Split(query, []byte{'\n'}) {
-      nv := stdbytes.SplitN(pair, []byte{'='}, 2)
+   for _, pair := range bytes.Split(query, []byte{'\n'}) {
+      nv := bytes.SplitN(pair, []byte{'='}, 2)
       if len(nv) != 2 {
-         return nil, fmt.Errorf("%q", query)
+         return nil
       }
       res.Add(string(nv[0]), string(nv[1]))
    }
-   return res, nil
+   return res
 }
 
-func Signature(email, password string) (string, error) {
-   data, err := base64.StdEncoding.DecodeString(androidKey)
+func signature(email, password string) (string, error) {
+   data, err := base64.StdEncoding.DecodeString(android)
    if err != nil {
       return "", err
    }
    var key rsa.PublicKey
-   buf := bytes.NewBuffer(data)
+   buf := crypto.NewBuffer(data)
    // modulus_length | modulus | exponent_length | exponent
    _, mod, ok := buf.ReadUint32LengthPrefixed()
    if ok {
@@ -107,7 +53,7 @@ func Signature(email, password string) (string, error) {
       key.E = int(exp)
    }
    var (
-      msg stdbytes.Buffer
+      msg bytes.Buffer
       zero devZero
    )
    msg.WriteString(email)
@@ -121,47 +67,100 @@ func Signature(email, password string) (string, error) {
    }
    hash := sha1.Sum(data)
    msg.Reset()
-   // FIXME is this line actually needed?
    msg.WriteByte(0)
    msg.Write(hash[:4])
    msg.Write(login)
    return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
 }
 
-// Token=aas_et/AKppINa1sGeVY7ukPvr-v5Djm5fp0-oQY72xu7JmWPSR_GpFmLterv2fjgI8m3...
-func Token(email, encryptedPasswd string) (url.Values, error) {
-   hello, err := tls.ParseJA3(tls.Android)
+type Auth struct {
+   url.Values
+}
+
+// device is Google Service Framework.
+func (a Auth) Details(device, app string) ([]byte, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
    }
-   val := url.Values{
-      "Email": {email},
-      "EncryptedPasswd": {encryptedPasswd},
-      "sdk_version": {"17"},
+   val := req.URL.Query()
+   val.Set("doc", app)
+   req.URL.RawQuery = val.Encode()
+   req.Header.Set("Authorization", "Bearer " + a.Get("Auth"))
+   req.Header.Set("X-DFE-Device-ID", device)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
    }
+   defer res.Body.Close()
+   return io.ReadAll(res.Body)
+}
+
+type Token struct {
+   url.Values
+}
+
+// Request refresh token.
+func NewToken(email, password string) (*Token, error) {
+   hello, err := crypto.ParseJA3(crypto.Android)
+   if err != nil {
+      return nil, err
+   }
+   sig, err := signature(email, password)
+   if err != nil {
+      return nil, err
+   }
+   val := make(url.Values)
+   val.Set("Email", email)
+   val.Set("EncryptedPasswd", sig)
+   val.Set("sdk_version", "17")
    req, err := http.NewRequest(
-      "POST", "https://android.clients.google.com/auth",
-      strings.NewReader(val.Encode()),
+      "POST", origin + "/auth", strings.NewReader(val.Encode()),
    )
    if err != nil {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   dum, err := httputil.DumpRequest(req, true)
+   res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
    if err != nil {
       return nil, err
-   }
-   os.Stdout.Write(append(dum, '\n'))
-   res, err := tls.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
-   if err != nil {
-      panic(err)
    }
    defer res.Body.Close()
    query, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err
    }
-   return ParseQuery(query)
+   if val := ParseQuery(query); val != nil {
+      return &Token{val}, nil
+   }
+   return nil, fmt.Errorf("parseQuery %q", query)
+}
+
+// Exchange refresh token for access token.
+func (t Token) Auth() (*Auth, error) {
+   val := make(url.Values)
+   val.Set("Token", t.Get("Token"))
+   val.Set("service", "oauth2:https://www.googleapis.com/auth/googleplay")
+   req, err := http.NewRequest(
+      "POST", origin + "/auth", strings.NewReader(val.Encode()),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   query, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   if val := ParseQuery(query); val != nil {
+      return &Auth{val}, nil
+   }
+   return nil, fmt.Errorf("parseQuery %q", query)
 }
 
 type devZero struct{}
