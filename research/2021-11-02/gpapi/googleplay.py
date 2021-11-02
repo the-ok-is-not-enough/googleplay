@@ -1,41 +1,34 @@
+from . import googleplay_pb2, config, utils
 from base64 import b64decode, urlsafe_b64encode
-from datetime import datetime
-
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.serialization import load_der_public_key
 from cryptography.hazmat.primitives.asymmetric import padding
-
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.primitives.serialization import load_der_public_key
+from datetime import datetime
 import requests
-
-from . import googleplay_pb2, config, utils
-
-ssl_verify = True
 
 BASE = "https://android.clients.google.com/"
 FDFE = BASE + "fdfe/"
-CHECKIN_URL = BASE + "checkin"
-AUTH_URL = BASE + "auth"
 
-UPLOAD_URL = FDFE + "uploadDeviceConfig"
-SEARCH_URL = FDFE + "search"
+ACCEPT_TOS_URL = FDFE + "acceptTos"
+AUTH_URL = BASE + "auth"
+BROWSE_URL = FDFE + "browse"
+BULK_URL = FDFE + "bulkDetails"
+CHECKIN_URL = BASE + "checkin"
+CONTENT_TYPE_PROTO = "application/x-protobuf"
+CONTENT_TYPE_URLENC = "application/x-www-form-urlencoded; charset=UTF-8"
+DELIVERY_URL = FDFE + "delivery"
 DETAILS_URL = FDFE + "details"
 HOME_URL = FDFE + "homeV2"
-BROWSE_URL = FDFE + "browse"
-DELIVERY_URL = FDFE + "delivery"
-PURCHASE_URL = FDFE + "purchase"
-SEARCH_SUGGEST_URL = FDFE + "searchSuggest"
-BULK_URL = FDFE + "bulkDetails"
-LOG_URL = FDFE + "log"
-TOC_URL = FDFE + "toc"
-ACCEPT_TOS_URL = FDFE + "acceptTos"
 LIST_URL = FDFE + "list"
+LOG_URL = FDFE + "log"
+PURCHASE_URL = FDFE + "purchase"
 REVIEWS_URL = FDFE + "rev"
-
-CONTENT_TYPE_URLENC = "application/x-www-form-urlencoded; charset=UTF-8"
-CONTENT_TYPE_PROTO = "application/x-protobuf"
-
+SEARCH_URL = FDFE + "search"
+TOC_URL = FDFE + "toc"
+UPLOAD_URL = FDFE + "uploadDeviceConfig"
+ssl_verify = True
 
 class LoginError(Exception):
     def __init__(self, value):
@@ -43,7 +36,6 @@ class LoginError(Exception):
 
     def __str__(self):
         return repr(self.value)
-
 
 class RequestError(Exception):
     def __init__(self, value):
@@ -199,59 +191,6 @@ class GooglePlayAPI(object):
         except ValueError:
             pass
 
-    def login(self, email=None, password=None, gsfId=None, authSubToken=None):
-        """Login to your Google Account.
-        For first time login you should provide:
-            * email
-            * password
-        For the following logins you need to provide:
-            * gsfId
-            * authSubToken"""
-        if email is not None and password is not None:
-            # First time setup, where we obtain an ac2dm token and
-            # upload device information
-
-            encryptedPass = self.encryptPassword(email, password).decode('utf-8')
-            # AC2DM token
-            params = self.deviceBuilder.getLoginParams(email, encryptedPass)
-            params['service'] = 'ac2dm'
-            params['add_account'] = '1'
-            params['callerPkg'] = 'com.google.android.gms'
-            headers = self.deviceBuilder.getAuthHeaders(self.gsfId)
-            headers['app'] = 'com.google.android.gsm'
-            response = requests.post(AUTH_URL, data=params, verify=ssl_verify,
-                                     proxies=self.proxies_config)
-            print(response.status_code, response.url)
-            data = response.text.split()
-            params = {}
-            for d in data:
-                if "=" not in d:
-                    continue
-                k, v = d.split("=", 1)
-                params[k.strip().lower()] = v.strip()
-            if "auth" in params:
-                ac2dmToken = params["auth"]
-            elif "error" in params:
-                if "NeedsBrowser" in params["error"]:
-                    raise SecurityCheckError("Security check is needed, try to visit "
-                                     "https://accounts.google.com/b/0/DisplayUnlockCaptcha "
-                                     "to unlock, or setup an app-specific password")
-                raise LoginError("server says: " + params["error"])
-            else:
-                raise LoginError("Auth token not found.")
-
-            self.gsfId = self.checkin(email, ac2dmToken)
-            self.getAuthSubToken(email, encryptedPass)
-            self.uploadDeviceConfig()
-        elif gsfId is not None and authSubToken is not None:
-            # no need to initialize API
-            self.gsfId = gsfId
-            self.setAuthSubToken(authSubToken)
-            # check if token is valid with a simple search
-            self.search('drv')
-        else:
-            raise LoginError('Either (email,pass) or (gsfId, authSubToken) is needed')
-
     def getAuthSubToken(self, email, passwd):
         requestParams = self.deviceBuilder.getLoginParams(email, passwd)
         requestParams['service'] = 'androidmarket'
@@ -259,10 +198,10 @@ class GooglePlayAPI(object):
         headers = self.deviceBuilder.getAuthHeaders(self.gsfId)
         headers['app'] = 'com.android.vending'
         response = requests.post(AUTH_URL,
-                                 data=requestParams,
-                                 verify=ssl_verify,
-                                 headers=headers,
-                                 proxies=self.proxies_config)
+            data=requestParams,
+            verify=ssl_verify,
+            headers=headers,
+            proxies=self.proxies_config)
         print(response.status_code, response.url)
         data = response.text.split()
         params = {}
@@ -293,10 +232,10 @@ class GooglePlayAPI(object):
         headers = self.deviceBuilder.getAuthHeaders(self.gsfId)
         headers['app'] = 'com.android.vending'
         response = requests.post(AUTH_URL,
-                                 data=params,
-                                 headers=headers,
-                                 verify=ssl_verify,
-                                 proxies=self.proxies_config)
+            data=params,
+            headers=headers,
+            verify=ssl_verify,
+            proxies=self.proxies_config)
         print(response.status_code, response.url)
         data = response.text.split()
         params = {}
@@ -340,15 +279,6 @@ class GooglePlayAPI(object):
             raise RequestError(message.commands.displayErrorMessage)
 
         return message
-
-    def searchSuggest(self, query):
-        params = {"c": "3",
-                  "q": requests.utils.quote(query),
-                  "ssis": "120",
-                  "sst": "2"}
-        data = self.executeRequestApi2(SEARCH_SUGGEST_URL, params=params)
-        entryIterator = data.payload.searchSuggestResponse.entry
-        return list(map(utils.parseProtobufObj, entryIterator))
 
     def search(self, query):
         """ Search the play store for an app.
