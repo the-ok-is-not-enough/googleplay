@@ -107,7 +107,7 @@ func NewToken(email, password string) (*Token, error) {
    val := make(url.Values)
    val.Set("Email", email)
    val.Set("EncryptedPasswd", sig)
-   val.Set("sdk_version", "17")
+   val.Set("sdk_version", "16")
    req, err := http.NewRequest(
       "POST", origin + "/auth", strings.NewReader(val.Encode()),
    )

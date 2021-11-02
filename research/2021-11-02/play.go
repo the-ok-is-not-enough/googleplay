@@ -1,31 +1,31 @@
-package googleplay
+package main
 
 import (
    "bytes"
    "fmt"
+   "github.com/89z/googleplay"
    "net/url"
-   "testing"
+   "os"
 )
 
-const (
-   app = "com.google.android.youtube"
-   email = "srpen6@gmail.com"
-)
-
-func TestDetails(t *testing.T) {
-   tok := Token{
+func main() {
+   if len(os.Args) != 2 {
+      fmt.Println("play [device]")
+      return
+   }
+   device := os.Args[1]
+   tok := googleplay.Token{
       url.Values{
          "Token": {token},
       },
    }
    auth, err := tok.Auth()
    if err != nil {
-      t.Fatal(err)
+      panic(err)
    }
-   fmt.Println(auth)
-   det, err := auth.Details(device, app)
+   det, err := auth.Details(device, "com.google.android.youtube")
    if err != nil {
-      t.Fatal(err)
+      panic(err)
    }
    vers := []string{"16.", "16.4", "16.42.", "16.42.3", "16.42.34"}
    for _, ver := range vers {
@@ -35,12 +35,4 @@ func TestDetails(t *testing.T) {
          fmt.Println("fail", ver)
       }
    }
-}
-
-func TestToken(t *testing.T) {
-   tok, err := NewToken(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
-   fmt.Println(tok)
 }

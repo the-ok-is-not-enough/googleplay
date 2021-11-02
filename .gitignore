@@ -1,2 +1,6 @@
+*.exe
 *.har
+__pycache__
+checkin.py
+googleplay_pb2.py
 secret.go
