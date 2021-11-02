@@ -89,9 +89,3 @@ not correct. Contact support [3] to request a solution.
 ## Is Charles open source?
 
 No.
-
-## Reset configuration
-
-~~~
-C:\Users\Steven\AppData\Roaming\Charles
-~~~

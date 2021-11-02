@@ -6,17 +6,7 @@ How to get this:
 X-DFE-Device-ID
 ~~~
 
-AKA Google Service Framework. This is interesting:
+AKA Google Service Framework ID. Does the APK have it? No. This looks like the
+answer here:
 
-https://github.com/thyrlian/AppReputation/wiki/Google-Play
-
-Can we use `androidpublisher` instead of what we are currently doing? I found
-this:
-
-https://github.com/nathanmkaya/vrsncode
-
-but we need a service account:
-
-<https://developers.google.com/android-publisher/getting_started>
-
-or maybe OAuth client will work?
+https://github.com/crow-misia/go-push-receiver/blob/main/instanceid.go

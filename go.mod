@@ -2,7 +2,7 @@ module github.com/89z/googleplay
 
 go 1.17
 
-require github.com/89z/parse v1.5.7
+require github.com/89z/parse v1.5.9
 
 require (
 	github.com/refraction-networking/utls v0.0.0-20210713165636-0b2885c8c0d4 // indirect

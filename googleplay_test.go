@@ -23,6 +23,7 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
+   fmt.Println(auth)
    det, err := auth.Details(device, app)
    if err != nil {
       t.Fatal(err)

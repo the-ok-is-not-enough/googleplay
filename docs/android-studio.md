@@ -23,12 +23,3 @@ If you need to configure a proxy, in the emulator click **More**. On the
 Android Studio HTTP proxy settings**. Click **Manual proxy configuration**.
 Enter **Host name** and **Port number** as determined by the proxy program you
 are using. Click **Apply**, and you should see **Proxy status Success**.
-
-## Uninstall
-
-The two big folders are here:
-
-~~~
-C:\Users\Steven\.android
-C:\Users\Steven\AppData\Local\Android
-~~~

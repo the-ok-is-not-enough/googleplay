@@ -17,7 +17,7 @@ Change `res/xml/network_security_config.xml` to:
 </network-security-config>
 ~~~
 
-Create `C:\Users\Steven\.keystore`:
+Create `C:\Users\89z\.keystore`:
 
 ~~~
 keytool -genkey -keyalg DSA

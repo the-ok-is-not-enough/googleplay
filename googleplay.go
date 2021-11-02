@@ -7,6 +7,7 @@ import (
    "encoding/base64"
    "fmt"
    "github.com/89z/parse/crypto"
+   "github.com/89z/parse/net"
    "io"
    "math/big"
    "net/http"
@@ -14,7 +15,7 @@ import (
    "strings"
 )
 
-const androidJA3 =
+const AndroidJA3 =
    "769,49195-49196-52393-49199-49200-52392-158-159-49161-49162-49171-49172-" +
    "51-57-156-157-47-53,65281-0-23-35-13-16-11-10,23,0"
 
@@ -25,21 +26,7 @@ const androidKey =
 
 const origin = "https://android.clients.google.com"
 
-// text/plain encoding algorithm
-// html.spec.whatwg.org/multipage/form-control-infrastructure.html
-func ParseQuery(query []byte) url.Values {
-   res := make(url.Values)
-   for _, pair := range bytes.Split(query, []byte{'\n'}) {
-      nv := bytes.SplitN(pair, []byte{'='}, 2)
-      if len(nv) != 2 {
-         return nil
-      }
-      res.Add(string(nv[0]), string(nv[1]))
-   }
-   return res
-}
-
-func signature(email, password string) (string, error) {
+func Signature(email, password string) (string, error) {
    data, err := base64.StdEncoding.DecodeString(androidKey)
    if err != nil {
       return "", err
@@ -109,11 +96,11 @@ type Token struct {
 
 // Request refresh token.
 func NewToken(email, password string) (*Token, error) {
-   hello, err := crypto.ParseJA3(androidJA3)
+   hello, err := crypto.ParseJA3(AndroidJA3)
    if err != nil {
       return nil, err
    }
-   sig, err := signature(email, password)
+   sig, err := Signature(email, password)
    if err != nil {
       return nil, err
    }
@@ -137,7 +124,7 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   if val := ParseQuery(query); val != nil {
+   if val := net.ParseQuery(query); val != nil {
       return &Token{val}, nil
    }
    return nil, fmt.Errorf("parseQuery %q", query)
@@ -164,7 +151,7 @@ func (t Token) Auth() (*Auth, error) {
    if err != nil {
       return nil, err
    }
-   if val := ParseQuery(query); val != nil {
+   if val := net.ParseQuery(query); val != nil {
       return &Auth{val}, nil
    }
    return nil, fmt.Errorf("parseQuery %q", query)

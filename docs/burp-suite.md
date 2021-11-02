@@ -1,16 +1,11 @@
 # Burp Suite
 
-First download [1]. The program installs to:
-
-~~~
-C:\Users\Steven\AppData\Local\Programs\BurpSuiteCommunity
-~~~
-
-Start the program, and choose **Temporary project**, then click **Next**. Choose
-**Use Burp defaults**, and click **Start Burp**. Then click **Proxy**,
-**Intercept**. Then click **Intercept is on** to turn it off. Intercept pauses
-every request until you click **Forward**, so you probably dont want that. Then
-click **Options**. Under **Proxy Listeners**, the default interface should be:
+First download [1]. Start the program, and choose **Temporary project**, then
+click **Next**. Choose **Use Burp defaults**, and click **Start Burp**. Then
+click **Proxy**, **Intercept**. Then click **Intercept is on** to turn it off.
+Intercept pauses every request until you click **Forward**, so you probably
+dont want that. Then click **Options**. Under **Proxy Listeners**, the default
+interface should be:
 
 ~~~
 127.0.0.1:8080
