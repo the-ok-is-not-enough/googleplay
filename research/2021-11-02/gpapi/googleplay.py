@@ -1,4 +1,4 @@
-from . import googleplay_pb2, config, utils
+from . import googleplay_pb2, config
 from base64 import b64decode, urlsafe_b64encode
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -11,7 +11,6 @@ import requests
 BASE = "https://android.clients.google.com/"
 FDFE = BASE + "fdfe/"
 
-ACCEPT_TOS_URL = FDFE + "acceptTos"
 AUTH_URL = BASE + "auth"
 BROWSE_URL = FDFE + "browse"
 BULK_URL = FDFE + "bulkDetails"
@@ -22,11 +21,9 @@ DELIVERY_URL = FDFE + "delivery"
 DETAILS_URL = FDFE + "details"
 HOME_URL = FDFE + "homeV2"
 LIST_URL = FDFE + "list"
-LOG_URL = FDFE + "log"
 PURCHASE_URL = FDFE + "purchase"
 REVIEWS_URL = FDFE + "rev"
 SEARCH_URL = FDFE + "search"
-TOC_URL = FDFE + "toc"
 UPLOAD_URL = FDFE + "uploadDeviceConfig"
 ssl_verify = True
 
@@ -37,24 +34,8 @@ class LoginError(Exception):
     def __str__(self):
         return repr(self.value)
 
-class RequestError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-class SecurityCheckError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
 class GooglePlayAPI(object):
     """Google Play Unofficial API Class
-
     Usual APIs methods are login(), search(), details(), bulkDetails(),
     download(), browse(), reviews() and list()."""
 
@@ -82,7 +63,6 @@ class GooglePlayAPI(object):
     def getHeaders(self, upload_fields=False):
         """Return the default set of request headers, which
         can later be expanded, based on the request type"""
-
         if upload_fields:
             headers = self.deviceBuilder.getDeviceUploadHeaders()
         else:
@@ -102,9 +82,7 @@ class GooglePlayAPI(object):
     def checkin(self, email, ac2dmToken):
         headers = self.getHeaders()
         headers["Content-Type"] = CONTENT_TYPE_PROTO
-
         request = self.deviceBuilder.getAndroidCheckinRequest()
-
         stringRequest = request.SerializeToString()
         res = requests.post(CHECKIN_URL, data=stringRequest,
                             headers=headers, verify=ssl_verify,
@@ -130,16 +108,15 @@ class GooglePlayAPI(object):
     def uploadDeviceConfig(self):
         """Upload the device configuration of the fake device
         selected in the __init__ methodi to the google account."""
-
         upload = googleplay_pb2.UploadDeviceConfigRequest()
         upload.deviceConfiguration.CopyFrom(self.deviceBuilder.getDeviceConfig())
         headers = self.getHeaders(upload_fields=True)
         stringRequest = upload.SerializeToString()
         response = requests.post(UPLOAD_URL, data=stringRequest,
-                                 headers=headers,
-                                 verify=ssl_verify,
-                                 timeout=60,
-                                 proxies=self.proxies_config)
+            headers=headers,
+            verify=ssl_verify,
+            timeout=60,
+            proxies=self.proxies_config)
         print(response.status_code, response.url)
         response = googleplay_pb2.ResponseWrapper.FromString(response.content)
         try:
@@ -208,73 +185,3 @@ class GooglePlayAPI(object):
             raise LoginError("server says: " + params["error"])
         else:
             raise LoginError("Auth token not found.")
-
-    def _deliver_data(self, url, cookies):
-        headers = self.getHeaders()
-        response = requests.get(url, headers=headers,
-                                cookies=cookies, verify=ssl_verify,
-                                stream=True, timeout=60,
-                                proxies=self.proxies_config)
-        print(response.status_code, response.url)
-        total_size = response.headers.get('content-length')
-        chunk_size = 32 * (1 << 10)
-        return {'data': response.iter_content(chunk_size=chunk_size),
-                'total_size': total_size,
-                'chunk_size': chunk_size}
-
-    def log(self, docid):
-        log_request = googleplay_pb2.LogRequest()
-        log_request.downloadConfirmationQuery = "confirmFreeDownload?doc=" + docid
-        timestamp = int(datetime.now().timestamp())
-        log_request.timestamp = timestamp
-
-        string_request = log_request.SerializeToString()
-        response = requests.post(LOG_URL,
-                                 data=string_request,
-                                 headers=self.getHeaders(),
-                                 verify=ssl_verify,
-                                 timeout=60,
-                                 proxies=self.proxies_config)
-        print(response.status_code, response.url)
-        response = googleplay_pb2.ResponseWrapper.FromString(response.content)
-        if response.commands.displayErrorMessage != "":
-            raise RequestError(response.commands.displayErrorMessage)
-
-    def toc(self):
-        response = requests.get(TOC_URL,
-                               headers=self.getHeaders(),
-                               verify=ssl_verify,
-                               timeout=60,
-                               proxies=self.proxies_config)
-        print(response.status_code, response.url)
-        data = googleplay_pb2.ResponseWrapper.FromString(response.content)
-        tocResponse = data.payload.tocResponse
-        if utils.hasTosContent(tocResponse) and utils.hasTosToken(tocResponse):
-            self.acceptTos(tocResponse.tosToken)
-        if utils.hasCookie(tocResponse):
-            self.dfeCookie = tocResponse.cookie
-        return utils.parseProtobufObj(tocResponse)
-
-
-    def acceptTos(self, tosToken):
-        params = {
-            "tost": tosToken,
-            "toscme": "false"
-        }
-        response = requests.get(ACCEPT_TOS_URL,
-                               headers=self.getHeaders(),
-                               params=params,
-                               verify=ssl_verify,
-                               timeout=60,
-                               proxies=self.proxies_config)
-        print(response.status_code, response.url)
-        data = googleplay_pb2.ResponseWrapper.FromString(response.content)
-        return utils.parseProtobufObj(data.payload.acceptTosResponse)
-
-    @staticmethod
-    def getDevicesCodenames():
-        return config.getDevicesCodenames()
-
-    @staticmethod
-    def getDevicesReadableNames():
-        return config.getDevicesReadableNames()
