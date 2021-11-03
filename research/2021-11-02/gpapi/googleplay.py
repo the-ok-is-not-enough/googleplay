@@ -10,6 +10,7 @@ from os import path
 from re import match
 from sys import version_info
 from time import time
+import configparser
 import requests
 
 BASE = "https://android.clients.google.com/"
@@ -42,7 +43,6 @@ class GooglePlayAPI(object):
     """Google Play Unofficial API Class
     Usual APIs methods are login(), search(), details(), bulkDetails(),
     download(), browse(), reviews() and list()."""
-
     def __init__(self, locale="en_US", timezone="UTC", device_codename="bacon",
                  proxies_config=None):
         self.authSubToken = None
@@ -52,25 +52,12 @@ class GooglePlayAPI(object):
         self.dfeCookie = None
         self.proxies_config = proxies_config
         self.deviceBuilder = DeviceBuilder(device_codename)
-        self.setLocale(locale)
-        self.setTimezone(timezone)
-
-    def setLocale(self, locale):
-        self.deviceBuilder.setLocale(locale)
-
-    def setTimezone(self, timezone):
-        self.deviceBuilder.setTimezone(timezone)
 
     def setAuthSubToken(self, authSubToken):
         self.authSubToken = authSubToken
 
     def getHeaders(self, upload_fields=False):
-        """Return the default set of request headers, which
-        can later be expanded, based on the request type"""
-        if upload_fields:
-            headers = self.deviceBuilder.getDeviceUploadHeaders()
-        else:
-            headers = self.deviceBuilder.getBaseHeaders()
+        headers = self.deviceBuilder.getBaseHeaders()
         if self.gsfId is not None:
             headers["X-DFE-Device-Id"] = "{0:x}".format(self.gsfId)
         if self.authSubToken is not None:
@@ -131,7 +118,16 @@ class GooglePlayAPI(object):
             pass
 
     def getAuthSubToken(self, email, passwd):
-        requestParams = self.deviceBuilder.getLoginParams(email, passwd)
+        requestParams = {
+            "Email": email,
+            "EncryptedPasswd": passwd,
+            "droidguard_results": "dummy123",
+            "add_account": "1",
+            "callerSig": "38918a453d07199354f8b19af05ec6562ced5788",
+            "client_sig": "38918a453d07199354f8b19af05ec6562ced5788",
+            "has_permission": "1",
+            "source": "android",
+               }
         requestParams['service'] = 'androidmarket'
         requestParams['app'] = 'com.android.vending'
         headers = self.deviceBuilder.getAuthHeaders(self.gsfId)
@@ -190,10 +186,6 @@ class GooglePlayAPI(object):
         else:
             raise LoginError("Auth token not found.")
 
-import configparser
-
-DFE_TARGETS = "CAEScFfqlIEG6gUYogFWrAISK1WDAg+hAZoCDgIU1gYEOIACFkLMAeQBnASLATlASUuyAyqCAjY5igOMBQzfA/IClwFbApUC4ANbtgKVAS7OAX8YswHFBhgDwAOPAmGEBt4OfKkB5weSB5AFASkiN68akgMaxAMSAQEBA9kBO7UBFE1KVwIDBGs3go6BBgEBAgMECQgJAQIEAQMEAQMBBQEBBAUEFQYCBgUEAwMBDwIBAgOrARwBEwMEAg0mrwESfTEcAQEKG4EBMxghChMBDwYGASI3hAEODEwXCVh/EREZA4sBYwEdFAgIIwkQcGQRDzQ2fTC2AjfVAQIBAYoBGRg2FhYFBwEqNzACJShzFFblAo0CFxpFNBzaAd0DHjIRI4sBJZcBPdwBCQGhAUd2A7kBLBVPngEECHl0UEUMtQETigHMAgUFCc0BBUUlTywdHDgBiAJ+vgKhAU0uAcYCAWQ/5ALUAw1UwQHUBpIBCdQDhgL4AY4CBQICjARbGFBGWzA1CAEMOQH+BRAOCAZywAIDyQZ2MgM3BxsoAgUEBwcHFia3AgcGTBwHBYwBAlcBggFxSGgIrAEEBw4QEqUCASsWadsHCgUCBQMD7QICA3tXCUw7ugJZAwGyAUwpIwM5AwkDBQMJA5sBCw8BNxBVVBwVKhebARkBAwsQEAgEAhESAgQJEBCZATMdzgEBBwG8AQQYKSMUkAEDAwY/CTs4/wEaAUt1AwEDAQUBAgIEAwYEDx1dB2wGeBFgTQ"
-GOOGLE_PUBKEY = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
 ACCOUNT = "HOSTED_OR_GOOGLE"
 
 # parse phone config from the file 'device.properties'.
@@ -212,18 +204,6 @@ class InvalidLocaleError(Exception):
 class InvalidTimezoneError(Exception):
     pass
 
-def getDevicesCodenames():
-    """Returns a list containing devices codenames"""
-    return config.sections()
-
-
-def getDevicesReadableNames():
-    """Returns codename and readable name for each device"""
-    return [{'codename': s,
-             'readableName': config.get(s).get('userreadablename')}
-            for s in getDevicesCodenames()]
-
-
 class DeviceBuilder(object):
 
     def __init__(self, device):
@@ -231,50 +211,12 @@ class DeviceBuilder(object):
         for (key, value) in config.items(device):
             self.device[key] = value
 
-    def setLocale(self, locale):
-        # test if provided locale is valid
-        if locale is None or type(locale) is not str:
-            raise InvalidLocaleError()
-
-        # check if locale matches the structure of a common
-        # value like "en_US"
-        if match(r'[a-z]{2}\_[A-Z]{2}', locale) is None:
-            raise InvalidLocaleError()
-        self.locale = locale
-
-    def setTimezone(self, timezone):
-        if timezone is None or type(timezone) is not str:
-            timezone = self.device.get('timezone')
-            if timezone is None:
-                raise InvalidTimezoneError()
-        self.timezone = timezone
-
     def getBaseHeaders(self):
-        return {"Accept-Language": self.locale.replace('_', '-'),
-                "X-DFE-Encoded-Targets": DFE_TARGETS,
-                "User-Agent": self.getUserAgent(),
-                "X-DFE-Client-Id": "am-android-google",
-                "X-DFE-MCCMNC": self.device.get('celloperator'),
-                "X-DFE-Network-Type": "4",
-                "X-DFE-Content-Filters": "",
-                "X-DFE-Request-Params": "timeoutMs=4000"}
-
-    def getDeviceUploadHeaders(self):
-        headers = self.getBaseHeaders()
-        headers["X-DFE-Enabled-Experiments"] = "cl:billing.select_add_instrument_by_default"
-        headers["X-DFE-Unsupported-Experiments"] = ("nocache:billing.use_charging_poller,"
-            "market_emails,buyer_currency,prod_baseline,checkin.set_asset_paid_app_field,"
-            "shekel_test,content_ratings,buyer_currency_in_app,nocache:encrypted_apk,recent_changes")
-        headers["X-DFE-SmallestScreenWidthDp"] = "320"
-        headers["X-DFE-Filter-Level"] = "3"
-        return headers
-
-
-    def getUserAgent(self):
         version_string = self.device.get('vending.versionstring')
         if version_string is None:
             version_string = '8.4.19.V-all [0] [FP] 175058788'
-        return ("Android-Finsky/{versionString} ("
+        return {
+            "User-Agent": ("Android-Finsky/{versionString} ("
                 "api=3"
                 ",versionCode={versionCode}"
                 ",sdk={sdk}"
@@ -287,46 +229,47 @@ class DeviceBuilder(object):
                 ",isWideScreen=0"
                 ",supportedAbis={supported_abis}"
                 ")").format(versionString=version_string,
-                            versionCode=self.device.get('vending.version'),
-                            sdk=self.device.get('build.version.sdk_int'),
-                            device=self.device.get('build.device'),
-                            hardware=self.device.get('build.hardware'),
-                            product=self.device.get('build.product'),
-                            platform_v=self.device.get('build.version.release'),
-                            model=self.device.get('build.model'),
-                            build_id=self.device.get('build.id'),
-                            supported_abis=self.device.get('platforms').replace(',', ';'))
-
-    def getAuthHeaders(self, gsfid):
-        headers = {"User-Agent": ("GoogleAuth/1.4 ("
-                                  "{device} {id}"
-                                  ")").format(device=self.device.get('build.device'),
-                                              id=self.device.get('build.id'))}
-        if gsfid is not None:
-            headers['device'] = "{0:x}".format(gsfid)
-        return headers
-
-    def getLoginParams(self, email, encrypted_passwd):
-        return {"Email": email,
-                "EncryptedPasswd": encrypted_passwd,
-                "add_account": "1",
-                "accountType": ACCOUNT,
-                "google_play_services_version": self.device.get('gsf.version'),
-                "has_permission": "1",
-                "source": "android",
-                "device_country": self.locale[0:2],
-                "lang": self.locale,
-                "client_sig": "38918a453d07199354f8b19af05ec6562ced5788",
-                "callerSig": "38918a453d07199354f8b19af05ec6562ced5788",
-               "droidguard_results": "dummy123"
+                   versionCode=self.device.get('vending.version'),
+                   sdk=self.device.get('build.version.sdk_int'),
+                   device=self.device.get('build.device'),
+                   hardware=self.device.get('build.hardware'),
+                   product=self.device.get('build.product'),
+                   platform_v=self.device.get('build.version.release'),
+                   model=self.device.get('build.model'),
+                   build_id=self.device.get('build.id'),
+                   supported_abis=self.device.get('platforms').replace(',', ';')),
+            "X-DFE-Client-Id": "am-android-google",
+            "X-DFE-Content-Filters": "",
+            "X-DFE-Network-Type": "4",
+            "X-DFE-Request-Params": "timeoutMs=4000",
                }
 
+    def getDeviceUploadHeaders(self):
+        headers = self.getBaseHeaders()
+        headers["X-DFE-Enabled-Experiments"] = "cl:billing.select_add_instrument_by_default"
+        headers["X-DFE-Unsupported-Experiments"] = ("nocache:billing.use_charging_poller,"
+            "market_emails,buyer_currency,prod_baseline,checkin.set_asset_paid_app_field,"
+            "shekel_test,content_ratings,buyer_currency_in_app,nocache:encrypted_apk,recent_changes")
+        headers["X-DFE-SmallestScreenWidthDp"] = "320"
+        headers["X-DFE-Filter-Level"] = "3"
+        return headers
+
+    def getAuthHeaders(self, gsfid):
+      headers = {
+         "User-Agent": ("GoogleAuth/1.4 ({device} {id})").format(
+            device=self.device.get('build.device'),id=self.device.get('build.id')
+         )
+      }
+      if gsfid is not None:
+            headers['device'] = "{0:x}".format(gsfid)
+      return headers
+    
+    # NEED THIS
     def getAndroidCheckinRequest(self):
         request = googleplay_pb2.AndroidCheckinRequest()
         request.id = 0
         request.checkin.CopyFrom(self.getAndroidCheckin())
-        request.locale = self.locale
-        request.timeZone = self.timezone
+        #request.locale = self.locale
         request.version = 3
         request.deviceConfiguration.CopyFrom(self.getDeviceConfig())
         request.fragment = 0
@@ -338,7 +281,6 @@ class DeviceBuilder(object):
         localeList = self.device['locales'].split(",")
         glList = self.device['gl.extensions'].split(",")
         platforms = self.device['platforms'].split(",")
-
         hasFiveWayNavigation = (self.device['hasfivewaynavigation'] == 'true')
         hasHardKeyboard = (self.device['hashardkeyboard'] == 'true')
         deviceConfig = googleplay_pb2.DeviceConfigurationProto()
