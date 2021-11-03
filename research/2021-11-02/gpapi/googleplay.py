@@ -9,8 +9,10 @@ CHECKIN_URL = BASE + "checkin"
 CONTENT_TYPE_PROTO = "application/x-protobuf"
 UPLOAD_URL = FDFE + "uploadDeviceConfig"
 
-selfDevice = {
+dev = {
    # NEED ALL THESE:
+   'build.version.sdk_int': '27',
+   'features': 'android.hardware.touchscreen,android.hardware.wifi',
    'gl.version': '196610',
    'hasfivewaynavigation': 'false',
    'hashardkeyboard': 'false',
@@ -20,12 +22,7 @@ selfDevice = {
    'screen.density': '420',
    'screenlayout': '2',
    'touchscreen': '3',
-   'build.version.sdk_int': '27',
    'vending.version': '81031200',
-   'features': ','.join([
-      'android.hardware.touchscreen',
-      'android.hardware.wifi',
-   ])
 }
 
 class LoginError(Exception):
@@ -44,12 +41,10 @@ class GooglePlayAPI(object):
         self.dfeCookie = None
 
    def checkin(self, email, ac2dmToken):
-      # NEED ALL THESE:
       request = googleplay_pb2.AndroidCheckinRequest()
       request.version = 3
       androidCheckin = googleplay_pb2.AndroidCheckinProto()
       request.checkin.CopyFrom(androidCheckin)
-      # b'"\x00p\x03'
       stringRequest = request.SerializeToString()
       res = requests.post(
          CHECKIN_URL,
@@ -62,33 +57,26 @@ class GooglePlayAPI(object):
       return response.androidId
 
    def uploadDeviceConfig(self, ac2dmToken):
-      upload = googleplay_pb2.UploadDeviceConfigRequest()
-      deviceConfig = googleplay_pb2.DeviceConfigurationProto()
-      # NEED ALL THESE:
-      deviceConfig.glEsVersion = int(selfDevice['gl.version'])
-      deviceConfig.hasFiveWayNavigation = (selfDevice['hasfivewaynavigation'] == 'true')
-      deviceConfig.hasHardKeyboard = (selfDevice['hashardkeyboard'] == 'true')
-      deviceConfig.keyboard = int(selfDevice['keyboard'])
-      deviceConfig.navigation = int(selfDevice['navigation'])
-      deviceConfig.screenDensity = int(selfDevice['screen.density'])
-      deviceConfig.screenLayout = int(selfDevice['screenlayout'])
-      deviceConfig.touchScreen = int(selfDevice['touchscreen'])
-      for x in selfDevice['features'].split(","):
-         deviceConfig.systemAvailableFeature.append(x)
-      for x in selfDevice['platforms'].split(","):
-         deviceConfig.nativePlatform.append(x)
-      upload.deviceConfiguration.CopyFrom(deviceConfig)
-      # NEED THIS:
-      agent = 'versionCode=' + selfDevice.get('vending.version') + ','
-      # NEED THIS:
-      agent += 'sdk=' + selfDevice.get('build.version.sdk_int')
       headers = {
-         'User-Agent': "Android-Finsky (" + agent + ')'
+         "Authorization": 'Bearer ' + ac2dmToken,
+         "X-DFE-Device-Id": "{0:x}".format(self.gsfId),
+         'User-Agent': 'Android-Finsky (versionCode=' + dev.get('vending.version') + ',sdk=' + dev.get('build.version.sdk_int') + ')'
       }
-      # NEED THIS:
-      headers["X-DFE-Device-Id"] = "{0:x}".format(self.gsfId)
-      # NEED THIS:
-      headers["Authorization"] = 'Bearer ' + ac2dmToken
+      deviceConfig = googleplay_pb2.DeviceConfigurationProto()
+      deviceConfig.glEsVersion = int(dev['gl.version'])
+      deviceConfig.hasFiveWayNavigation = (dev['hasfivewaynavigation'] == 'true')
+      deviceConfig.hasHardKeyboard = (dev['hashardkeyboard'] == 'true')
+      deviceConfig.keyboard = int(dev['keyboard'])
+      deviceConfig.navigation = int(dev['navigation'])
+      deviceConfig.screenDensity = int(dev['screen.density'])
+      deviceConfig.screenLayout = int(dev['screenlayout'])
+      deviceConfig.touchScreen = int(dev['touchscreen'])
+      for x in dev['features'].split(","):
+         deviceConfig.systemAvailableFeature.append(x)
+      for x in dev['platforms'].split(","):
+         deviceConfig.nativePlatform.append(x)
+      upload = googleplay_pb2.UploadDeviceConfigRequest()
+      upload.deviceConfiguration.CopyFrom(deviceConfig)
       stringRequest = upload.SerializeToString()
       response = requests.post(
          UPLOAD_URL,
