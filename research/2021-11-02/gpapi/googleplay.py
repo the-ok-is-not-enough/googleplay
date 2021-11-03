@@ -76,47 +76,6 @@ class GooglePlayAPI(object):
     def setTimezone(self, timezone):
         self.deviceBuilder.setTimezone(timezone)
 
-    def encryptPassword(self, login, passwd):
-        """Encrypt credentials using the google publickey, with the
-        RSA algorithm"""
-
-        # structure of the binary key:
-        #
-        # *-------------------------------------------------------*
-        # | modulus_length | modulus | exponent_length | exponent |
-        # *-------------------------------------------------------*
-        #
-        # modulus_length and exponent_length are uint32
-        binaryKey = b64decode(config.GOOGLE_PUBKEY)
-        # modulus
-        i = utils.readInt(binaryKey, 0)
-        modulus = utils.toBigInt(binaryKey[4:][0:i])
-        # exponent
-        j = utils.readInt(binaryKey, i + 4)
-        exponent = utils.toBigInt(binaryKey[i + 8:][0:j])
-
-        # calculate SHA1 of the pub key
-        digest = hashes.Hash(hashes.SHA1(), backend=default_backend())
-        digest.update(binaryKey)
-        h = b'\x00' + digest.finalize()[0:4]
-
-        # generate a public key
-        der_data = encode_dss_signature(modulus, exponent)
-        publicKey = load_der_public_key(der_data, backend=default_backend())
-
-        # encrypt email and password using pubkey
-        to_be_encrypted = login.encode() + b'\x00' + passwd.encode()
-        ciphertext = publicKey.encrypt(
-            to_be_encrypted,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                algorithm=hashes.SHA1(),
-                label=None
-            )
-        )
-
-        return urlsafe_b64encode(h + ciphertext)
-
     def setAuthSubToken(self, authSubToken):
         self.authSubToken = authSubToken
 
@@ -154,7 +113,6 @@ class GooglePlayAPI(object):
         response = googleplay_pb2.AndroidCheckinResponse()
         response.ParseFromString(res.content)
         self.deviceCheckinConsistencyToken = response.deviceCheckinConsistencyToken
-
         # checkin again to upload gfsid
         request.id = response.androidId
         request.securityToken = response.securityToken
@@ -250,63 +208,6 @@ class GooglePlayAPI(object):
             raise LoginError("server says: " + params["error"])
         else:
             raise LoginError("Auth token not found.")
-
-    def executeRequestApi2(self, path, post_data=None, content_type=CONTENT_TYPE_URLENC, params=None):
-        if self.authSubToken is None:
-            raise LoginError("You need to login before executing any request")
-        headers = self.getHeaders()
-        headers["Content-Type"] = content_type
-
-        if post_data is not None:
-            response = requests.post(path,
-                data=str(post_data),
-                headers=headers,
-                params=params,
-                verify=ssl_verify,
-                timeout=60,
-                proxies=self.proxies_config)
-            print(response.status_code, response.url)
-        else:
-            response = requests.get(path,
-               headers=headers,
-               params=params,
-               verify=ssl_verify,
-               timeout=60,
-               proxies=self.proxies_config)
-            print(response.status_code, response.url)
-        message = googleplay_pb2.ResponseWrapper.FromString(response.content)
-        if message.commands.displayErrorMessage != "":
-            raise RequestError(message.commands.displayErrorMessage)
-        return message
-
-    def reviews(self, packageName, filterByDevice=False, sort=2,
-                nb_results=None, offset=None):
-        """Browse reviews for an application
-
-        Args:
-            packageName (str): app unique ID.
-            filterByDevice (bool): filter results for current device
-            sort (int): sorting criteria (values are unknown)
-            nb_results (int): max number of reviews to return
-            offset (int): return reviews starting from an offset value
-
-        Returns:
-            dict object containing all the protobuf data returned from
-            the api
-        """
-        # TODO: select the number of reviews to return
-        path = REVIEWS_URL + "?doc={}&sort={}".format(requests.utils.quote(packageName), sort)
-        if nb_results is not None:
-            path += "&n={}".format(nb_results)
-        if offset is not None:
-            path += "&o={}".format(offset)
-        if filterByDevice:
-            path += "&dfil=1"
-        data = self.executeRequestApi2(path)
-        output = []
-        for review in data.payload.reviewResponse.getResponse.review:
-            output.append(utils.parseProtobufObj(review))
-        return output
 
     def _deliver_data(self, url, cookies):
         headers = self.getHeaders()
