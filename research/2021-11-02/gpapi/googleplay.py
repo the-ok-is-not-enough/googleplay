@@ -268,137 +268,16 @@ class GooglePlayAPI(object):
             print(response.status_code, response.url)
         else:
             response = requests.get(path,
-                                    headers=headers,
-                                    params=params,
-                                    verify=ssl_verify,
-                                    timeout=60,
-                                    proxies=self.proxies_config)
+               headers=headers,
+               params=params,
+               verify=ssl_verify,
+               timeout=60,
+               proxies=self.proxies_config)
             print(response.status_code, response.url)
         message = googleplay_pb2.ResponseWrapper.FromString(response.content)
         if message.commands.displayErrorMessage != "":
             raise RequestError(message.commands.displayErrorMessage)
-
         return message
-
-    def search(self, query):
-        """ Search the play store for an app.
-
-        nb_result (int): is the maximum number of result to be returned
-
-        offset (int): is used to take result starting from an index.
-        """
-        if self.authSubToken is None:
-            raise LoginError("You need to login before executing any request")
-
-        path = SEARCH_URL + "?c=3&q={}".format(requests.utils.quote(query))
-        # FIXME: not sure if this toc call should be here
-        self.toc()
-        data = self.executeRequestApi2(path)
-        if utils.hasPrefetch(data):
-            response = data.preFetch[0].response
-        else:
-            response = data
-        resIterator = response.payload.listResponse.doc
-        return list(map(utils.parseProtobufObj, resIterator))
-
-    def details(self, packageName):
-        """Get app details from a package name.
-
-        packageName is the app unique ID (usually starting with 'com.')."""
-        path = DETAILS_URL + "?doc={}".format(requests.utils.quote(packageName))
-        data = self.executeRequestApi2(path)
-        return utils.parseProtobufObj(data.payload.detailsResponse.docV2)
-
-    def bulkDetails(self, packageNames):
-        """Get several apps details from a list of package names.
-
-        This is much more efficient than calling N times details() since it
-        requires only one request. If an item is not found it returns an empty object
-        instead of throwing a RequestError('Item not found') like the details() function
-
-        Args:
-            packageNames (list): a list of app IDs (usually starting with 'com.').
-
-        Returns:
-            a list of dictionaries containing docv2 data, or None
-            if the app doesn't exist"""
-
-        params = {'au': '1'}
-        req = googleplay_pb2.BulkDetailsRequest()
-        req.docid.extend(packageNames)
-        data = req.SerializeToString()
-        message = self.executeRequestApi2(BULK_URL,
-                                          post_data=data.decode("utf-8"),
-                                          content_type=CONTENT_TYPE_PROTO,
-                                          params=params)
-        response = message.payload.bulkDetailsResponse
-        return [None if not utils.hasDoc(entry) else
-                utils.parseProtobufObj(entry.doc)
-                for entry in response.entry]
-
-    def home(self, cat=None):
-        path = HOME_URL + "?c=3&nocache_isui=true"
-        if cat is not None:
-            path += "&cat={}".format(cat)
-        data = self.executeRequestApi2(path)
-        if utils.hasPrefetch(data):
-            response = data.preFetch[0].response
-        else:
-            response = data
-        resIterator = response.payload.listResponse.doc
-        return list(map(utils.parseProtobufObj, resIterator))
-
-    def browse(self, cat=None, subCat=None):
-        """Browse categories. If neither cat nor subcat are specified,
-        return a list of categories, otherwise it return a list of apps
-        using cat (category ID) and subCat (subcategory ID) as filters."""
-        path = BROWSE_URL + "?c=3"
-        if cat is not None:
-            path += "&cat={}".format(requests.utils.quote(cat))
-        if subCat is not None:
-            path += "&ctr={}".format(requests.utils.quote(subCat))
-        data = self.executeRequestApi2(path)
-
-        return utils.parseProtobufObj(data.payload.browseResponse)
-
-    def list(self, cat, ctr=None, nb_results=None, offset=None):
-        """List all possible subcategories for a specific category. If
-        also a subcategory is provided, list apps from this category.
-
-        Args:
-            cat (str): category id
-            ctr (str): subcategory id
-            nb_results (int): if a subcategory is specified, limit number
-                of results to this number
-            offset (int): if a subcategory is specified, start counting from this
-                result
-        Returns:
-            A list of categories. If subcategory is specified, a list of apps in this
-            category.
-        """
-        path = LIST_URL + "?c=3&cat={}".format(requests.utils.quote(cat))
-        if ctr is not None:
-            path += "&ctr={}".format(requests.utils.quote(ctr))
-        if nb_results is not None:
-            path += "&n={}".format(requests.utils.quote(str(nb_results)))
-        if offset is not None:
-            path += "&o={}".format(requests.utils.quote(str(offset)))
-        data = self.executeRequestApi2(path)
-        clusters = []
-        docs = []
-        if ctr is None:
-            # list subcategories
-            for pf in data.preFetch:
-                for cluster in pf.response.payload.listResponse.doc:
-                    clusters.extend(cluster.child)
-            return [c.docid for c in clusters]
-        else:
-            apps = []
-            for d in data.payload.listResponse.doc: # categories
-                for c in d.child: # sub-category
-                    for a in c.child: # app
-                        apps.append(utils.parseProtobufObj(a))
-            return apps
 
     def reviews(self, packageName, filterByDevice=False, sort=2,
                 nb_results=None, offset=None):

@@ -20,4 +20,6 @@ pip install urllib3==1.25.11
 ~~~
 
 After getting a new device ID, you have to wait about 9 seconds before you try
-to use it.
+to use it. This is interesting:
+
+https://gitlab.com/marzzzello/playstoreapi/-/blob/e3328b7b/playstoreapi/googleplay.py#L25
