@@ -69,49 +69,38 @@ class GooglePlayAPI(object):
         return headers
 
     def checkin(self, email, ac2dmToken):
-        headers = self.getHeaders()
-        headers["Content-Type"] = CONTENT_TYPE_PROTO
-        request = self.deviceBuilder.getAndroidCheckinRequest()
-        stringRequest = request.SerializeToString()
-        res = requests.post(CHECKIN_URL, data=stringRequest,
-             headers=headers, verify=ssl_verify,
-             proxies=self.proxies_config)
-        print(res.status_code, res.url)
-        response = googleplay_pb2.AndroidCheckinResponse()
-        response.ParseFromString(res.content)
-        self.deviceCheckinConsistencyToken = response.deviceCheckinConsistencyToken
-        # checkin again to upload gfsid
-        request.id = response.androidId
-        request.securityToken = response.securityToken
-        request.accountCookie.append("[" + email + "]")
-        request.accountCookie.append(ac2dmToken)
-        stringRequest = request.SerializeToString()
-        res = requests.post(CHECKIN_URL,
-             data=stringRequest,
-             headers=headers,
-             verify=ssl_verify,
-             proxies=self.proxies_config)
-        print(res.status_code, res.url)
-        return response.androidId
+      headers = self.getHeaders()
+      headers["Content-Type"] = CONTENT_TYPE_PROTO
+      request = self.deviceBuilder.getAndroidCheckinRequest()
+      stringRequest = request.SerializeToString()
+      res = requests.post(CHECKIN_URL, data=stringRequest,
+           headers=headers, verify=ssl_verify,
+           proxies=self.proxies_config)
+      print(res.status_code, res.url)
+      response = googleplay_pb2.AndroidCheckinResponse()
+      response.ParseFromString(res.content)
+      self.deviceCheckinConsistencyToken = response.deviceCheckinConsistencyToken
+      return response.androidId
 
     def uploadDeviceConfig(self):
-        upload = googleplay_pb2.UploadDeviceConfigRequest()
-        upload.deviceConfiguration.CopyFrom(self.deviceBuilder.getDeviceConfig())
-        headers = self.getHeaders(upload_fields=True)
-        stringRequest = upload.SerializeToString()
-        response = requests.post(UPLOAD_URL, data=stringRequest,
+      upload = googleplay_pb2.UploadDeviceConfigRequest()
+      # NEED THIS:
+      upload.deviceConfiguration.CopyFrom(self.deviceBuilder.getDeviceConfig())
+      headers = self.getHeaders(upload_fields=True)
+      stringRequest = upload.SerializeToString()
+      response = requests.post(UPLOAD_URL, data=stringRequest,
             headers=headers,
             verify=ssl_verify,
             timeout=60,
             proxies=self.proxies_config)
-        print(response.status_code, response.url)
-        response = googleplay_pb2.ResponseWrapper.FromString(response.content)
-        try:
-            if response.payload.HasField('uploadDeviceConfigResponse'):
-                self.device_config_token = response.payload.uploadDeviceConfigResponse
-                self.device_config_token = self.device_config_token.uploadDeviceConfigToken
-        except ValueError:
-            pass
+      print(response.status_code, response.url)
+      response = googleplay_pb2.ResponseWrapper.FromString(response.content)
+      try:
+          if response.payload.HasField('uploadDeviceConfigResponse'):
+              self.device_config_token = response.payload.uploadDeviceConfigResponse
+              self.device_config_token = self.device_config_token.uploadDeviceConfigToken
+      except ValueError:
+          pass
 
     def getAuthSubToken(self, email, passwd, master_token):
       requestParams = {
@@ -131,36 +120,36 @@ class GooglePlayAPI(object):
       self.setAuthSubToken(second_round_token)
 
     def getSecondRoundToken(self, first_token, params):
-        if self.gsfId is not None:
+      if self.gsfId is not None:
             params['androidId'] = "{0:x}".format(self.gsfId)
-        params['Token'] = first_token
-        params['check_email'] = '1'
-        params['token_request_options'] = 'CAA4AQ=='
-        params['system_partition'] = '1'
-        params['_opt_is_called_from_account_manager'] = '1'
-        params.pop('Email')
-        params.pop('EncryptedPasswd')
-        headers = self.deviceBuilder.getAuthHeaders(self.gsfId)
-        headers['app'] = 'com.android.vending'
-        response = requests.post(AUTH_URL,
+      params['Token'] = first_token
+      params['check_email'] = '1'
+      params['token_request_options'] = 'CAA4AQ=='
+      params['system_partition'] = '1'
+      params['_opt_is_called_from_account_manager'] = '1'
+      params.pop('Email')
+      params.pop('EncryptedPasswd')
+      headers = self.deviceBuilder.getAuthHeaders(self.gsfId)
+      headers['app'] = 'com.android.vending'
+      response = requests.post(AUTH_URL,
             data=params,
             headers=headers,
             verify=ssl_verify,
             proxies=self.proxies_config)
-        print(response.status_code, response.url)
-        data = response.text.split()
-        params = {}
-        for d in data:
-            if "=" not in d:
-                continue
-            k, v = d.split("=", 1)
-            params[k.strip().lower()] = v.strip()
-        if "auth" in params:
-            return params["auth"]
-        elif "error" in params:
-            raise LoginError("server says: " + params["error"])
-        else:
-            raise LoginError("Auth token not found.")
+      print(response.status_code, response.url)
+      data = response.text.split()
+      params = {}
+      for d in data:
+          if "=" not in d:
+              continue
+          k, v = d.split("=", 1)
+          params[k.strip().lower()] = v.strip()
+      if "auth" in params:
+          return params["auth"]
+      elif "error" in params:
+          raise LoginError("server says: " + params["error"])
+      else:
+          raise LoginError("Auth token not found.")
 
 selfDevice = {
    'build.fingerprint': 'google/sailfish/sailfish:8.1.0/OPM4.171019.016.B1/4720843:user/release-keys', 'build.brand': 'Google', 'build.device': 'sailfish',
@@ -218,18 +207,6 @@ class DeviceBuilder(object):
       agent += 'supportedAbis=' + selfDevice.get('platforms').replace(',', ';') + ')'
       return {'User-Agent': agent}
 
-    def getDeviceUploadHeaders(self):
-      headers = {}
-      headers["X-DFE-Enabled-Experiments"] = "cl:billing.select_add_instrument_by_default"
-      headers["X-DFE-Unsupported-Experiments"] = (
-         "nocache:billing.use_charging_poller,"
-         "market_emails,buyer_currency,prod_baseline,checkin.set_asset_paid_app_field,"
-         "shekel_test,content_ratings,buyer_currency_in_app,nocache:encrypted_apk,recent_changes"
-      )
-      headers["X-DFE-SmallestScreenWidthDp"] = "320"
-      headers["X-DFE-Filter-Level"] = "3"
-      return headers
-
     def getAuthHeaders(self, gsfid):
       headers = {
          "User-Agent": ("GoogleAuth/1.4 ({device} {id})").format(
@@ -243,13 +220,12 @@ class DeviceBuilder(object):
     
     # NEED THIS
     def getAndroidCheckinRequest(self):
-        request = googleplay_pb2.AndroidCheckinRequest()
-        request.id = 0
-        request.checkin.CopyFrom(self.getAndroidCheckin())
-        request.version = 3
-        request.deviceConfiguration.CopyFrom(self.getDeviceConfig())
-        request.fragment = 0
-        return request
+      request = googleplay_pb2.AndroidCheckinRequest()
+      request.id = 0
+      request.checkin.CopyFrom(self.getAndroidCheckin())
+      request.version = 3
+      request.fragment = 0
+      return request
 
     def getDeviceConfig(self):
       featureList = selfDevice['features'].split(",")
@@ -273,27 +249,9 @@ class DeviceBuilder(object):
           deviceConfig.systemAvailableFeature.append(x)
       return deviceConfig
 
-    def getAndroidBuild(self):
-        androidBuild = googleplay_pb2.AndroidBuildProto()
-        androidBuild.id = selfDevice['build.fingerprint']
-        androidBuild.product = selfDevice['build.hardware']
-        androidBuild.carrier = selfDevice['build.brand']
-        androidBuild.radio = selfDevice['build.radio']
-        androidBuild.bootloader = selfDevice['build.bootloader']
-        androidBuild.device = selfDevice['build.device']
-        androidBuild.sdkVersion = int(selfDevice['build.version.sdk_int'])
-        androidBuild.model = selfDevice['build.model']
-        androidBuild.manufacturer = selfDevice['build.manufacturer']
-        androidBuild.buildProduct = selfDevice['build.product']
-        androidBuild.client = selfDevice['client']
-        androidBuild.otaInstalled = False
-        androidBuild.timestamp = int(time()/1000)
-        androidBuild.googleServices = int(selfDevice['gsf.version'])
-        return androidBuild
-
+    # NEED THIS
     def getAndroidCheckin(self):
         androidCheckin = googleplay_pb2.AndroidCheckinProto()
-        androidCheckin.build.CopyFrom(self.getAndroidBuild())
         androidCheckin.lastCheckinMsec = 0
         androidCheckin.cellOperator = selfDevice['celloperator']
         androidCheckin.simOperator = selfDevice['simoperator']
