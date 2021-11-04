@@ -1,5 +1,7 @@
 # November 3 2021
 
+When creating `X-DFE-Device-ID`, you must use Android API 25 or higher.
+
 - https://github.com/Juby210/gplayapi-go/issues/4
 - https://github.com/4thel00z/google-play
 
