@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/89z/googleplay v1.0.5
 	github.com/segmentio/encoding v0.2.23
-	google.golang.org/protobuf v1.27.1
 )
 
 require (

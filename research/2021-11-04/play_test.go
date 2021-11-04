@@ -19,18 +19,18 @@ func TestUpload(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   device := check.String()
-   if err := upload(ac2dmToken, device); err != nil {
+   deviceID := check.String()
+   if err := newDevice().upload(ac2dmToken, deviceID); err != nil {
       t.Fatal(err)
    }
-   fmt.Println(device)
+   fmt.Println(deviceID)
    auth := googleplay.Auth{
       url.Values{
          "Auth": {ac2dmToken},
       },
    }
    time.Sleep(16 * time.Second)
-   det, err := auth.Details(device, "com.google.android.youtube")
+   det, err := auth.Details(deviceID, "com.google.android.youtube")
    if err != nil {
       t.Fatal(err)
    }
