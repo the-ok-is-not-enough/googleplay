@@ -13,7 +13,9 @@ import (
    "io"
    "math/big"
    "net/http"
+   "net/http/httputil"
    "net/url"
+   "os"
    "strconv"
    "strings"
 )
@@ -82,14 +84,20 @@ func (c Checkin) Post() (*CheckinResponse, error) {
    if err != nil {
       return nil, err
    }
-   res, err := http.Post(origin + "/checkin", "application/json", buf)
+   req, err := http.NewRequest("POST", origin + "/checkin", buf)
+   if err != nil {
+      return nil, err
+   }
+   dum, err := httputil.DumpRequest(req, true)
+   if err != nil {
+      return nil, err
+   }
+   os.Stdout.Write(dum)
+   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, fmt.Errorf("status %q", res.Status)
-   }
    check := new(CheckinResponse)
    if err := json.NewDecoder(res.Body).Decode(check); err != nil {
       return nil, err
@@ -120,6 +128,55 @@ type Device struct {
    } `protobuf:"bytes,1"`
 }
 
+func NewDevice() Device {
+   var d Device
+   // developer.android.com/guide/topics/manifest/uses-feature-element
+   d.Configuration.GlEsVersion = 0x0009_0000
+   d.Configuration.HasFiveWayNavigation = true
+   d.Configuration.HasHardKeyboard = true
+   d.Configuration.Keyboard = 1
+   // developer.android.com/ndk/guides/abis
+   d.Configuration.NativePlatform = []string{
+      "armeabi-v7a",
+   }
+   d.Configuration.Navigation = 1
+   d.Configuration.ScreenDensity = 1
+   d.Configuration.ScreenLayout = 1
+   // developer.android.com/guide/topics/manifest/uses-feature-element
+   d.Configuration.SystemAvailableFeature = []string{
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
+   }
+   d.Configuration.TouchScreen = 1
+   return d
+}
+
+func (d Device) Upload(deviceID, auth string) error {
+   buf, err := proto.Marshal(d)
+   if err != nil {
+      return err
+   }
+   req, err := http.NewRequest(
+      "POST", origin + "/fdfe/uploadDeviceConfig", bytes.NewReader(buf),
+   )
+   if err != nil {
+      return err
+   }
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + auth},
+      "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
+      "X-DFE-Device-ID": {deviceID},
+   }
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return fmt.Errorf("status %q", res.Status)
+   }
+   return nil
+}
 
 type OAuth struct {
    url.Values
@@ -149,6 +206,43 @@ func (a OAuth) Details(deviceID, app string) ([]byte, error) {
 
 type Token struct {
    url.Values
+}
+
+// Request refresh token.
+func NewToken(email, password string) (*Token, error) {
+   hello, err := crypto.ParseJA3(androidJA3)
+   if err != nil {
+      return nil, err
+   }
+   sig, err := signature(email, password)
+   if err != nil {
+      return nil, err
+   }
+   val := make(url.Values)
+   val.Set("Email", email)
+   val.Set("EncryptedPasswd", sig)
+   // Newer versions fail.
+   val.Set("sdk_version", "20")
+   req, err := http.NewRequest(
+      "POST", origin + "/auth", strings.NewReader(val.Encode()),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   query, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   if val := net.ParseQuery(query); val != nil {
+      return &Token{val}, nil
+   }
+   return nil, fmt.Errorf("parseQuery %q", query)
 }
 
 // Exchange refresh token for access token.
@@ -182,94 +276,4 @@ type devZero struct{}
 
 func (devZero) Read(b []byte) (int, error) {
    return len(b), nil
-}
-
-// Request refresh token.
-func NewToken(email, password string) (*Token, error) {
-   hello, err := crypto.ParseJA3(androidJA3)
-   if err != nil {
-      return nil, err
-   }
-   sig, err := signature(email, password)
-   if err != nil {
-      return nil, err
-   }
-   val := make(url.Values)
-   val.Set("Email", email)
-   val.Set("EncryptedPasswd", sig)
-   val.Set("sdk_version", "20")
-   req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(val.Encode()),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   if val := net.ParseQuery(query); val != nil {
-      return &Token{val}, nil
-   }
-   return nil, fmt.Errorf("parseQuery %q", query)
-}
-
-func NewDevice() Device {
-   var d Device
-   // developer.android.com/guide/topics/manifest/uses-feature-element
-   d.Configuration.GlEsVersion = 0x0002_0000
-   d.Configuration.HasFiveWayNavigation = true
-   d.Configuration.HasHardKeyboard = true
-   d.Configuration.Keyboard = 1
-   // developer.android.com/ndk/guides/abis
-   d.Configuration.NativePlatform = []string{
-      "armeabi-v7a",
-   }
-   d.Configuration.Navigation = 1
-   d.Configuration.ScreenDensity = 1
-   d.Configuration.ScreenLayout = 1
-   // developer.android.com/guide/topics/manifest/uses-feature-element
-   d.Configuration.SystemAvailableFeature = []string{
-      "android.hardware.touchscreen",
-      "android.hardware.wifi",
-   }
-   d.Configuration.TouchScreen = 1
-   return d
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-const agent = "Android-Finsky (sdk=27,versionCode=81031200)"
-
-func (d Device) Upload(deviceID, auth string) error {
-   buf, err := proto.Marshal(d)
-   if err != nil {
-      return err
-   }
-   req, err := http.NewRequest(
-      "POST", origin + "/fdfe/uploadDeviceConfig", bytes.NewReader(buf),
-   )
-   if err != nil {
-      return err
-   }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + auth},
-      "User-Agent": {agent},
-      "X-DFE-Device-ID": {deviceID},
-   }
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return fmt.Errorf("status %q", res.Status)
-   }
-   return nil
 }

@@ -1,27 +1,33 @@
-# November 4 2021
+# November 3 2021
 
-How do we get this:
+This issue is helpful:
+
+https://github.com/EFForg/apkeep/issues/17
+
+Fix:
+
+https://github.com/NoMore201/googleplay-api/pull/153
+
+After getting a new device ID, you have to wait about 9 seconds before you try
+to use it. This is interesting:
+
+https://gitlab.com/marzzzello/playstoreapi/-/blob/e3328b7b/playstoreapi/googleplay.py#L25
+
+How to get this:
 
 ~~~
-Android-Finsky (sdk=27,versionCode=81031200)
+X-DFE-Device-ID
 ~~~
 
-Some commands:
+AKA Google Service Framework ID. Does the APK have it? No. This looks like the
+answer here:
+
+https://github.com/crow-misia/go-push-receiver/blob/main/instanceid.go
 
 ~~~
-fail
-"Android-Finsky" site:developer.android.com
-"Android-Finsky" site:android.com
+done
+language:go android.clients.google.com sdk_version
+android.clients.google.com sdk_version -EncryptedPasswd
 
-"User-Agent" "Android-Finsky"
-
-adb shell cat system/build.prop
-ro.build.version.sdk=24
-ro.build.version.incremental=6696031
-
-sdk=%d
-getprop ro.build.version.sdk
-
-versionCode=%d
-getprop ro.build.version.incremental
+BadAuthentication
 ~~~
