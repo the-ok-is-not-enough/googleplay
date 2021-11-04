@@ -27,7 +27,8 @@ func main() {
    if err != nil {
       panic(err)
    }
-   vers := []string{"16.", "16.4", "16.42.", "16.42.3", "16.42.34"}
+   fmt.Printf("%q\n", det)
+   vers := []string{"16.", "16.4", "16.43.", "16.43.3", "16.43.34"}
    for _, ver := range vers {
       if bytes.Contains(det, []byte(ver)) {
          fmt.Println("pass", ver)
