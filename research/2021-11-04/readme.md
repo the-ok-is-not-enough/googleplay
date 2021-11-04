@@ -1,47 +1,27 @@
-# November 3 2021
+# November 4 2021
 
-When creating `X-DFE-Device-ID`, you must use Android API 25 or higher.
-
-- https://github.com/Juby210/gplayapi-go/issues/4
-- https://github.com/4thel00z/google-play
-
-This issue is helpful:
-
-https://github.com/EFForg/apkeep/issues/17
-
-Fix:
-
-https://github.com/NoMore201/googleplay-api/pull/153
-
-The answer is here:
-
-https://github.com/NoMore201/googleplay-api/blob/664c399f/gpapi/googleplay.py#L242-L244
+How do we get this:
 
 ~~~
-pip install protobuf
-pip install requests
+Android-Finsky (sdk=27,versionCode=81031200)
 ~~~
 
-After getting a new device ID, you have to wait about 9 seconds before you try
-to use it. This is interesting:
-
-https://gitlab.com/marzzzello/playstoreapi/-/blob/e3328b7b/playstoreapi/googleplay.py#L25
-
-How to get this:
+Some commands:
 
 ~~~
-X-DFE-Device-ID
-~~~
+fail
+"Android-Finsky" site:developer.android.com
+"Android-Finsky" site:android.com
 
-AKA Google Service Framework ID. Does the APK have it? No. This looks like the
-answer here:
+"User-Agent" "Android-Finsky"
 
-https://github.com/crow-misia/go-push-receiver/blob/main/instanceid.go
+adb shell cat system/build.prop
+ro.build.version.sdk=24
+ro.build.version.incremental=6696031
 
-~~~
-done
-language:go android.clients.google.com sdk_version
-android.clients.google.com sdk_version -EncryptedPasswd
+sdk=%d
+getprop ro.build.version.sdk
 
-BadAuthentication
+versionCode=%d
+getprop ro.build.version.incremental
 ~~~

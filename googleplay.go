@@ -18,7 +18,7 @@ import (
    "strings"
 )
 
-const AndroidJA3 =
+const androidJA3 =
    "769,49195-49196-52393-49199-49200-52392-158-159-49161-49162-49171-49172-" +
    "51-57-156-157-47-53,65281-0-23-35-13-16-11-10,23,0"
 
@@ -29,7 +29,7 @@ const androidKey =
 
 const origin = "https://android.clients.google.com"
 
-func Signature(email, password string) (string, error) {
+func signature(email, password string) (string, error) {
    data, err := base64.StdEncoding.DecodeString(androidKey)
    if err != nil {
       return "", err
@@ -120,59 +120,13 @@ type Device struct {
    } `protobuf:"bytes,1"`
 }
 
-func NewDevice() Device {
-   var d Device
-   // OpenGL ES version
-   // developer.android.com/guide/topics/manifest/uses-feature-element
-   d.Configuration.GlEsVersion = 0x0002_0000
-   d.Configuration.HasFiveWayNavigation = true
-   d.Configuration.HasHardKeyboard = true
-   d.Configuration.Keyboard = 1
-   d.Configuration.NativePlatform = []string{"armeabi-v7a"}
-   d.Configuration.Navigation = 1
-   d.Configuration.ScreenDensity = 1
-   d.Configuration.ScreenLayout = 1
-   d.Configuration.SystemAvailableFeature = []string{
-      "android.hardware.touchscreen",
-      "android.hardware.wifi",
-   }
-   d.Configuration.TouchScreen = 1
-   return d
-}
-
-func (d Device) Upload(check *CheckinResponse, oauth OAuth) error {
-   buf, err := proto.Marshal(d)
-   if err != nil {
-      return err
-   }
-   req, err := http.NewRequest(
-      "POST", origin + "/fdfe/uploadDeviceConfig", bytes.NewReader(buf),
-   )
-   if err != nil {
-      return err
-   }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + oauth.Get("Auth")},
-      "User-Agent": {"Android-Finsky (versionCode=81031200,sdk=27)"},
-      "X-DFE-Device-Id": {check.String()},
-   }
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return fmt.Errorf("status %q", res.Status)
-   }
-   return nil
-}
 
 type OAuth struct {
    url.Values
 }
 
-// device is Google Service Framework.
-func (a OAuth) Details(device, app string) ([]byte, error) {
+// deviceID is Google Service Framework.
+func (a OAuth) Details(deviceID, app string) ([]byte, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
@@ -181,7 +135,7 @@ func (a OAuth) Details(device, app string) ([]byte, error) {
    val.Set("doc", app)
    req.URL.RawQuery = val.Encode()
    req.Header.Set("Authorization", "Bearer " + a.Get("Auth"))
-   req.Header.Set("X-DFE-Device-ID", device)
+   req.Header.Set("X-DFE-Device-ID", deviceID)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -195,42 +149,6 @@ func (a OAuth) Details(device, app string) ([]byte, error) {
 
 type Token struct {
    url.Values
-}
-
-// Request refresh token.
-func NewToken(email, password string) (*Token, error) {
-   hello, err := crypto.ParseJA3(AndroidJA3)
-   if err != nil {
-      return nil, err
-   }
-   sig, err := Signature(email, password)
-   if err != nil {
-      return nil, err
-   }
-   val := make(url.Values)
-   val.Set("Email", email)
-   val.Set("EncryptedPasswd", sig)
-   val.Set("sdk_version", "16")
-   req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(val.Encode()),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   if val := net.ParseQuery(query); val != nil {
-      return &Token{val}, nil
-   }
-   return nil, fmt.Errorf("parseQuery %q", query)
 }
 
 // Exchange refresh token for access token.
@@ -264,4 +182,94 @@ type devZero struct{}
 
 func (devZero) Read(b []byte) (int, error) {
    return len(b), nil
+}
+
+// Request refresh token.
+func NewToken(email, password string) (*Token, error) {
+   hello, err := crypto.ParseJA3(androidJA3)
+   if err != nil {
+      return nil, err
+   }
+   sig, err := signature(email, password)
+   if err != nil {
+      return nil, err
+   }
+   val := make(url.Values)
+   val.Set("Email", email)
+   val.Set("EncryptedPasswd", sig)
+   val.Set("sdk_version", "20")
+   req, err := http.NewRequest(
+      "POST", origin + "/auth", strings.NewReader(val.Encode()),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   query, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   if val := net.ParseQuery(query); val != nil {
+      return &Token{val}, nil
+   }
+   return nil, fmt.Errorf("parseQuery %q", query)
+}
+
+func NewDevice() Device {
+   var d Device
+   // developer.android.com/guide/topics/manifest/uses-feature-element
+   d.Configuration.GlEsVersion = 0x0002_0000
+   d.Configuration.HasFiveWayNavigation = true
+   d.Configuration.HasHardKeyboard = true
+   d.Configuration.Keyboard = 1
+   // developer.android.com/ndk/guides/abis
+   d.Configuration.NativePlatform = []string{
+      "armeabi-v7a",
+   }
+   d.Configuration.Navigation = 1
+   d.Configuration.ScreenDensity = 1
+   d.Configuration.ScreenLayout = 1
+   // developer.android.com/guide/topics/manifest/uses-feature-element
+   d.Configuration.SystemAvailableFeature = []string{
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
+   }
+   d.Configuration.TouchScreen = 1
+   return d
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const agent = "Android-Finsky (sdk=27,versionCode=81031200)"
+
+func (d Device) Upload(deviceID, auth string) error {
+   buf, err := proto.Marshal(d)
+   if err != nil {
+      return err
+   }
+   req, err := http.NewRequest(
+      "POST", origin + "/fdfe/uploadDeviceConfig", bytes.NewReader(buf),
+   )
+   if err != nil {
+      return err
+   }
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + auth},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {deviceID},
+   }
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return fmt.Errorf("status %q", res.Status)
+   }
+   return nil
 }

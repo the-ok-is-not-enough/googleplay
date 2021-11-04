@@ -10,22 +10,14 @@ import (
 
 const email = "srpen6@gmail.com"
 
-func TestCheckin(t *testing.T) {
-   check, err := NewCheckin().Post()
-   if err != nil {
-      t.Fatal(err)
-   }
+func TestDetails(t *testing.T) {
    oauth := OAuth{
       url.Values{
          "Auth": {auth},
       },
    }
-   if err := NewDevice().Upload(check, oauth); err != nil {
-      t.Fatal(err)
-   }
-   fmt.Println(check)
    time.Sleep(16 * time.Second)
-   det, err := oauth.Details(check.String(), "com.google.android.youtube")
+   det, err := oauth.Details(device, "com.google.android.youtube")
    if err != nil {
       t.Fatal(err)
    }
@@ -37,6 +29,17 @@ func TestCheckin(t *testing.T) {
          fmt.Println("fail", ver)
       }
    }
+}
+
+func TestUpload(t *testing.T) {
+   check, err := NewCheckin().Post()
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := NewDevice().Upload(check.String(), auth); err != nil {
+      t.Fatal(err)
+   }
+   fmt.Println(check)
 }
 
 func TestOAuth(t *testing.T) {
