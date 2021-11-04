@@ -9,18 +9,11 @@ import (
    "strconv"
 )
 
-const origin = "https://android.clients.google.com"
-
-type checkinRequest struct {
-   Checkin struct{} `json:"checkin"`
-   Version int `json:"version"`
-}
-
-type checkin struct {
+type Checkin struct {
    Android_ID int64
 }
 
-func newCheckin() (*checkin, error) {
+func NewCheckin() (*Checkin, error) {
    cReq := checkinRequest{Version: 3}
    buf := new(bytes.Buffer)
    err := json.NewEncoder(buf).Encode(cReq)
@@ -35,18 +28,23 @@ func newCheckin() (*checkin, error) {
    if res.StatusCode != http.StatusOK {
       return nil, fmt.Errorf("status %q", res.Status)
    }
-   check := new(checkin)
+   check := new(Checkin)
    if err := json.NewDecoder(res.Body).Decode(check); err != nil {
       return nil, err
    }
    return check, nil
 }
 
-func (c checkin) String() string {
+func (c Checkin) String() string {
    return strconv.FormatInt(c.Android_ID, 16)
 }
 
-type device struct {
+type checkinRequest struct {
+   Checkin struct{} `json:"checkin"`
+   Version int `json:"version"`
+}
+
+type Device struct {
    Configuration struct {
       GlEsVersion            int32   `protobuf:"varint,8"`
       HasFiveWayNavigation   bool    `protobuf:"varint,6"`
@@ -61,28 +59,27 @@ type device struct {
    } `protobuf:"bytes,1"`
 }
 
-func newDevice() device {
-   var d device
-   d.Configuration.GlEsVersion=196610
+func NewDevice() Device {
+   var d Device
+   // OpenGL ES version
+   // developer.android.com/guide/topics/manifest/uses-feature-element
+   d.Configuration.GlEsVersion = 0x0002_0000
    d.Configuration.HasFiveWayNavigation = true
    d.Configuration.HasHardKeyboard = true
    d.Configuration.Keyboard = 1
-   d.Configuration.NativePlatform = []string{
-      "arm64-v8a","armeabi-v7a", "armeabi",
-   }
+   d.Configuration.NativePlatform = []string{"armeabi-v7a"}
    d.Configuration.Navigation = 1
-   d.Configuration.ScreenDensity = 420
-   d.Configuration.ScreenLayout = 2
+   d.Configuration.ScreenDensity = 1
+   d.Configuration.ScreenLayout = 1
    d.Configuration.SystemAvailableFeature = []string{
-      "android.hardware.touchscreen","android.hardware.wifi",
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
    }
-   d.Configuration.TouchScreen = 3
+   d.Configuration.TouchScreen = 1
    return d
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-func (d device) upload(auth, deviceID string) error {
+func (d Device) Upload(auth, deviceID string) error {
    buf, err := proto.Marshal(d)
    if err != nil {
       return err
@@ -94,9 +91,7 @@ func (d device) upload(auth, deviceID string) error {
       return err
    }
    req.Header = http.Header{
-      "Accept": {"*/*"},
       "Authorization": {"Bearer " + auth},
-      "Content-Type": {"application/x-protobuf"},
       "User-Agent": {"Android-Finsky (versionCode=81031200,sdk=27)"},
       "X-DFE-Device-Id": {deviceID},
    }

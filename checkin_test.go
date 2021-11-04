@@ -3,28 +3,22 @@ package googleplay
 import (
    "bytes"
    "fmt"
-   "github.com/89z/googleplay"
    "net/url"
-   "os"
    "testing"
    "time"
 )
 
-func TestUpload(t *testing.T) {
-   ac2dmToken, ok := os.LookupEnv("ac2dmToken")
-   if ! ok {
-      panic("ac2dmToken")
-   }
-   check, err := newCheckin()
+func TestCheckin(t *testing.T) {
+   check, err := NewCheckin()
    if err != nil {
       t.Fatal(err)
    }
    deviceID := check.String()
-   if err := newDevice().upload(ac2dmToken, deviceID); err != nil {
+   if err := NewDevice().Upload(ac2dmToken, deviceID); err != nil {
       t.Fatal(err)
    }
    fmt.Println(deviceID)
-   auth := googleplay.Auth{
+   auth := Auth{
       url.Values{
          "Auth": {ac2dmToken},
       },
