@@ -14,20 +14,19 @@ func main() {
       return
    }
    device := os.Args[1]
-   tok := googleplay.Token{
-      url.Values{
-         "Token": {token},
-      },
+   ac2dmToken, ok := os.LookupEnv("ac2dmToken")
+   if ! ok {
+      panic("ac2dmToken")
    }
-   auth, err := tok.Auth()
-   if err != nil {
-      panic(err)
+   auth := googleplay.Auth{
+      url.Values{
+         "Auth": {ac2dmToken},
+      },
    }
    det, err := auth.Details(device, "com.google.android.youtube")
    if err != nil {
       panic(err)
    }
-   fmt.Printf("%q\n", det)
    vers := []string{"16.", "16.4", "16.43.", "16.43.3", "16.43.34"}
    for _, ver := range vers {
       if bytes.Contains(det, []byte(ver)) {

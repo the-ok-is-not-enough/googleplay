@@ -5,36 +5,31 @@ import (
    "fmt"
    "github.com/89z/googleplay"
    "net/url"
+   "os"
    "testing"
    "time"
 )
 
-const device = "3cac75f5da7c75d3"
-
-var _ = time.Second
-
 func TestUpload(t *testing.T) {
-   tok := googleplay.Token{
-      url.Values{
-         "Token": {token},
-      },
+   ac2dmToken, ok := os.LookupEnv("ac2dmToken")
+   if ! ok {
+      panic("ac2dmToken")
    }
-   auth, err := tok.Auth()
+   check, err := newCheckin()
    if err != nil {
       t.Fatal(err)
    }
-   /*
-   device, err := newCheckin()
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := upload(auth.Get("Auth"), device.String()); err != nil {
+   device := check.String()
+   if err := upload(ac2dmToken, device); err != nil {
       t.Fatal(err)
    }
    fmt.Println(device)
-   time.Sleep(9 * time.Second)
-   det, err := auth.Details(device.String(), "com.google.android.youtube")
-   */
+   auth := googleplay.Auth{
+      url.Values{
+         "Auth": {ac2dmToken},
+      },
+   }
+   time.Sleep(16 * time.Second)
    det, err := auth.Details(device, "com.google.android.youtube")
    if err != nil {
       t.Fatal(err)

@@ -13,6 +13,11 @@ const (
 )
 
 func TestDetails(t *testing.T) {
+   sig, err := Signature(email, password)
+   if err != nil {
+      t.Fatal(err)
+   }
+   fmt.Println(sig)
    tok := Token{
       url.Values{
          "Token": {token},

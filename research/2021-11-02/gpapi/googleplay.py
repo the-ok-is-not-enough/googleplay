@@ -1,5 +1,7 @@
 from . import googleplay_pb2
 import requests
+from requests_toolbelt.utils import dump
+
 
 BASE = "https://android.clients.google.com/"
 FDFE = BASE + "fdfe/"
@@ -8,22 +10,6 @@ AUTH_URL = BASE + "auth"
 CHECKIN_URL = BASE + "checkin"
 CONTENT_TYPE_PROTO = "application/x-protobuf"
 UPLOAD_URL = FDFE + "uploadDeviceConfig"
-
-dev = {
-   # NEED ALL THESE:
-   'build.version.sdk_int': '27',
-   'features': 'android.hardware.touchscreen,android.hardware.wifi',
-   'gl.version': '196610',
-   'hasfivewaynavigation': 'false',
-   'hashardkeyboard': 'false',
-   'keyboard': '1',
-   'navigation': '1',
-   'platforms': 'arm64-v8a,armeabi-v7a,armeabi',
-   'screen.density': '420',
-   'screenlayout': '2',
-   'touchscreen': '3',
-   'vending.version': '81031200',
-}
 
 class LoginError(Exception):
 
@@ -35,7 +21,7 @@ class LoginError(Exception):
 
 class GooglePlayAPI(object):
 
-   def __init__(self, locale="en_US", timezone="UTC", device_codename="bacon"):
+   def __init__(self):
         self.authSubToken = None
         self.gsfId = None
         self.dfeCookie = None
@@ -51,7 +37,8 @@ class GooglePlayAPI(object):
          data=stringRequest,
          headers = {"Content-Type": CONTENT_TYPE_PROTO},
       )
-      print(res.status_code, res.url)
+      data = dump.dump_all(res)
+      print(data)
       response = googleplay_pb2.AndroidCheckinResponse()
       response.ParseFromString(res.content)
       return response.androidId
@@ -63,6 +50,7 @@ class GooglePlayAPI(object):
          'User-Agent': 'Android-Finsky (versionCode=' + dev.get('vending.version') + ',sdk=' + dev.get('build.version.sdk_int') + ')'
       }
       deviceConfig = googleplay_pb2.DeviceConfigurationProto()
+      # BEGIN
       deviceConfig.glEsVersion = int(dev['gl.version'])
       deviceConfig.hasFiveWayNavigation = (dev['hasfivewaynavigation'] == 'true')
       deviceConfig.hasHardKeyboard = (dev['hashardkeyboard'] == 'true')
@@ -75,6 +63,7 @@ class GooglePlayAPI(object):
          deviceConfig.systemAvailableFeature.append(x)
       for x in dev['platforms'].split(","):
          deviceConfig.nativePlatform.append(x)
+      # END
       upload = googleplay_pb2.UploadDeviceConfigRequest()
       upload.deviceConfiguration.CopyFrom(deviceConfig)
       stringRequest = upload.SerializeToString()
@@ -83,4 +72,20 @@ class GooglePlayAPI(object):
          data=stringRequest,
          headers=headers,
       )
-      print(response.status_code, response.url)
+      data = dump.dump_all(response)
+      print(data)
+
+dev = {
+   'build.version.sdk_int': '27',
+   'features': 'android.hardware.touchscreen,android.hardware.wifi',
+   'gl.version': '196610',
+   'hasfivewaynavigation': 'false',
+   'hashardkeyboard': 'false',
+   'keyboard': '1',
+   'navigation': '1',
+   'platforms': 'arm64-v8a,armeabi-v7a,armeabi',
+   'screen.density': '420',
+   'screenlayout': '2',
+   'touchscreen': '3',
+   'vending.version': '81031200',
+}
