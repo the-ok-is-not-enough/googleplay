@@ -8,8 +8,6 @@ import (
    "time"
 )
 
-const email = "srpen6@gmail.com"
-
 func TestDetails(t *testing.T) {
    oauth := OAuth{
       url.Values{
@@ -40,25 +38,4 @@ func TestUpload(t *testing.T) {
       t.Fatal(err)
    }
    fmt.Println(check)
-}
-
-func TestOAuth(t *testing.T) {
-   tok := Token{
-      url.Values{
-         "Token": {token},
-      },
-   }
-   oauth, err := tok.OAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   fmt.Println(oauth)
-}
-
-func TestToken(t *testing.T) {
-   tok, err := NewToken(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
-   fmt.Println(tok)
 }
