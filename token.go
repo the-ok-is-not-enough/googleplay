@@ -65,29 +65,6 @@ func signature(email, password string) (string, error) {
    return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
 }
 
-type OAuth struct {
-   url.Values
-}
-
-// deviceID is Google Service Framework.
-func (o OAuth) Details(deviceID, app string) ([]byte, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
-   if err != nil {
-      return nil, err
-   }
-   val := req.URL.Query()
-   val.Set("doc", app)
-   req.URL.RawQuery = val.Encode()
-   req.Header.Set("Authorization", "Bearer " + o.Get("Auth"))
-   req.Header.Set("X-DFE-Device-ID", deviceID)
-   res, err := roundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   return io.ReadAll(res.Body)
-}
-
 type Token struct {
    url.Values
 }
@@ -102,18 +79,21 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   val := make(url.Values)
-   val.Set("Email", email)
-   val.Set("EncryptedPasswd", sig)
-   // Newer versions fail.
-   val.Set("sdk_version", "20")
+   buf := url.Values{
+      "Email": {email},
+      "EncryptedPasswd": {sig},
+      // Newer versions fail.
+      "sdk_version": {"20"},
+   }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(val.Encode()),
+      "POST", origin + "/auth", strings.NewReader(buf),
    )
    if err != nil {
       return nil, err
    }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   req.Header = http.Header{
+      "Content-Type": {"application/x-www-form-urlencoded"},
+   }
    res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -142,17 +122,20 @@ func (t Token) Encode(w io.Writer) error {
 }
 
 // Exchange refresh token for access token.
-func (t Token) OAuth() (*OAuth, error) {
-   val := make(url.Values)
-   val.Set("Token", t.Get("Token"))
-   val.Set("service", "oauth2:https://www.googleapis.com/auth/googleplay")
+func (t Token) Auth() (*Auth, error) {
+   buf := url.Values{
+      "Token": {t.Get("Token")},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(val.Encode()),
+      "POST", origin + "/auth", strings.NewReader(buf),
    )
    if err != nil {
       return nil, err
    }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   req.Header = http.Header{
+      "Content-Type": {"application/x-www-form-urlencoded"},
+   }
    res, err := roundTrip(req)
    if err != nil {
       return nil, err
@@ -163,7 +146,7 @@ func (t Token) OAuth() (*OAuth, error) {
       return nil, err
    }
    if val := net.ParseQuery(query); val != nil {
-      return &OAuth{val}, nil
+      return &Auth{val}, nil
    }
    return nil, fmt.Errorf("parseQuery %q", query)
 }

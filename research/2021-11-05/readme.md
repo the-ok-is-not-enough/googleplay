@@ -1,6 +1,4 @@
-# November 4 2021
-
-Decode Details response
+# November 5 2021
 
 ~~~
 BadAuthentication
