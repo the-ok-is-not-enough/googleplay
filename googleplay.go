@@ -151,6 +151,11 @@ func NewDevice() Device {
    return d
 }
 
+// This seems to return `StatusOK`, even with invalid requests, and the response
+// body only contains a token, that doesnt seem to indicate success or failure.
+// Only way I know to check, it to try the `deviceID` with a `details` request
+// or similar. Also, after the POST, you need to wait at least 16 seconds
+// before the `deviceID` can be used.
 func (d Device) Upload(deviceID, auth string) error {
    buf, err := proto.Marshal(d)
    if err != nil {
