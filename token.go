@@ -70,7 +70,7 @@ type OAuth struct {
 }
 
 // deviceID is Google Service Framework.
-func (a OAuth) Details(deviceID, app string) ([]byte, error) {
+func (o OAuth) Details(deviceID, app string) ([]byte, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
@@ -78,7 +78,7 @@ func (a OAuth) Details(deviceID, app string) ([]byte, error) {
    val := req.URL.Query()
    val.Set("doc", app)
    req.URL.RawQuery = val.Encode()
-   req.Header.Set("Authorization", "Bearer " + a.Get("Auth"))
+   req.Header.Set("Authorization", "Bearer " + o.Get("Auth"))
    req.Header.Set("X-DFE-Device-ID", deviceID)
    res, err := roundTrip(req)
    if err != nil {

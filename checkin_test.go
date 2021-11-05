@@ -42,11 +42,11 @@ func TestCheckinDecode(t *testing.T) {
       }
    }
    // details
-   time.Sleep(16 * time.Second)
    det, err := a.Details(check.String(), "com.google.android.youtube")
    if err != nil {
       t.Fatal(err)
    }
+   fmt.Printf("%q\n", det)
    vers := []string{"16.", "16.4", "16.43.", "16.43.3", "16.43.34"}
    for _, ver := range vers {
       if bytes.Contains(det, []byte(ver)) {
@@ -90,4 +90,6 @@ func TestCheckinEncode(t *testing.T) {
    if err := c.Encode(w); err != nil {
       t.Fatal(err)
    }
+   // make sure server processes request
+   time.Sleep(16 * time.Second)
 }
