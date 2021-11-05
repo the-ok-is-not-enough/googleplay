@@ -1,30 +1,29 @@
 package googleplay
 
 import (
-   "fmt"
-   "net/url"
+   "os"
    "testing"
 )
 
 const email = "srpen6@gmail.com"
 
-func TestOAuth(t *testing.T) {
-   tok := Token{
-      url.Values{
-         "Token": {token},
-      },
-   }
-   oauth, err := tok.OAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   fmt.Println(oauth)
-}
-
-func TestToken(t *testing.T) {
+func TestTokenEncode(t *testing.T) {
    tok, err := NewToken(email, password)
    if err != nil {
       t.Fatal(err)
    }
-   fmt.Println(tok)
+   c, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   c += "/googleplay"
+   os.Mkdir(c, os.ModeDir)
+   f, err := os.Create(c + "/token.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer f.Close()
+   if err := tok.Encode(f); err != nil {
+      t.Fatal(err)
+   }
 }

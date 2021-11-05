@@ -3,19 +3,47 @@ package googleplay
 import (
    "bytes"
    "fmt"
-   "net/url"
+   "os"
    "testing"
    "time"
 )
 
-func TestDetails(t *testing.T) {
-   oauth := OAuth{
-      url.Values{
-         "Auth": {auth},
-      },
+func TestCheckinDecode(t *testing.T) {
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
    }
+   // read token
+   tok := new(Token)
+   {
+      r, err := os.Open(cache + "/googleplay/token.json")
+      if err != nil {
+         t.Fatal(err)
+      }
+      defer r.Close()
+      if err := tok.Decode(r); err != nil {
+         t.Fatal(err)
+      }
+   }
+   a, err := tok.OAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   // read checkin
+   check := new(Checkin)
+   {
+      r, err := os.Open(cache + "/googleplay/checkin.json")
+      if err != nil {
+         t.Fatal(err)
+      }
+      defer r.Close()
+      if err := check.Decode(r); err != nil {
+         t.Fatal(err)
+      }
+   }
+   // details
    time.Sleep(16 * time.Second)
-   det, err := oauth.Details(device, "com.google.android.youtube")
+   det, err := a.Details(check.String(), "com.google.android.youtube")
    if err != nil {
       t.Fatal(err)
    }
@@ -29,13 +57,37 @@ func TestDetails(t *testing.T) {
    }
 }
 
-func TestUpload(t *testing.T) {
-   check, err := NewCheckin().Post()
+func TestCheckinEncode(t *testing.T) {
+   tok := new(Token)
+   cache, err := os.UserCacheDir()
    if err != nil {
       t.Fatal(err)
    }
-   if err := NewDevice().Upload(check.String(), auth); err != nil {
+   r, err := os.Open(cache + "/googleplay/token.json")
+   if err != nil {
       t.Fatal(err)
    }
-   fmt.Println(check)
+   defer r.Close()
+   if err := tok.Decode(r); err != nil {
+      t.Fatal(err)
+   }
+   a, err := tok.OAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   c, err := NewCheckinRequest().Post()
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := NewDevice().Upload(c.String(), a.Get("Auth")); err != nil {
+      t.Fatal(err)
+   }
+   w, err := os.Create(cache + "/googleplay/checkin.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer w.Close()
+   if err := c.Encode(w); err != nil {
+      t.Fatal(err)
+   }
 }

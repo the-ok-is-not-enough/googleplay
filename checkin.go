@@ -5,22 +5,63 @@ import (
    "encoding/json"
    "fmt"
    "github.com/segmentio/encoding/proto"
+   "io"
    "net/http"
    "net/http/httputil"
    "os"
    "strconv"
 )
 
+func roundTrip(req *http.Request) (*http.Response, error) {
+   dum, err := httputil.DumpRequest(req, false)
+   if err != nil {
+      return nil, err
+   }
+   os.Stdout.Write(dum)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   if res.StatusCode != http.StatusOK {
+      dum, err := httputil.DumpResponse(res, false)
+      if err != nil {
+         return nil, err
+      }
+      return nil, fmt.Errorf("%s", dum)
+   }
+   return res, nil
+}
+
 type Checkin struct {
+   Android_ID int64
+}
+
+// Read Checkin from file.
+func (c *Checkin) Decode(r io.Reader) error {
+   return json.NewDecoder(r).Decode(c)
+}
+
+// Write Checkin to file.
+func (c Checkin) Encode(w io.Writer) error {
+   enc := json.NewEncoder(w)
+   enc.SetIndent("", " ")
+   return enc.Encode(c)
+}
+
+func (c Checkin) String() string {
+   return strconv.FormatInt(c.Android_ID, 16)
+}
+
+type CheckinRequest struct {
    Checkin struct{} `json:"checkin"`
    Version int `json:"version"`
 }
 
-func NewCheckin() Checkin {
-   return Checkin{Version: 3}
+func NewCheckinRequest() CheckinRequest {
+   return CheckinRequest{Version: 3}
 }
 
-func (c Checkin) Post() (*CheckinResponse, error) {
+func (c CheckinRequest) Post() (*Checkin, error) {
    buf := new(bytes.Buffer)
    err := json.NewEncoder(buf).Encode(c)
    if err != nil {
@@ -30,29 +71,16 @@ func (c Checkin) Post() (*CheckinResponse, error) {
    if err != nil {
       return nil, err
    }
-   dum, err := httputil.DumpRequest(req, true)
-   if err != nil {
-      return nil, err
-   }
-   os.Stdout.Write(dum)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := roundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   check := new(CheckinResponse)
+   check := new(Checkin)
    if err := json.NewDecoder(res.Body).Decode(check); err != nil {
       return nil, err
    }
    return check, nil
-}
-
-type CheckinResponse struct {
-   Android_ID int64
-}
-
-func (c CheckinResponse) String() string {
-   return strconv.FormatInt(c.Android_ID, 16)
 }
 
 type Device struct {
@@ -114,13 +142,9 @@ func (d Device) Upload(deviceID, auth string) error {
       "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
       "X-DFE-Device-ID": {deviceID},
    }
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := roundTrip(req)
    if err != nil {
       return err
    }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return fmt.Errorf("status %q", res.Status)
-   }
-   return nil
+   return res.Body.Close()
 }

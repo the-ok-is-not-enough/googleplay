@@ -80,14 +80,11 @@ func (a OAuth) Details(deviceID, app string) ([]byte, error) {
    req.URL.RawQuery = val.Encode()
    req.Header.Set("Authorization", "Bearer " + a.Get("Auth"))
    req.Header.Set("X-DFE-Device-ID", deviceID)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := roundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, fmt.Errorf("status %q", res.Status)
-   }
    return io.ReadAll(res.Body)
 }
 
@@ -156,7 +153,7 @@ func (t Token) OAuth() (*OAuth, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := roundTrip(req)
    if err != nil {
       return nil, err
    }
