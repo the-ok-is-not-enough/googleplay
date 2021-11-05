@@ -6,7 +6,10 @@ import (
    "io"
    "net/http"
    "net/url"
+   "time"
 )
+
+const Sleep = 16 * time.Second
 
 type AppDetails struct {
    DeveloperName string `protobuf:"bytes,1"`

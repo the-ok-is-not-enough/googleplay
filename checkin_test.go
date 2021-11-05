@@ -21,7 +21,7 @@ func TestCheckinEncode(t *testing.T) {
    if err := tok.Decode(r); err != nil {
       t.Fatal(err)
    }
-   o, err := tok.Auth()
+   a, err := tok.Auth()
    if err != nil {
       t.Fatal(err)
    }
@@ -31,7 +31,7 @@ func TestCheckinEncode(t *testing.T) {
       t.Fatal(err)
    }
    // Upload
-   if err := o.Upload(c.String(), NewDevice()); err != nil {
+   if err := a.Upload(c.String(), NewDevice()); err != nil {
       t.Fatal(err)
    }
    w, err := os.Create(cache + "/googleplay/checkin.json")
