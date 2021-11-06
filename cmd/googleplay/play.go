@@ -1,12 +1,9 @@
 package main
 
 import (
-   "fmt"
-   "flag"
    "github.com/89z/googleplay"
    "os"
    "path/filepath"
-   "time"
 )
 
 func checkin() (string, error) {
@@ -33,7 +30,24 @@ func checkin() (string, error) {
    return cache, nil
 }
 
-func details(app string) (*googleplay.AppDetails, error) {
+func delivery(app string, ver int) (*googleplay.Delivery, error) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      return nil, err
+   }
+   check := new(googleplay.Checkin)
+   read, err := os.Open(cache + "/googleplay/checkin.json")
+   if err != nil {
+      return nil, err
+   }
+   defer read.Close()
+   if err := check.Decode(read); err != nil {
+      return nil, err
+   }
+   return auth.Delivery(check.String(), app, ver)
+}
+
+func details(app string) (*googleplay.Details, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
@@ -92,41 +106,4 @@ func token(email, password string) (string, error) {
       return "", err
    }
    return cache, nil
-}
-
-func main() {
-   var (
-      check bool
-      app, email, password string
-   )
-   flag.BoolVar(&check, "c", false, "checkin")
-   flag.StringVar(&app, "a", "", "get app details")
-   flag.StringVar(&email, "e", "", "email")
-   flag.StringVar(&password, "p", "", "password")
-   flag.Parse()
-   switch {
-   case app != "":
-      detail, err := details(app)
-      if err != nil {
-         panic(err)
-      }
-      fmt.Printf("%+v\n", detail)
-   case email != "":
-      cache, err := token(email, password)
-      if err != nil {
-         panic(err)
-      }
-      fmt.Println("Create", cache)
-   case check:
-      cache, err := checkin()
-      if err != nil {
-         panic(err)
-      }
-      fmt.Printf("Sleeping %v for server to process\n", googleplay.Sleep)
-      time.Sleep(googleplay.Sleep)
-      fmt.Println("Create", cache)
-   default:
-      fmt.Println("googleplay [flags]")
-      flag.PrintDefaults()
-   }
 }

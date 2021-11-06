@@ -6,9 +6,12 @@ import (
    "testing"
 )
 
-const app = "com.google.android.youtube"
+const (
+   app = "com.google.android.youtube"
+   ver = 1524094400
+)
 
-func TestPurchase(t *testing.T) {
+func TestDelivery(t *testing.T) {
    a, cache, err := getAuth()
    if err != nil {
       t.Fatal(err)
@@ -22,11 +25,11 @@ func TestPurchase(t *testing.T) {
    if err := check.Decode(r); err != nil {
       t.Fatal(err)
    }
-   p, err := a.Purchase(check.String(), app)
+   d, err := a.Delivery(check.String(), app, ver)
    if err != nil {
       t.Fatal(err)
    }
-   fmt.Printf("%q\n", p)
+   fmt.Printf("%+v\n", d)
 }
 
 func TestDetails(t *testing.T) {

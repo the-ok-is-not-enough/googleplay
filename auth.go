@@ -6,7 +6,7 @@ import (
    "io"
    "net/http"
    "net/url"
-   "strings"
+   "strconv"
    "time"
 )
 
@@ -15,44 +15,42 @@ const (
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
 )
 
-type AppDetails struct {
-   DeveloperName string `protobuf:"bytes,1"`
-   VersionCode int32 `protobuf:"varint,3"`
-   Version string `protobuf:"bytes,4"`
-   InstallationSize int64 `protobuf:"varint,9"`
-   DeveloperEmail string `protobuf:"bytes,11"`
-}
-
 type Auth struct {
    url.Values
 }
 
-func (a Auth) Purchase(deviceID, app string) ([]byte, error) {
-   buf := url.Values{
-      "doc": {app},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", origin + "/fdfe/purchase", strings.NewReader(buf),
-   )
+func (a Auth) Delivery(deviceID, app string, ver int) (*Delivery, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
    }
    req.Header = http.Header{
       "Authorization": {"Bearer " + a.Get("Auth")},
-      "Content-Type": {"application/x-www-form-urlencoded"},
       "User-Agent": {agent},
       "X-DFE-Device-ID": {deviceID},
    }
+   req.URL.RawQuery = url.Values{
+      "doc": {app},
+      "vc": {strconv.Itoa(ver)},
+   }.Encode()
    res, err := roundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   return io.ReadAll(res.Body)
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   var wrap responseWrapper
+   if err := proto.Unmarshal(buf, &wrap); err != nil {
+      return nil, err
+   }
+   return &wrap.Payload.DeliveryResponse, nil
 }
 
-// deviceID is Google Service Framework.
-func (a Auth) Details(deviceID, app string) (*AppDetails, error) {
+// `deviceID` is Google Service Framework.
+func (a Auth) Details(deviceID, app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
@@ -77,7 +75,7 @@ func (a Auth) Details(deviceID, app string) (*AppDetails, error) {
    if err := proto.Unmarshal(buf, &wrap); err != nil {
       return nil, err
    }
-   return wrap.appDetails(), nil
+   return &wrap.Payload.DetailsResponse, nil
 }
 
 // This seems to return `StatusOK`, even with invalid requests, and the response
@@ -108,18 +106,29 @@ func (a Auth) Upload(deviceID string, dev Device) error {
    return res.Body.Close()
 }
 
-type responseWrapper struct {
-   Payload struct {
-      DetailsResponse struct {
-         DocV2 struct {
-            DocumentDetails struct {
-               AppDetails AppDetails `protobuf:"bytes,1"`
-            } `protobuf:"bytes,13"`
-         } `protobuf:"bytes,4"`
-      } `protobuf:"bytes,2"`
-   } `protobuf:"bytes,1"`
+type Delivery struct {
+   AppDeliveryData struct {
+      DownloadUrl string `protobuf:"bytes,3"`
+   } `protobuf:"bytes,2"`
 }
 
-func (r responseWrapper) appDetails() *AppDetails {
-   return &r.Payload.DetailsResponse.DocV2.DocumentDetails.AppDetails
+type Details struct {
+   DocV2 struct {
+      DocumentDetails struct {
+         AppDetails struct {
+            DeveloperName string `protobuf:"bytes,1"`
+            VersionCode int `protobuf:"varint,3"`
+            Version string `protobuf:"bytes,4"`
+            InstallationSize int `protobuf:"varint,9"`
+            DeveloperEmail string `protobuf:"bytes,11"`
+         } `protobuf:"bytes,1"`
+      } `protobuf:"bytes,13"`
+   } `protobuf:"bytes,4"`
+}
+
+type responseWrapper struct {
+   Payload struct {
+      DetailsResponse Details `protobuf:"bytes,2"`
+      DeliveryResponse Delivery `protobuf:"bytes,21"`
+   } `protobuf:"bytes,1"`
 }
