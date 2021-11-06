@@ -12,45 +12,24 @@ const (
 )
 
 func TestDelivery(t *testing.T) {
-   a, cache, err := getAuth()
+   auth, cache, err := getAuth()
    if err != nil {
       t.Fatal(err)
    }
-   check := new(Checkin)
+   dev := new(Device)
    r, err := os.Open(cache + "/googleplay/checkin.json")
    if err != nil {
       t.Fatal(err)
    }
    defer r.Close()
-   if err := check.Decode(r); err != nil {
+   if err := dev.Decode(r); err != nil {
       t.Fatal(err)
    }
-   d, err := a.Delivery(check.String(), app, ver)
+   del, err := auth.Delivery(dev, app, ver)
    if err != nil {
       t.Fatal(err)
    }
-   fmt.Printf("%+v\n", d)
-}
-
-func TestDetails(t *testing.T) {
-   a, cache, err := getAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   check := new(Checkin)
-   r, err := os.Open(cache + "/googleplay/checkin.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer r.Close()
-   if err := check.Decode(r); err != nil {
-      t.Fatal(err)
-   }
-   det, err := a.Details(check.String(), app)
-   if err != nil {
-      t.Fatal(err)
-   }
-   fmt.Printf("%+v\n", det)
+   fmt.Printf("%+v\n", del)
 }
 
 func getAuth() (*Auth, string, error) {
@@ -67,9 +46,32 @@ func getAuth() (*Auth, string, error) {
    if err := tok.Decode(r); err != nil {
       return nil, "", err
    }
-   a, err := tok.Auth()
+   auth, err := tok.Auth()
    if err != nil {
       return nil, "", err
    }
-   return a, cache, nil
+   return auth, cache, nil
 }
+
+func TestDetails(t *testing.T) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   dev := new(Device)
+   r, err := os.Open(cache + "/googleplay/checkin.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer r.Close()
+   if err := dev.Decode(r); err != nil {
+      t.Fatal(err)
+   }
+   det, err := auth.Details(dev, app)
+   if err != nil {
+      t.Fatal(err)
+   }
+   fmt.Printf("%+v\n", det)
+}
+
+

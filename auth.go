@@ -19,7 +19,7 @@ type Auth struct {
    url.Values
 }
 
-func (a Auth) Delivery(deviceID, app string, ver int) (*Delivery, error) {
+func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
@@ -27,7 +27,7 @@ func (a Auth) Delivery(deviceID, app string, ver int) (*Delivery, error) {
    req.Header = http.Header{
       "Authorization": {"Bearer " + a.Get("Auth")},
       "User-Agent": {agent},
-      "X-DFE-Device-ID": {deviceID},
+      "X-DFE-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = url.Values{
       "doc": {app},
@@ -49,15 +49,14 @@ func (a Auth) Delivery(deviceID, app string, ver int) (*Delivery, error) {
    return &wrap.Payload.DeliveryResponse, nil
 }
 
-// `deviceID` is Google Service Framework.
-func (a Auth) Details(deviceID, app string) (*Details, error) {
+func (a Auth) Details(dev *Device, app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
    }
    req.Header = http.Header{
       "Authorization": {"Bearer " + a.Get("Auth")},
-      "X-DFE-Device-ID": {deviceID},
+      "X-DFE-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = url.Values{
       "doc": {app},
@@ -83,8 +82,8 @@ func (a Auth) Details(deviceID, app string) (*Details, error) {
 // Only way I know to check, it to try the `deviceID` with a `details` request
 // or similar. Also, after the POST, you need to wait at least 16 seconds
 // before the `deviceID` can be used.
-func (a Auth) Upload(deviceID string, dev Device) error {
-   buf, err := proto.Marshal(dev)
+func (a Auth) Upload(dev *Device, con Config) error {
+   buf, err := proto.Marshal(con)
    if err != nil {
       return err
    }
@@ -97,7 +96,7 @@ func (a Auth) Upload(deviceID string, dev Device) error {
    req.Header = http.Header{
       "Authorization": {"Bearer " + a.Get("Auth")},
       "User-Agent": {agent},
-      "X-DFE-Device-ID": {deviceID},
+      "X-DFE-Device-ID": {dev.String()},
    }
    res, err := roundTrip(req)
    if err != nil {

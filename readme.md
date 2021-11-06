@@ -1,8 +1,68 @@
 # googleplay
 
-Google Play API
+Download APK from Google Play or send API requests
 
 https://godocs.io/github.com/89z/googleplay
+
+## Tool examples
+
+Create a file containing Token (`aas_et`) for future requests:
+
+~~~
+googleplay -e EMAIL -p PASSWORD
+~~~
+
+Create a file containing `Android_ID` for future requests:
+
+~~~
+googleplay -d
+~~~
+
+Get app details:
+
+~~~
+googleplay -a com.google.android.youtube
+~~~
+
+Get APK URL:
+
+~~~
+googleplay -a com.google.android.youtube -v 1524094400
+~~~
+
+## Module example
+
+~~~go
+package main
+
+import (
+   "fmt"
+   "time"
+   gp "github.com/89z/googleplay"
+)
+
+func main() {
+   tok, err := gp.NewToken("EMAIL", "PASSWORD")
+   if err != nil {
+      panic(err)
+   }
+   auth, err := tok.Auth()
+   if err != nil {
+      panic(err)
+   }
+   dev, err := gp.NewDevice(gp.DefaultCheckin)
+   if err != nil {
+      panic(err)
+   }
+   auth.Upload(dev, gp.DefaultConfig)
+   time.Sleep(gp.Sleep)
+   del, err := auth.Delivery(dev, "com.google.android.youtube", 1524094400)
+   if err != nil {
+      panic(err)
+   }
+   fmt.Printf("%+v\n", del)
+}
+~~~
 
 ## How to get Android JA3?
 

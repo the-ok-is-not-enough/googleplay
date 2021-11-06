@@ -6,8 +6,7 @@ import (
    "time"
 )
 
-func TestCheckinEncode(t *testing.T) {
-   // get Auth
+func TestDevice(t *testing.T) {
    tok := new(Token)
    cache, err := os.UserCacheDir()
    if err != nil {
@@ -21,17 +20,15 @@ func TestCheckinEncode(t *testing.T) {
    if err := tok.Decode(r); err != nil {
       t.Fatal(err)
    }
-   a, err := tok.Auth()
+   auth, err := tok.Auth()
    if err != nil {
       t.Fatal(err)
    }
-   // get Checkin
-   c, err := NewCheckinRequest().Post()
+   dev, err := NewDevice(DefaultCheckin)
    if err != nil {
       t.Fatal(err)
    }
-   // Upload
-   if err := a.Upload(c.String(), NewDevice()); err != nil {
+   if err := auth.Upload(dev, DefaultConfig); err != nil {
       t.Fatal(err)
    }
    w, err := os.Create(cache + "/googleplay/checkin.json")
@@ -39,9 +36,8 @@ func TestCheckinEncode(t *testing.T) {
       t.Fatal(err)
    }
    defer w.Close()
-   if err := c.Encode(w); err != nil {
+   if err := dev.Encode(w); err != nil {
       t.Fatal(err)
    }
-   // make sure server processes request
    time.Sleep(16 * time.Second)
 }

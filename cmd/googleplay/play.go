@@ -6,16 +6,50 @@ import (
    "path/filepath"
 )
 
-func checkin() (string, error) {
+func delivery(app string, ver int) (*googleplay.Delivery, error) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      return nil, err
+   }
+   dev := new(googleplay.Device)
+   read, err := os.Open(cache + "/googleplay/checkin.json")
+   if err != nil {
+      return nil, err
+   }
+   defer read.Close()
+   if err := dev.Decode(read); err != nil {
+      return nil, err
+   }
+   return auth.Delivery(dev, app, ver)
+}
+
+func details(app string) (*googleplay.Details, error) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      return nil, err
+   }
+   dev := new(googleplay.Device)
+   read, err := os.Open(cache + "/googleplay/checkin.json")
+   if err != nil {
+      return nil, err
+   }
+   defer read.Close()
+   if err := dev.Decode(read); err != nil {
+      return nil, err
+   }
+   return auth.Details(dev, app)
+}
+
+func device() (string, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return "", err
    }
-   check, err := googleplay.NewCheckinRequest().Post()
+   dev, err := googleplay.NewDevice(googleplay.DefaultCheckin)
    if err != nil {
       return "", err
    }
-   if err := auth.Upload(check.String(), googleplay.NewDevice()); err != nil {
+   if err := auth.Upload(dev, googleplay.DefaultConfig); err != nil {
       return "", err
    }
    cache = filepath.Join(cache, "/googleplay/checkin.json")
@@ -24,44 +58,10 @@ func checkin() (string, error) {
       return "", err
    }
    defer write.Close()
-   if err := check.Encode(write); err != nil {
+   if err := dev.Encode(write); err != nil {
       return "", err
    }
    return cache, nil
-}
-
-func delivery(app string, ver int) (*googleplay.Delivery, error) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      return nil, err
-   }
-   check := new(googleplay.Checkin)
-   read, err := os.Open(cache + "/googleplay/checkin.json")
-   if err != nil {
-      return nil, err
-   }
-   defer read.Close()
-   if err := check.Decode(read); err != nil {
-      return nil, err
-   }
-   return auth.Delivery(check.String(), app, ver)
-}
-
-func details(app string) (*googleplay.Details, error) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      return nil, err
-   }
-   check := new(googleplay.Checkin)
-   read, err := os.Open(cache + "/googleplay/checkin.json")
-   if err != nil {
-      return nil, err
-   }
-   defer read.Close()
-   if err := check.Decode(read); err != nil {
-      return nil, err
-   }
-   return auth.Details(check.String(), app)
 }
 
 func getAuth() (*googleplay.Auth, string, error) {

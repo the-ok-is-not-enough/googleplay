@@ -9,11 +9,11 @@ import (
 
 func main() {
    var (
-      check bool
       app, email, password string
+      dev bool
       version int
    )
-   flag.BoolVar(&check, "c", false, "checkin")
+   flag.BoolVar(&dev, "d", false, "device")
    flag.IntVar(&version, "v", 0, "version")
    flag.StringVar(&app, "a", "", "get app details")
    flag.StringVar(&email, "e", "", "email")
@@ -26,8 +26,8 @@ func main() {
          panic(err)
       }
       fmt.Println("Create", cache)
-   case check:
-      cache, err := checkin()
+   case dev:
+      cache, err := device()
       if err != nil {
          panic(err)
       }
@@ -51,5 +51,3 @@ func main() {
       flag.PrintDefaults()
    }
 }
-
-
