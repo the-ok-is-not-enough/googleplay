@@ -6,10 +6,14 @@ import (
    "io"
    "net/http"
    "net/url"
+   "strings"
    "time"
 )
 
-const Sleep = 16 * time.Second
+const (
+   Sleep = 16 * time.Second
+   agent = "Android-Finsky (sdk=99,versionCode=99999999)"
+)
 
 type AppDetails struct {
    DeveloperName string `protobuf:"bytes,1"`
@@ -21,6 +25,30 @@ type AppDetails struct {
 
 type Auth struct {
    url.Values
+}
+
+func (a Auth) Purchase(deviceID, app string) ([]byte, error) {
+   buf := url.Values{
+      "doc": {app},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", origin + "/fdfe/purchase", strings.NewReader(buf),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Get("Auth")},
+      "Content-Type": {"application/x-www-form-urlencoded"},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {deviceID},
+   }
+   res, err := roundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   return io.ReadAll(res.Body)
 }
 
 // deviceID is Google Service Framework.
@@ -70,7 +98,7 @@ func (a Auth) Upload(deviceID string, dev Device) error {
    }
    req.Header = http.Header{
       "Authorization": {"Bearer " + a.Get("Auth")},
-      "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
+      "User-Agent": {agent},
       "X-DFE-Device-ID": {deviceID},
    }
    res, err := roundTrip(req)

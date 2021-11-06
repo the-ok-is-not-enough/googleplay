@@ -1,8 +1,13 @@
 # November 5 2021
 
 ~~~
-BadAuthentication
+39 results:
+apk language:go stars:>1
 
-Security check is needed, try to visit
-https://accounts.google.com/b/0/DisplayUnlockCaptcha
+26 results:
+google play language:go stars:>1
 ~~~
+
+5 stars:
+
+https://github.com/Jarijaas/go-googleplay
