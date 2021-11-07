@@ -2,6 +2,7 @@ package googleplay
 
 import (
    "bytes"
+   "github.com/89z/parse/protobuf"
    "github.com/segmentio/encoding/proto"
    "io"
    "net/http"
@@ -77,12 +78,42 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    return &wrap.Payload.DetailsResponse, nil
 }
 
+type (
+   array protobuf.Array
+   object = protobuf.Object
+)
+
+var defaultConfig = object{
+   1: object{
+      1: uint64(1),
+      2: uint64(1),
+      3: uint64(1),
+      4: uint64(1),
+      5: true,
+      6: true,
+      7: uint64(1),
+      8: uint64(0x0009_0000),
+      10: array{
+         "android.hardware.camera",
+         "android.hardware.faketouch",
+         "android.hardware.location",
+         "android.hardware.screen.portrait",
+         "android.hardware.touchscreen",
+         "android.hardware.wifi",
+      },
+      11: array{
+         "armeabi-v7a",
+      },
+   },
+}
+
 // This seems to return `StatusOK`, even with invalid requests, and the response
 // body only contains a token, that doesnt seem to indicate success or failure.
 // Only way I know to check, it to try the `deviceID` with a `details` request
 // or similar. Also, after the POST, you need to wait at least 16 seconds
 // before the `deviceID` can be used.
 func (a Auth) Upload(dev *Device, con Config) error {
+   // buf := defaultConfig.Marshal()
    buf, err := proto.Marshal(con)
    if err != nil {
       return err
@@ -119,7 +150,7 @@ type Details struct {
             VersionCode int `protobuf:"varint,3"`
             Version string `protobuf:"bytes,4"`
             InstallationSize int `protobuf:"varint,9"`
-            DeveloperEmail string `protobuf:"bytes,11"`
+            // Permission []string `protobuf:"bytes,10"`
          } `protobuf:"bytes,1"`
       } `protobuf:"bytes,13"`
    } `protobuf:"bytes,4"`

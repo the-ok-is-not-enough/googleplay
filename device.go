@@ -11,22 +11,30 @@ import (
    "strconv"
 )
 
-var DefaultCheckin = Checkin{Version: 3}
-
 var DefaultConfig = Config{
    DeviceConfiguration{
       TouchScreen: 1,
       Keyboard: 1,
       Navigation: 1,
       ScreenLayout: 1,
-      HasFiveWayNavigation: true,
       HasHardKeyboard: true,
+      HasFiveWayNavigation: true,
       ScreenDensity: 1,
       // developer.android.com/guide/topics/manifest/uses-feature-element
       GlEsVersion: 0x0009_0000,
       // developer.android.com/guide/topics/manifest/uses-feature-element
       SystemAvailableFeature: []string{
+         // com.pinterest
+         "android.hardware.camera",
+         // com.pinterest
+         "android.hardware.faketouch",
+         // com.pinterest
+         "android.hardware.location",
+         // com.pinterest
+         "android.hardware.screen.portrait",
+         // com.google.android.youtube
          "android.hardware.touchscreen",
+         // com.google.android.youtube
          "android.hardware.wifi",
       },
       // developer.android.com/ndk/guides/abis
@@ -35,6 +43,8 @@ var DefaultConfig = Config{
       },
    },
 }
+
+var DefaultCheckin = Checkin{Version: 3}
 
 func roundTrip(req *http.Request) (*http.Response, error) {
    dum, err := httputil.DumpRequest(req, false)
@@ -112,8 +122,8 @@ type DeviceConfiguration struct {
    Keyboard               int32   `protobuf:"varint,2"`
    Navigation             int32   `protobuf:"varint,3"`
    ScreenLayout           int32   `protobuf:"varint,4"`
-   HasFiveWayNavigation   bool    `protobuf:"varint,6"`
    HasHardKeyboard        bool    `protobuf:"varint,5"`
+   HasFiveWayNavigation   bool    `protobuf:"varint,6"`
    ScreenDensity          int32   `protobuf:"varint,7"`
    GlEsVersion            int32   `protobuf:"varint,8"`
    SystemAvailableFeature []string `protobuf:"bytes,10"`

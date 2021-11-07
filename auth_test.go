@@ -32,27 +32,6 @@ func TestDelivery(t *testing.T) {
    fmt.Printf("%+v\n", del)
 }
 
-func getAuth() (*Auth, string, error) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return nil, "", err
-   }
-   tok := new(Token)
-   r, err := os.Open(cache + "/googleplay/token.json")
-   if err != nil {
-      return nil, "", err
-   }
-   defer r.Close()
-   if err := tok.Decode(r); err != nil {
-      return nil, "", err
-   }
-   auth, err := tok.Auth()
-   if err != nil {
-      return nil, "", err
-   }
-   return auth, cache, nil
-}
-
 func TestDetails(t *testing.T) {
    auth, cache, err := getAuth()
    if err != nil {
@@ -72,6 +51,27 @@ func TestDetails(t *testing.T) {
       t.Fatal(err)
    }
    fmt.Printf("%+v\n", det)
+}
+
+func getAuth() (*Auth, string, error) {
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      return nil, "", err
+   }
+   tok := new(Token)
+   r, err := os.Open(cache + "/googleplay/token.json")
+   if err != nil {
+      return nil, "", err
+   }
+   defer r.Close()
+   if err := tok.Decode(r); err != nil {
+      return nil, "", err
+   }
+   auth, err := tok.Auth()
+   if err != nil {
+      return nil, "", err
+   }
+   return auth, cache, nil
 }
 
 
