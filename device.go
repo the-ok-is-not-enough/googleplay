@@ -13,39 +13,6 @@ import (
 
 var DefaultCheckin = Checkin{Version: 3}
 
-var DefaultConfig = Object{
-   1: Object{
-      1: uint64(1),
-      2: uint64(1),
-      3: uint64(1),
-      4: uint64(1),
-      5: true,
-      6: true,
-      7: uint64(1),
-      // developer.android.com/guide/topics/manifest/uses-feature-element
-      8: uint64(0x0009_0000),
-      // developer.android.com/guide/topics/manifest/uses-feature-element
-      10: Array{
-         // com.pinterest
-         "android.hardware.camera",
-         // com.pinterest
-         "android.hardware.faketouch",
-         // com.pinterest
-         "android.hardware.location",
-         // com.pinterest
-         "android.hardware.screen.portrait",
-         // com.google.android.youtube
-         "android.hardware.touchscreen",
-         // com.google.android.youtube
-         "android.hardware.wifi",
-      },
-      // developer.android.com/ndk/guides/abis
-      11: Array{
-         "armeabi-v7a",
-      },
-   },
-}
-
 func roundTrip(req *http.Request) (*http.Response, error) {
    dum, err := httputil.DumpRequest(req, false)
    if err != nil {

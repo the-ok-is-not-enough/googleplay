@@ -3,8 +3,6 @@ package main
 import (
    "fmt"
    "flag"
-   "github.com/89z/googleplay"
-   "time"
 )
 
 func main() {
@@ -31,8 +29,6 @@ func main() {
       if err != nil {
          panic(err)
       }
-      fmt.Printf("Sleeping %v for server to process\n", googleplay.Sleep)
-      time.Sleep(googleplay.Sleep)
       fmt.Println("Create", cache)
    case app != "" && version == 0:
       det, err := details(app)

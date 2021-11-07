@@ -39,5 +39,5 @@ func TestDevice(t *testing.T) {
    if err := dev.Encode(w); err != nil {
       t.Fatal(err)
    }
-   time.Sleep(16 * time.Second)
+   time.Sleep(Sleep)
 }

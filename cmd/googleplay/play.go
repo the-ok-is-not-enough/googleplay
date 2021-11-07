@@ -1,17 +1,19 @@
 package main
 
 import (
-   "github.com/89z/googleplay"
+   "fmt"
    "os"
    "path/filepath"
+   "time"
+   gp "github.com/89z/googleplay"
 )
 
-func delivery(app string, ver int) (*googleplay.Delivery, error) {
+func delivery(app string, ver int) (gp.Message, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
    }
-   dev := new(googleplay.Device)
+   dev := new(gp.Device)
    read, err := os.Open(cache + "/googleplay/checkin.json")
    if err != nil {
       return nil, err
@@ -23,12 +25,12 @@ func delivery(app string, ver int) (*googleplay.Delivery, error) {
    return auth.Delivery(dev, app, ver)
 }
 
-func details(app string) (*googleplay.Details, error) {
+func details(app string) (gp.Message, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
    }
-   dev := new(googleplay.Device)
+   dev := new(gp.Device)
    read, err := os.Open(cache + "/googleplay/checkin.json")
    if err != nil {
       return nil, err
@@ -45,13 +47,15 @@ func device() (string, error) {
    if err != nil {
       return "", err
    }
-   dev, err := googleplay.NewDevice(googleplay.DefaultCheckin)
+   dev, err := gp.NewDevice(gp.DefaultCheckin)
    if err != nil {
       return "", err
    }
-   if err := auth.Upload(dev, googleplay.DefaultConfig); err != nil {
+   if err := auth.Upload(dev, gp.DefaultConfig); err != nil {
       return "", err
    }
+   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
+   time.Sleep(gp.Sleep)
    cache = filepath.Join(cache, "/googleplay/checkin.json")
    write, err := os.Create(cache)
    if err != nil {
@@ -64,8 +68,8 @@ func device() (string, error) {
    return cache, nil
 }
 
-func getAuth() (*googleplay.Auth, string, error) {
-   tok := new(googleplay.Token)
+func getAuth() (*gp.Auth, string, error) {
+   tok := new(gp.Token)
    cache, err := os.UserCacheDir()
    if err != nil {
       return nil, "", err
@@ -86,7 +90,7 @@ func getAuth() (*googleplay.Auth, string, error) {
 }
 
 func token(email, password string) (string, error) {
-   tok, err := googleplay.NewToken(email, password)
+   tok, err := gp.NewToken(email, password)
    if err != nil {
       return "", err
    }
