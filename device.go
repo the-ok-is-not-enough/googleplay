@@ -11,19 +11,21 @@ import (
    "strconv"
 )
 
-var DefaultConfig = Config{
-   DeviceConfiguration{
-      TouchScreen: 1,
-      Keyboard: 1,
-      Navigation: 1,
-      ScreenLayout: 1,
-      HasHardKeyboard: true,
-      HasFiveWayNavigation: true,
-      ScreenDensity: 1,
+var DefaultCheckin = Checkin{Version: 3}
+
+var DefaultConfig = Object{
+   1: Object{
+      1: uint64(1),
+      2: uint64(1),
+      3: uint64(1),
+      4: uint64(1),
+      5: true,
+      6: true,
+      7: uint64(1),
       // developer.android.com/guide/topics/manifest/uses-feature-element
-      GlEsVersion: 0x0009_0000,
+      8: uint64(0x0009_0000),
       // developer.android.com/guide/topics/manifest/uses-feature-element
-      SystemAvailableFeature: []string{
+      10: Array{
          // com.pinterest
          "android.hardware.camera",
          // com.pinterest
@@ -38,13 +40,11 @@ var DefaultConfig = Config{
          "android.hardware.wifi",
       },
       // developer.android.com/ndk/guides/abis
-      NativePlatform: []string{
+      11: Array{
          "armeabi-v7a",
       },
    },
 }
-
-var DefaultCheckin = Checkin{Version: 3}
 
 func roundTrip(req *http.Request) (*http.Response, error) {
    dum, err := httputil.DumpRequest(req, false)
@@ -69,10 +69,6 @@ func roundTrip(req *http.Request) (*http.Response, error) {
 type Checkin struct {
    Checkin struct{} `json:"checkin"`
    Version int `json:"version"`
-}
-
-type Config struct {
-   DeviceConfiguration DeviceConfiguration `protobuf:"bytes,1"`
 }
 
 type Device struct {
@@ -115,17 +111,4 @@ func (d Device) Encode(w io.Writer) error {
 
 func (d Device) String() string {
    return strconv.FormatInt(d.Android_ID, 16)
-}
-
-type DeviceConfiguration struct {
-   TouchScreen            int32   `protobuf:"varint,1"`
-   Keyboard               int32   `protobuf:"varint,2"`
-   Navigation             int32   `protobuf:"varint,3"`
-   ScreenLayout           int32   `protobuf:"varint,4"`
-   HasHardKeyboard        bool    `protobuf:"varint,5"`
-   HasFiveWayNavigation   bool    `protobuf:"varint,6"`
-   ScreenDensity          int32   `protobuf:"varint,7"`
-   GlEsVersion            int32   `protobuf:"varint,8"`
-   SystemAvailableFeature []string `protobuf:"bytes,10"`
-   NativePlatform         []string `protobuf:"bytes,11"`
 }

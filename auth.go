@@ -3,7 +3,6 @@ package googleplay
 import (
    "bytes"
    "github.com/89z/parse/protobuf"
-   "github.com/segmentio/encoding/proto"
    "io"
    "net/http"
    "net/url"
@@ -16,11 +15,13 @@ const (
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
 )
 
+type Array = protobuf.Array
+
 type Auth struct {
    url.Values
 }
 
-func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
+func (a Auth) Delivery(dev *Device, app string, ver int) (protobuf.Object, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
@@ -43,14 +44,10 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   var wrap responseWrapper
-   if err := proto.Unmarshal(buf, &wrap); err != nil {
-      return nil, err
-   }
-   return &wrap.Payload.DeliveryResponse, nil
+   return protobuf.Parse(buf), nil
 }
 
-func (a Auth) Details(dev *Device, app string) (*Details, error) {
+func (a Auth) Details(dev *Device, app string) (protobuf.Object, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
@@ -71,40 +68,7 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   var wrap responseWrapper
-   if err := proto.Unmarshal(buf, &wrap); err != nil {
-      return nil, err
-   }
-   return &wrap.Payload.DetailsResponse, nil
-}
-
-type (
-   array protobuf.Array
-   object = protobuf.Object
-)
-
-var defaultConfig = object{
-   1: object{
-      1: uint64(1),
-      2: uint64(1),
-      3: uint64(1),
-      4: uint64(1),
-      5: true,
-      6: true,
-      7: uint64(1),
-      8: uint64(0x0009_0000),
-      10: array{
-         "android.hardware.camera",
-         "android.hardware.faketouch",
-         "android.hardware.location",
-         "android.hardware.screen.portrait",
-         "android.hardware.touchscreen",
-         "android.hardware.wifi",
-      },
-      11: array{
-         "armeabi-v7a",
-      },
-   },
+   return protobuf.Parse(buf), nil
 }
 
 // This seems to return `StatusOK`, even with invalid requests, and the response
@@ -112,12 +76,8 @@ var defaultConfig = object{
 // Only way I know to check, it to try the `deviceID` with a `details` request
 // or similar. Also, after the POST, you need to wait at least 16 seconds
 // before the `deviceID` can be used.
-func (a Auth) Upload(dev *Device, con Config) error {
-   // buf := defaultConfig.Marshal()
-   buf, err := proto.Marshal(con)
-   if err != nil {
-      return err
-   }
+func (a Auth) Upload(dev *Device, config Object) error {
+   buf := config.Marshal()
    req, err := http.NewRequest(
       "POST", origin + "/fdfe/uploadDeviceConfig", bytes.NewReader(buf),
    )
@@ -136,29 +96,4 @@ func (a Auth) Upload(dev *Device, con Config) error {
    return res.Body.Close()
 }
 
-type Delivery struct {
-   AppDeliveryData struct {
-      DownloadUrl string `protobuf:"bytes,3"`
-   } `protobuf:"bytes,2"`
-}
-
-type Details struct {
-   DocV2 struct {
-      DocumentDetails struct {
-         AppDetails struct {
-            DeveloperName string `protobuf:"bytes,1"`
-            VersionCode int `protobuf:"varint,3"`
-            Version string `protobuf:"bytes,4"`
-            InstallationSize int `protobuf:"varint,9"`
-            // Permission []string `protobuf:"bytes,10"`
-         } `protobuf:"bytes,1"`
-      } `protobuf:"bytes,13"`
-   } `protobuf:"bytes,4"`
-}
-
-type responseWrapper struct {
-   Payload struct {
-      DetailsResponse Details `protobuf:"bytes,2"`
-      DeliveryResponse Delivery `protobuf:"bytes,21"`
-   } `protobuf:"bytes,1"`
-}
+type Object = protobuf.Object

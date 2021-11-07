@@ -109,18 +109,6 @@ func NewToken(email, password string) (*Token, error) {
    return nil, fmt.Errorf("parseQuery %q", query)
 }
 
-// Read Token from file.
-func (t *Token) Decode(r io.Reader) error {
-   return json.NewDecoder(r).Decode(&t.Values)
-}
-
-// Write Token to file.
-func (t Token) Encode(w io.Writer) error {
-   enc := json.NewEncoder(w)
-   enc.SetIndent("", " ")
-   return enc.Encode(t.Values)
-}
-
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
    buf := url.Values{
@@ -149,6 +137,18 @@ func (t Token) Auth() (*Auth, error) {
       return &Auth{val}, nil
    }
    return nil, fmt.Errorf("parseQuery %q", query)
+}
+
+// Read Token from file.
+func (t *Token) Decode(r io.Reader) error {
+   return json.NewDecoder(r).Decode(&t.Values)
+}
+
+// Write Token to file.
+func (t Token) Encode(w io.Writer) error {
+   enc := json.NewEncoder(w)
+   enc.SetIndent("", " ")
+   return enc.Encode(t.Values)
 }
 
 type devZero struct{}
