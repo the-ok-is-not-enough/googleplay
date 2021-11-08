@@ -38,6 +38,10 @@ type Checkin struct {
    Version int `json:"version"`
 }
 
+type Config struct {
+   DeviceConfiguration DeviceConfiguration `json:"1"`
+}
+
 type Device struct {
    Android_ID int64
 }
@@ -78,4 +82,17 @@ func (d Device) Encode(w io.Writer) error {
 
 func (d Device) String() string {
    return strconv.FormatInt(d.Android_ID, 16)
+}
+
+type DeviceConfiguration struct {
+   TouchScreen int32 `json:"1"`
+   Keyboard int32 `json:"2"`
+   Navigation int32 `json:"3"`
+   ScreenLayout int32 `json:"4"`
+   HasHardKeyboard bool `json:"5"`
+   HasFiveWayNavigation bool `json:"6"`
+   ScreenDensity int32 `json:"7"`
+   GlEsVersion int32 `json:"8"`
+   SystemAvailableFeature []string `json:"10"`
+   NativePlatform []string `json:"11"`
 }
