@@ -7,6 +7,7 @@ import (
    "net/http"
    "net/url"
    "strconv"
+   "strings"
    "time"
 )
 
@@ -14,39 +15,6 @@ const (
    Sleep = 16 * time.Second
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
 )
-
-var DefaultConfig = Config{
-   DeviceConfiguration: DeviceConfiguration{
-      TouchScreen: 1,
-      Keyboard: 1,
-      Navigation: 1,
-      ScreenLayout: 1,
-      HasHardKeyboard: true,
-      HasFiveWayNavigation: true,
-      ScreenDensity: 1,
-      // developer.android.com/guide/topics/manifest/uses-feature-element
-      GlEsVersion: 0x0009_0000,
-      // developer.android.com/guide/topics/manifest/uses-feature-element
-      SystemAvailableFeature: []string{
-         // com.pinterest
-         "android.hardware.camera",
-         // com.pinterest
-         "android.hardware.faketouch",
-         // com.pinterest
-         "android.hardware.location",
-         // com.pinterest
-         "android.hardware.screen.portrait",
-         // com.google.android.youtube
-         "android.hardware.touchscreen",
-         // com.google.android.youtube
-         "android.hardware.wifi",
-      },
-      // developer.android.com/ndk/guides/abis
-      NativePlatform: []string{
-         "armeabi-v7a",
-      },
-   },
-}
 
 type Auth struct {
    url.Values
@@ -110,6 +78,30 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    return &wrap.Payload.DetailsResponse, nil
 }
 
+// Purchase app. Only needs to be done once per Google account.
+func (a Auth) Purchase(dev *Device, app string) error {
+   buf := url.Values{
+      "doc": {app},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", origin + "/fdfe/purchase", strings.NewReader(buf),
+   )
+   if err != nil {
+      return err
+   }
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Get("Auth")},
+      "Content-Type": {"application/x-www-form-urlencoded"},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   res, err := roundTrip(req)
+   if err != nil {
+      return err
+   }
+   return res.Body.Close()
+}
+
 // This seems to return `StatusOK`, even with invalid requests, and the response
 // body only contains a token, that doesnt seem to indicate success or failure.
 // Only way I know to check, it to try the `deviceID` with a `details` request
@@ -143,6 +135,7 @@ func (a Auth) Upload(dev *Device, con Config) error {
 }
 
 type Delivery struct {
+   Status int32 `json:"1"`
    AppDeliveryData struct {
       DownloadURL string `json:"3"`
    } `json:"2"`
@@ -150,13 +143,13 @@ type Delivery struct {
 
 type Details struct {
    DocV2 struct {
-      DocumentDetails struct {
+      Details struct {
          AppDetails struct {
             DeveloperName string `json:"1"`
-            VersionCode int `json:"3"`
+            VersionCode int32 `json:"3"`
             Version string `json:"4"`
-            InstallationSize int `json:"9"`
-            Permission []string `json:"10"`
+            InstallationSize int64 `json:"9"`
+            UploadDate string `json:"16"`
          } `json:"1"`
       } `json:"13"`
    } `json:"4"`

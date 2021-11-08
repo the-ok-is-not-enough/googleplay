@@ -13,6 +13,39 @@ import (
 
 var DefaultCheckin = Checkin{Version: 3}
 
+var DefaultConfig = Config{
+   DeviceConfiguration: DeviceConfiguration{
+      TouchScreen: 1,
+      Keyboard: 1,
+      Navigation: 1,
+      ScreenLayout: 1,
+      HasHardKeyboard: true,
+      HasFiveWayNavigation: true,
+      ScreenDensity: 1,
+      // developer.android.com/guide/topics/manifest/uses-feature-element
+      GlEsVersion: 0x0009_0000,
+      // developer.android.com/guide/topics/manifest/uses-feature-element
+      SystemAvailableFeature: []string{
+         // com.pinterest
+         "android.hardware.camera",
+         // com.pinterest
+         "android.hardware.location",
+         // org.videolan.vlc
+         "android.hardware.screen.landscape",
+         // com.pinterest
+         "android.hardware.screen.portrait",
+         // com.google.android.youtube
+         "android.hardware.touchscreen",
+         // com.google.android.youtube
+         "android.hardware.wifi",
+      },
+      // developer.android.com/ndk/guides/abis
+      NativePlatform: []string{
+         "armeabi-v7a",
+      },
+   },
+}
+
 func roundTrip(req *http.Request) (*http.Response, error) {
    dum, err := httputil.DumpRequest(req, false)
    if err != nil {

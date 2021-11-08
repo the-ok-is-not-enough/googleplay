@@ -7,19 +7,23 @@ import (
 
 func main() {
    var (
-      app, email, password string
-      dev bool
-      version int
+      app, email, pass string
+      dev, purch bool
+      ver int
    )
-   flag.BoolVar(&dev, "d", false, "device")
-   flag.IntVar(&version, "v", 0, "version")
-   flag.StringVar(&app, "a", "", "get app details")
+   flag.StringVar(&app, "a", "", "app")
+   flag.BoolVar(&dev, "d", false, "create device")
    flag.StringVar(&email, "e", "", "email")
-   flag.StringVar(&password, "p", "", "password")
+   flag.StringVar(&pass, "p", "", "password")
+   flag.BoolVar(
+      &purch, "purchase", false,
+      "Purchase app. Only needs to be done once per Google account.",
+   )
+   flag.IntVar(&ver, "v", 0, "version")
    flag.Parse()
    switch {
    case email != "":
-      cache, err := token(email, password)
+      cache, err := token(email, pass)
       if err != nil {
          panic(err)
       }
@@ -30,14 +34,19 @@ func main() {
          panic(err)
       }
       fmt.Println("Create", cache)
-   case app != "" && version == 0:
+   case app != "" && !purch && ver == 0:
       det, err := details(app)
       if err != nil {
          panic(err)
       }
       fmt.Printf("%+v\n", det)
-   case app != "" && version != 0:
-      del, err := delivery(app, version)
+   case app != "" && purch:
+      err := purchase(app)
+      if err != nil {
+         panic(err)
+      }
+   case app != "" && ver != 0:
+      del, err := delivery(app, ver)
       if err != nil {
          panic(err)
       }

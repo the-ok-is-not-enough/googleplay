@@ -24,6 +24,12 @@ Get app details:
 googleplay -a com.google.android.youtube
 ~~~
 
+Purchase app:
+
+~~~
+googleplay -a com.google.android.youtube -purchase
+~~~
+
 Get APK URL:
 
 ~~~
@@ -32,36 +38,14 @@ googleplay -a com.google.android.youtube -v 1524094400
 
 ## Module example
 
-~~~go
-package main
+See `cmd` folder:
 
-import (
-   "fmt"
-   "time"
-   gp "github.com/89z/googleplay"
-)
+https://github.com/89z/googleplay/tree/master/cmd
 
-func main() {
-   tok, err := gp.NewToken("EMAIL", "PASSWORD")
-   if err != nil {
-      panic(err)
-   }
-   auth, err := tok.Auth()
-   if err != nil {
-      panic(err)
-   }
-   dev, err := gp.NewDevice(gp.DefaultCheckin)
-   if err != nil {
-      panic(err)
-   }
-   auth.Upload(dev, gp.DefaultConfig)
-   time.Sleep(gp.Sleep)
-   del, err := auth.Delivery(dev, "com.google.android.youtube", 1524094400)
-   if err != nil {
-      panic(err)
-   }
-   fmt.Printf("%+v\n", del)
-}
+## How to determine required features?
+
+~~~
+aapt dump badging file.apk
 ~~~
 
 ## How to get Android JA3?

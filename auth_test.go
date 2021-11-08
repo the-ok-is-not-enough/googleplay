@@ -7,8 +7,8 @@ import (
 )
 
 const (
-   app = "com.google.android.youtube"
-   ver = 1524094400
+   app = "org.videolan.vlc"
+   ver = 13040204
 )
 
 func TestDelivery(t *testing.T) {
@@ -17,12 +17,15 @@ func TestDelivery(t *testing.T) {
       t.Fatal(err)
    }
    dev := new(Device)
-   r, err := os.Open(cache + "/googleplay/checkin.json")
+   r, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
    defer r.Close()
    if err := dev.Decode(r); err != nil {
+      t.Fatal(err)
+   }
+   if err := auth.Purchase(dev, app); err != nil {
       t.Fatal(err)
    }
    del, err := auth.Delivery(dev, app, ver)
@@ -38,7 +41,7 @@ func TestDetails(t *testing.T) {
       t.Fatal(err)
    }
    dev := new(Device)
-   r, err := os.Open(cache + "/googleplay/checkin.json")
+   r, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }

@@ -8,13 +8,13 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func delivery(app string, ver int) (gp.Message, error) {
+func delivery(app string, ver int) (*gp.Delivery, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
    }
    dev := new(gp.Device)
-   read, err := os.Open(cache + "/googleplay/checkin.json")
+   read, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return nil, err
    }
@@ -25,13 +25,30 @@ func delivery(app string, ver int) (gp.Message, error) {
    return auth.Delivery(dev, app, ver)
 }
 
-func details(app string) (gp.Message, error) {
+func purchase(app string) error {
+   auth, cache, err := getAuth()
+   if err != nil {
+      return err
+   }
+   dev := new(gp.Device)
+   read, err := os.Open(cache + "/googleplay/device.json")
+   if err != nil {
+      return err
+   }
+   defer read.Close()
+   if err := dev.Decode(read); err != nil {
+      return err
+   }
+   return auth.Purchase(dev, app)
+}
+
+func details(app string) (*gp.Details, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
    }
    dev := new(gp.Device)
-   read, err := os.Open(cache + "/googleplay/checkin.json")
+   read, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return nil, err
    }
@@ -56,7 +73,7 @@ func device() (string, error) {
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   cache = filepath.Join(cache, "/googleplay/checkin.json")
+   cache = filepath.Join(cache, "/googleplay/device.json")
    write, err := os.Create(cache)
    if err != nil {
       return "", err
