@@ -69,9 +69,11 @@ https://godocs.io/github.com/89z/parse/crypto
 
 ## How to get Android public key?
 
-Get this:
+Get this APK:
 
-https://apkpure.com/google-play-services/com.google.android.gms
+~~~
+com.google.android.gms
+~~~
 
 Then extract:
 

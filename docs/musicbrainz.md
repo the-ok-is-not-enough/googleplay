@@ -1,5 +1,7 @@
 # MusicBrainz
 
-Install MITM Proxy CA certificate to Trusted credentials (SYSTEM).
+~~~
+org.metabrainz.android
+~~~
 
-https://apkpure.com/musicbrainz/org.metabrainz.android
+Install MITM Proxy CA certificate to Trusted credentials (SYSTEM).

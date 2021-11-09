@@ -2,6 +2,10 @@
 
 ## Vimeo
 
+~~~
+com.vimeo.android.videoapp
+~~~
+
 - https://github.com/Shosta/androSecTest
 - https://github.com/httptoolkit/frida-android-unpinning
 - https://github.com/ryanking13/android-SSL-unpinning
@@ -40,5 +44,3 @@ Ljava/util/List;
 smali_classes2\g0\r.smali
 V
 ~~~
-
-https://apkpure.com/vimeo/com.vimeo.android.videoapp

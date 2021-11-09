@@ -1,7 +1,7 @@
 # APK Tool
 
 ~~~
-apktool d Bandcamp_v2.4.11_apkpure.com.apk
+apktool d Bandcamp.apk
 ~~~
 
 Change `res/xml/network_security_config.xml` to:
@@ -23,16 +23,16 @@ Create `C:\Users\89z\.keystore`:
 keytool -genkey -keyalg DSA
 ~~~
 
-Create `dist\Bandcamp_v2.4.11_apkpure.com.apk`:
+Create `dist\Bandcamp.apk`:
 
 ~~~
-apktool b Bandcamp_v2.4.11_apkpure.com --use-aapt2
+apktool b Bandcamp --use-aapt2
 ~~~
 
 Sign:
 
 ~~~
-jarsigner dist\Bandcamp_v2.4.11_apkpure.com.apk mykey
+jarsigner dist\Bandcamp.apk mykey
 ~~~
 
 - https://bugs.openjdk.java.net/browse/JDK-8212111
