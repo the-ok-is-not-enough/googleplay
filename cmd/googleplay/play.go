@@ -3,26 +3,46 @@ package main
 import (
    "fmt"
    "os"
+   "net/http"
    "path/filepath"
    "time"
    gp "github.com/89z/googleplay"
 )
 
-func delivery(app string, ver int) (*gp.Delivery, error) {
+func delivery(app string, ver int) error {
    auth, cache, err := getAuth()
    if err != nil {
-      return nil, err
+      return err
    }
    dev := new(gp.Device)
-   read, err := os.Open(cache + "/googleplay/device.json")
+   rd, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
-      return nil, err
+      return err
    }
-   defer read.Close()
-   if err := dev.Decode(read); err != nil {
-      return nil, err
+   defer rd.Close()
+   if err := dev.Decode(rd); err != nil {
+      return err
    }
-   return auth.Delivery(dev, app, ver)
+   del, err := auth.Delivery(dev, app, ver)
+   if err != nil {
+      return err
+   }
+   fmt.Println("GET", del.AppDeliveryData.DownloadURL)
+   res, err := http.Get(del.AppDeliveryData.DownloadURL)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   name := fmt.Sprintf("%v-%v.apk", app, ver)
+   wr, err := os.Create(name)
+   if err != nil {
+      return err
+   }
+   defer wr.Close()
+   if _, err := wr.ReadFrom(res.Body); err != nil {
+      return err
+   }
+   return nil
 }
 
 func purchase(app string) error {
@@ -31,12 +51,12 @@ func purchase(app string) error {
       return err
    }
    dev := new(gp.Device)
-   read, err := os.Open(cache + "/googleplay/device.json")
+   rd, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return err
    }
-   defer read.Close()
-   if err := dev.Decode(read); err != nil {
+   defer rd.Close()
+   if err := dev.Decode(rd); err != nil {
       return err
    }
    return auth.Purchase(dev, app)
@@ -48,12 +68,12 @@ func details(app string) (*gp.Details, error) {
       return nil, err
    }
    dev := new(gp.Device)
-   read, err := os.Open(cache + "/googleplay/device.json")
+   rd, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return nil, err
    }
-   defer read.Close()
-   if err := dev.Decode(read); err != nil {
+   defer rd.Close()
+   if err := dev.Decode(rd); err != nil {
       return nil, err
    }
    return auth.Details(dev, app)
@@ -91,12 +111,12 @@ func getAuth() (*gp.Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   read, err := os.Open(cache + "/googleplay/token.json")
+   rd, err := os.Open(cache + "/googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
-   defer read.Close()
-   if err := tok.Decode(read); err != nil {
+   defer rd.Close()
+   if err := tok.Decode(rd); err != nil {
       return nil, "", err
    }
    auth, err := tok.Auth()

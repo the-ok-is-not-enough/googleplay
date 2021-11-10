@@ -46,11 +46,10 @@ func main() {
          panic(err)
       }
    case app != "" && ver != 0:
-      del, err := delivery(app, ver)
+      err := delivery(app, ver)
       if err != nil {
          panic(err)
       }
-      fmt.Printf("%+v\n", del)
    default:
       fmt.Println("googleplay [flags]")
       flag.PrintDefaults()
