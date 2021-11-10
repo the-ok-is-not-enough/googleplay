@@ -7,8 +7,8 @@ import (
 )
 
 const (
-   app = "org.videolan.vlc"
-   ver = 13040204
+   app = "com.pbs.video"
+   ver = 510565
 )
 
 func TestDelivery(t *testing.T) {
@@ -23,9 +23,6 @@ func TestDelivery(t *testing.T) {
    }
    defer r.Close()
    if err := dev.Decode(r); err != nil {
-      t.Fatal(err)
-   }
-   if err := auth.Purchase(dev, app); err != nil {
       t.Fatal(err)
    }
    del, err := auth.Delivery(dev, app, ver)

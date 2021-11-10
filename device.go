@@ -41,7 +41,7 @@ var DefaultConfig = Config{
       },
       // developer.android.com/ndk/guides/abis
       NativePlatform: []string{
-         "armeabi-v7a",
+         "x86",
       },
    },
 }

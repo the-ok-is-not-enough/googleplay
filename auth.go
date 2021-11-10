@@ -134,10 +134,16 @@ func (a Auth) Upload(dev *Device, con Config) error {
    return res.Body.Close()
 }
 
+type SplitDeliveryData struct {
+   Name string `json:"1"`
+   DownloadURL string `json:"5"`
+}
+
 type Delivery struct {
    Status int32 `json:"1"`
    AppDeliveryData struct {
       DownloadURL string `json:"3"`
+      SplitDeliveryData []SplitDeliveryData `json:"15"`
    } `json:"2"`
 }
 

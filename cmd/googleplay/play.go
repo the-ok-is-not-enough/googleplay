@@ -27,20 +27,28 @@ func delivery(app string, ver int) error {
    if err != nil {
       return err
    }
-   fmt.Println("GET", del.AppDeliveryData.DownloadURL)
-   res, err := http.Get(del.AppDeliveryData.DownloadURL)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   name := fmt.Sprintf("%v-%v.apk", app, ver)
-   wr, err := os.Create(name)
-   if err != nil {
-      return err
-   }
-   defer wr.Close()
-   if _, err := wr.ReadFrom(res.Body); err != nil {
-      return err
+   splits := del.AppDeliveryData.SplitDeliveryData
+   splits = append(splits, gp.SplitDeliveryData{
+      DownloadURL: del.AppDeliveryData.DownloadURL,
+   })
+   for _, split := range splits {
+      fmt.Println("GET", split.DownloadURL)
+      res, err := http.Get(split.DownloadURL)
+      if err != nil {
+         return err
+      }
+      defer res.Body.Close()
+      if split.Name != "" {
+         split.Name = fmt.Sprintf("%v-%v-%v.apk", app, split.Name, ver)
+      } else {
+         split.Name = fmt.Sprintf("%v-%v.apk", app, ver)
+      }
+      file, err := os.Create(split.Name)
+      if err != nil {
+         return err
+      }
+      defer file.Close()
+      file.ReadFrom(res.Body)
    }
    return nil
 }

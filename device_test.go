@@ -7,6 +7,10 @@ import (
 )
 
 func TestDevice(t *testing.T) {
+   dev, err := NewDevice(DefaultCheckin)
+   if err != nil {
+      t.Fatal(err)
+   }
    tok := new(Token)
    cache, err := os.UserCacheDir()
    if err != nil {
@@ -21,10 +25,6 @@ func TestDevice(t *testing.T) {
       t.Fatal(err)
    }
    auth, err := tok.Auth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   dev, err := NewDevice(DefaultCheckin)
    if err != nil {
       t.Fatal(err)
    }
