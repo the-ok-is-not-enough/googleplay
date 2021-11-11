@@ -26,8 +26,8 @@ To exit, press `q`, then `y`.
 ## HTTPS
 
 Open Google Chrome on Virtual Device, and browse to <http://mitm.it>. Click on
-the Android certificate. Under **Certificate name** enter **MITM**, then click
-**OK**. Then browse to:
+the Android certificate. Under `Certificate name` enter `MITM`, then click
+`OK`. Then browse to:
 
 ~~~
 https://example.com

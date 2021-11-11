@@ -1,13 +1,13 @@
 ## HTTP Toolkit
 
-First download the program [1]. Start the program, and click **Android device
-connected via ADB**. Then browse to:
+First download the program [1]. Start the program, and click `Android device
+connected via ADB`. Then browse to:
 
 ~~~
 https://example.com
 ~~~
 
-To quit, click **File**, **Quit**. However a bug currently exists [2], where a
+To quit, click `File`, `Quit`. However a bug currently exists [2], where a
 zombie `node.exe` keep running, so you will need to kill that before the next
 start.
 

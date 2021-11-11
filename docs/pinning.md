@@ -1,8 +1,8 @@
 # Certificate pinning
 
 To install, drag file to emulator home screen. To uninstall, long press on the
-app, and drag to **Uninstall**. To force stop, long press on the app, and drag
-to **App info**.
+app, and drag to `Uninstall`. To force stop, long press on the app, and drag
+to `App info`.
 
 ## APK MITM
 
