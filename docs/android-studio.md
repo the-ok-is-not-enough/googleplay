@@ -15,6 +15,12 @@ Virtual Devices` screen, click `Launch this AVD in the emulator`.
 
 1. https://developer.android.com/studio#downloads
 
+## APK
+
+To install, drag file to emulator home screen. To uninstall, long press on the
+app, and drag to `Uninstall`. To force stop, long press on the app, and drag
+to `App info`.
+
 ## Proxy
 
 If you need to configure a proxy, in the emulator click `More`. On the

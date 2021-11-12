@@ -8,6 +8,7 @@ import (
    "fmt"
    "os"
    "os/exec"
+   "path/filepath"
 )
 
 const (
@@ -27,11 +28,12 @@ func subjectHashOld(buf []byte) ([]byte, error) {
 }
 
 func main() {
-   home, err := os.UserHomeDir()
+   cert, err := os.UserHomeDir()
    if err != nil {
       panic(err)
    }
-   buf, err := os.ReadFile(home + "/.mitmproxy/mitmproxy-ca-cert.cer")
+   cert = filepath.Join(cert, "/.mitmproxy/mitmproxy-ca-cert.cer")
+   buf, err := os.ReadFile(cert)
    if err != nil {
       panic(err)
    }
@@ -43,7 +45,7 @@ func main() {
    commands := [][]string{
       {"adb", "shell", "mkdir", data},
       {"adb", "shell", "cp", system + "/*", data},
-      {"adb", "push", "mitmproxy-ca-cert.cer", data + "/" + push},
+      {"adb", "push", cert, data + "/" + push},
       {"adb", "root"},
       {"adb", "shell", "mount", "-t", "tmpfs", "tmpfs", system},
       {"adb", "shell", "mv", data + "/*", system},

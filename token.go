@@ -91,9 +91,7 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header{
-      "Content-Type": {"application/x-www-form-urlencoded"},
-   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
    res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
    if err != nil {
       return nil, err

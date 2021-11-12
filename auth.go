@@ -16,6 +16,8 @@ const (
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
 )
 
+var PurchaseRequired = Response{3, "purchase required"}
+
 type Auth struct {
    url.Values
 }
@@ -46,6 +48,9 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    wrap := new(responseWrapper)
    if err := protobuf.NewDecoder(buf).Decode(wrap); err != nil {
       return nil, err
+   }
+   if wrap.Payload.DeliveryResponse.Status == PurchaseRequired.StatusCode {
+      return nil, PurchaseRequired
    }
    return &wrap.Payload.DeliveryResponse, nil
 }
@@ -134,11 +139,6 @@ func (a Auth) Upload(dev *Device, con Config) error {
    return res.Body.Close()
 }
 
-type SplitDeliveryData struct {
-   Name string `json:"1"`
-   DownloadURL string `json:"5"`
-}
-
 type Delivery struct {
    Status int32 `json:"1"`
    AppDeliveryData struct {
@@ -159,6 +159,21 @@ type Details struct {
          } `json:"1"`
       } `json:"13"`
    } `json:"4"`
+}
+
+type SplitDeliveryData struct {
+   Name string `json:"1"`
+   DownloadURL string `json:"5"`
+}
+
+type Response struct {
+   StatusCode int32
+   Status string
+}
+
+func (r Response) Error() string {
+   code := int(r.StatusCode)
+   return strconv.Itoa(code) + " " + r.Status
 }
 
 type responseWrapper struct {

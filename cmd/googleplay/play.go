@@ -53,23 +53,6 @@ func delivery(app string, ver int) error {
    return nil
 }
 
-func purchase(app string) error {
-   auth, cache, err := getAuth()
-   if err != nil {
-      return err
-   }
-   dev := new(gp.Device)
-   rd, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   defer rd.Close()
-   if err := dev.Decode(rd); err != nil {
-      return err
-   }
-   return auth.Purchase(dev, app)
-}
-
 func details(app string) (*gp.Details, error) {
    auth, cache, err := getAuth()
    if err != nil {
@@ -134,6 +117,23 @@ func getAuth() (*gp.Auth, string, error) {
    return auth, cache, nil
 }
 
+func purchase(app string) error {
+   auth, cache, err := getAuth()
+   if err != nil {
+      return err
+   }
+   dev := new(gp.Device)
+   rd, err := os.Open(cache + "/googleplay/device.json")
+   if err != nil {
+      return err
+   }
+   defer rd.Close()
+   if err := dev.Decode(rd); err != nil {
+      return err
+   }
+   return auth.Purchase(dev, app)
+}
+
 func token(email, password string) (string, error) {
    tok, err := gp.NewToken(email, password)
    if err != nil {
@@ -144,7 +144,7 @@ func token(email, password string) (string, error) {
       return "", err
    }
    cache = filepath.Join(cache, "googleplay")
-   os.Mkdir(cache, os.ModeDir)
+   os.Mkdir(cache, os.ModePerm)
    cache = filepath.Join(cache, "token.json")
    file, err := os.Create(cache)
    if err != nil {
