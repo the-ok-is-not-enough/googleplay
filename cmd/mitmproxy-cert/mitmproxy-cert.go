@@ -47,6 +47,8 @@ func main() {
       {"adb", "shell", "cp", system + "/*", data},
       {"adb", "push", cert, data + "/" + push},
       {"adb", "root"},
+      // if you omit this, the next command could run before `root` is finished
+      {"adb", "remount"},
       {"adb", "shell", "mount", "-t", "tmpfs", "tmpfs", system},
       {"adb", "shell", "mv", data + "/*", system},
       {"adb", "shell", "chcon", "u:object_r:system_file:s0", system + "/*"},

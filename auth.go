@@ -16,7 +16,7 @@ const (
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
 )
 
-var PurchaseRequired = Response{3, "purchase required"}
+var purchaseRequired = response{3, "purchase required"}
 
 type Auth struct {
    url.Values
@@ -49,8 +49,8 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    if err := protobuf.NewDecoder(buf).Decode(wrap); err != nil {
       return nil, err
    }
-   if wrap.Payload.DeliveryResponse.Status == PurchaseRequired.StatusCode {
-      return nil, PurchaseRequired
+   if wrap.Payload.DeliveryResponse.Status == purchaseRequired.statusCode {
+      return nil, purchaseRequired
    }
    return &wrap.Payload.DeliveryResponse, nil
 }
@@ -166,14 +166,14 @@ type SplitDeliveryData struct {
    DownloadURL string `json:"5"`
 }
 
-type Response struct {
-   StatusCode int32
-   Status string
+type response struct {
+   statusCode int32
+   status string
 }
 
-func (r Response) Error() string {
-   code := int(r.StatusCode)
-   return strconv.Itoa(code) + " " + r.Status
+func (r response) Error() string {
+   code := int(r.statusCode)
+   return strconv.Itoa(code) + " " + r.status
 }
 
 type responseWrapper struct {

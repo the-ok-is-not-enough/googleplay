@@ -30,6 +30,8 @@ var DefaultConfig = Config{
          "android.hardware.camera",
          // com.pinterest
          "android.hardware.location",
+         // com.vimeo.android.videoapp
+         "android.hardware.microphone",
          // org.videolan.vlc
          "android.hardware.screen.landscape",
          // com.pinterest
