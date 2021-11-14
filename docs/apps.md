@@ -1,12 +1,20 @@
 # Apps
 
+## NBC
+
+~~~
+com.nbcuni.nbc
+~~~
+
+https://github.com/httptoolkit/frida-android-unpinning
+
 ## Bandcamp
 
 ~~~
 com.bandcamp.android
 ~~~
 
-Install MITM Proxy CA certificate to Trusted credentials (SYSTEM).
+https://github.com/httptoolkit/frida-android-unpinning
 
 ## MusicBrainz
 
@@ -14,4 +22,4 @@ Install MITM Proxy CA certificate to Trusted credentials (SYSTEM).
 org.metabrainz.android
 ~~~
 
-Install MITM Proxy CA certificate to Trusted credentials (SYSTEM).
+https://github.com/httptoolkit/frida-android-unpinning

@@ -6,7 +6,6 @@
 com.vimeo.android.videoapp
 ~~~
 
-
 so, where are the exceptions?
 
 ~~~

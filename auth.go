@@ -149,16 +149,27 @@ type Delivery struct {
 
 type Details struct {
    DocV2 struct {
+      Offer struct {
+         FormattedAmount FormattedAmount `json:"3"`
+      } `json:"8"`
       Details struct {
          AppDetails struct {
             DeveloperName string `json:"1"`
             VersionCode int32 `json:"3"`
             Version string `json:"4"`
-            InstallationSize int64 `json:"9"`
             UploadDate string `json:"16"`
          } `json:"1"`
       } `json:"13"`
    } `json:"4"`
+}
+
+type FormattedAmount string
+
+func (f FormattedAmount) String() string {
+   if f == "" {
+      return "$0"
+   }
+   return string(f)
 }
 
 type SplitDeliveryData struct {

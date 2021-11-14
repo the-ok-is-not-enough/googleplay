@@ -29,8 +29,8 @@ Get app details:
 
 ~~~
 PS C:\> googleplay -a com.google.android.youtube
-{DeveloperName:Google LLC VersionCode:1524221376 Version:16.44.32
-InstallationSize:38864515 UploadDate:Nov 2, 2021}
+{Offer:{FormattedAmount:$0} Details:{AppDetails:{DeveloperName:Google LLC
+VersionCode:1524221376 Version:16.44.32 UploadDate:Nov 2, 2021}}}
 ~~~
 
 Purchase app. Only needs to be done once per Google account:

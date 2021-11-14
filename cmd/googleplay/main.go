@@ -39,7 +39,7 @@ func main() {
       if err != nil {
          panic(err)
       }
-      fmt.Printf("%+v\n", det.DocV2.Details.AppDetails)
+      fmt.Printf("%+v\n", det.DocV2)
    case app != "" && purch:
       err := purchase(app)
       if err != nil {
