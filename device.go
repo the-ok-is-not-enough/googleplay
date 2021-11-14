@@ -15,16 +15,8 @@ var DefaultCheckin = Checkin{Version: 3}
 
 var DefaultConfig = Config{
    DeviceConfiguration: DeviceConfiguration{
-      TouchScreen: 1,
-      Keyboard: 1,
-      Navigation: 1,
-      ScreenLayout: 1,
-      HasHardKeyboard: true,
-      HasFiveWayNavigation: true,
-      ScreenDensity: 1,
-      // developer.android.com/guide/topics/manifest/uses-feature-element
-      GlEsVersion: 0x0009_0000,
-      // developer.android.com/guide/topics/manifest/uses-feature-element
+      // com.google.android.youtube
+      GlEsVersion: 0x0002_0000,
       SystemAvailableFeature: []string{
          // com.pinterest
          "android.hardware.camera",
@@ -41,9 +33,13 @@ var DefaultConfig = Config{
          // com.google.android.youtube
          "android.hardware.wifi",
       },
-      // developer.android.com/ndk/guides/abis
       NativePlatform: []string{
+         // com.google.android.youtube
          "x86",
+      },
+      GlExtension: []string{
+         // com.instagram.android
+         "GL_OES_compressed_ETC1_RGB8_texture",
       },
    },
 }
@@ -120,14 +116,22 @@ func (d Device) String() string {
 }
 
 type DeviceConfiguration struct {
+   // this can be 0, but it must be included:
    TouchScreen int32 `json:"1"`
+   // this can be 0, but it must be included:
    Keyboard int32 `json:"2"`
+   // this can be 0, but it must be included:
    Navigation int32 `json:"3"`
+   // this can be 0, but it must be included:
    ScreenLayout int32 `json:"4"`
+   // this can be false, but it must be included:
    HasHardKeyboard bool `json:"5"`
+   // this can be false, but it must be included:
    HasFiveWayNavigation bool `json:"6"`
+   // this can be 0, but it must be included:
    ScreenDensity int32 `json:"7"`
    GlEsVersion int32 `json:"8"`
    SystemAvailableFeature []string `json:"10"`
    NativePlatform []string `json:"11"`
+   GlExtension []string `json:"15"`
 }

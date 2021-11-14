@@ -71,5 +71,5 @@ https://gitlab.com/AuroraOSS/gplayapi/-/blob/master/src/main/proto/GooglePlay.pr
 ## How to install split APK?
 
 ~~~
-adb install-multiple com.pbs.video-510565.apk config.x86-510565.apk
+adb install-multiple (ls *.apk)
 ~~~
