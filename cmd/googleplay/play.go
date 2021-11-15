@@ -28,7 +28,7 @@ func delivery(app string, ver int) error {
       return err
    }
    splits := del.AppDeliveryData.SplitDeliveryData
-   splits = append(splits, gp.SplitDeliveryData{
+   splits = append(splits, gp.Split{
       DownloadURL: del.AppDeliveryData.DownloadURL,
    })
    for _, split := range splits {

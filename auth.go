@@ -2,6 +2,7 @@ package googleplay
 
 import (
    "bytes"
+   "encoding/json"
    "github.com/89z/parse/protobuf"
    "io"
    "net/http"
@@ -17,6 +18,18 @@ const (
 )
 
 var purchaseRequired = response{3, "purchase required"}
+
+func numberFormat(val float64, metric []string) string {
+   var key int
+   for val >= 1000 {
+      val /= 1000
+      key++
+   }
+   if key >= len(metric) {
+      return ""
+   }
+   return strconv.FormatFloat(val, 'f', 3, 64) + " " + metric[key]
+}
 
 type Auth struct {
    url.Values
@@ -143,7 +156,7 @@ type Delivery struct {
    Status int32 `json:"1"`
    AppDeliveryData struct {
       DownloadURL string `json:"3"`
-      SplitDeliveryData []SplitDeliveryData `json:"15"`
+      SplitDeliveryData Splits `json:"15"`
    } `json:"2"`
 }
 
@@ -157,6 +170,7 @@ type Details struct {
             DeveloperName string `json:"1"`
             VersionCode int32 `json:"3"`
             Version string `json:"4"`
+            InstallationSize InstallationSize `json:"9"`
             UploadDate string `json:"16"`
          } `json:"1"`
       } `json:"13"`
@@ -172,9 +186,37 @@ func (f FormattedAmount) String() string {
    return string(f)
 }
 
-type SplitDeliveryData struct {
+type InstallationSize int64
+
+func (i InstallationSize) String() string {
+   metric := []string{"B", "kB", "MB", "GB"}
+   return numberFormat(float64(i), metric)
+}
+
+type Split struct {
    Name string `json:"1"`
    DownloadURL string `json:"5"`
+}
+
+type Splits []Split
+
+func (s *Splits) UnmarshalJSON(buf []byte) error {
+   if buf[0] == '[' {
+      var splits []Split
+      err := json.Unmarshal(buf, &splits)
+      if err != nil {
+         return err
+      }
+      *s = splits
+   } else {
+      var split Split
+      err := json.Unmarshal(buf, &split)
+      if err != nil {
+         return err
+      }
+      *s = Splits{split}
+   }
+   return nil
 }
 
 type response struct {

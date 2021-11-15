@@ -45,21 +45,21 @@ var DefaultConfig = Config{
 }
 
 func roundTrip(req *http.Request) (*http.Response, error) {
-   dum, err := httputil.DumpRequest(req, false)
+   buf, err := httputil.DumpRequest(req, false)
    if err != nil {
       return nil, err
    }
-   os.Stdout.Write(dum)
+   os.Stdout.Write(buf)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    if res.StatusCode != http.StatusOK {
-      dum, err := httputil.DumpResponse(res, false)
+      buf, err := httputil.DumpResponse(res, false)
       if err != nil {
          return nil, err
       }
-      return nil, fmt.Errorf("%s", dum)
+      return nil, fmt.Errorf("%s", buf)
    }
    return res, nil
 }
