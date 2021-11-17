@@ -15,27 +15,33 @@ var DefaultCheckin = Checkin{Version: 3}
 
 var DefaultConfig = Config{
    DeviceConfiguration: DeviceConfiguration{
-      // com.google.android.youtube
-      GlEsVersion: 0x0002_0000,
+      // com.axis.drawingdesk.v3
+      GlEsVersion: 0x0003_0001,
       SystemAvailableFeature: []string{
+         // com.smarty.voomvoom
+         "android.hardware.bluetooth",
          // com.pinterest
          "android.hardware.camera",
          // com.pinterest
          "android.hardware.location",
+         // com.smarty.voomvoom
+         "android.hardware.location.gps",
          // com.vimeo.android.videoapp
          "android.hardware.microphone",
          // org.videolan.vlc
          "android.hardware.screen.landscape",
          // com.pinterest
          "android.hardware.screen.portrait",
+         // com.smarty.voomvoom
+         "android.hardware.sensor.accelerometer",
          // com.google.android.youtube
          "android.hardware.touchscreen",
          // com.google.android.youtube
          "android.hardware.wifi",
       },
       NativePlatform: []string{
-         // com.google.android.youtube
-         "x86",
+         // com.axis.drawingdesk.v3
+         "arm64-v8a",
       },
       GlExtension: []string{
          // com.instagram.android
