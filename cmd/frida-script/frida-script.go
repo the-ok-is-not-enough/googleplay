@@ -7,7 +7,6 @@ import (
    "os"
    "os/exec"
    "path/filepath"
-   "strings"
 )
 
 const server =
@@ -68,18 +67,10 @@ func downloadServer(dst string) error {
    return nil
 }
 
-
 func stem(s string) string {
-   low := strings.LastIndexByte(s, '/')
-   if low == -1 {
-      return s
-   }
-   s = s[low+1:]
-   high := strings.LastIndexByte(s, '.')
-   if high == -1 {
-      return s
-   }
-   return s[:high]
+   base := filepath.Base(s)
+   ext := filepath.Ext(base)
+   return base[:len(base)-len(ext)]
 }
 
 type command struct {
