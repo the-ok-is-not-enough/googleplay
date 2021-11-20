@@ -59,7 +59,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
       return nil, err
    }
    wrap := new(responseWrapper)
-   if err := protobuf.NewDecoder(buf).Decode(wrap); err != nil {
+   if err := protobuf.NewNumberMap(buf).Struct(wrap); err != nil {
       return nil, err
    }
    if wrap.Payload.DeliveryResponse.Status == purchaseRequired.statusCode {
@@ -90,7 +90,7 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       return nil, err
    }
    wrap := new(responseWrapper)
-   if err := protobuf.NewDecoder(buf).Decode(wrap); err != nil {
+   if err := protobuf.NewNumberMap(buf).Struct(wrap); err != nil {
       return nil, err
    }
    return &wrap.Payload.DetailsResponse, nil
@@ -126,11 +126,11 @@ func (a Auth) Purchase(dev *Device, app string) error {
 // or similar. Also, after the POST, you need to wait at least 16 seconds
 // before the `deviceID` can be used.
 func (a Auth) Upload(dev *Device, con Config) error {
-   enc, err := protobuf.NewEncoder(con)
+   smap, err := protobuf.NewStringMap(con)
    if err != nil {
       return err
    }
-   buf, err := enc.Encode()
+   buf, err := smap.Bytes()
    if err != nil {
       return err
    }
