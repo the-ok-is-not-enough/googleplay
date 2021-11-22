@@ -116,21 +116,21 @@ func main() {
    commands := []command{
       run("adb", "root"),
       run("adb", "wait-for-device"),
-      run("adb", "push", cacheServer, "/var/frida-server"),
-      run("adb", "shell", "chmod", "755", "/var/frida-server"),
-      start("adb", "shell", "/var/frida-server"),
+      run("adb", "push", cacheServer, "/data/app/frida-server"),
+      run("adb", "shell", "chmod", "755", "/data/app/frida-server"),
+      start("adb", "shell", "/data/app/frida-server"),
       run("frida", "--no-pause", "-U", "-l", cacheScript, "-f", pack),
    }
    for _, cmd := range commands {
       cmd.Stderr = os.Stderr
       cmd.Stdout = os.Stdout
       fmt.Println(cmd.Args)
-      err := cmd.Start()
-      if err != nil {
-         panic(err)
-      }
+      cmd.Start()
       if cmd.wait {
-         cmd.Wait()
+         err := cmd.Wait()
+         if err != nil {
+            panic(err)
+         }
       } else {
          defer cmd.Wait()
       }
