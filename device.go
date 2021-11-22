@@ -41,7 +41,7 @@ var DefaultConfig = Config{
       },
       NativePlatform: []string{
          // com.axis.drawingdesk.v3
-         "arm64-v8a",
+         "armeabi-v7a",
       },
       GlExtension: []string{
          // com.instagram.android

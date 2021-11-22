@@ -40,7 +40,6 @@ func TestDetails(t *testing.T) {
          t.Fatal(app)
       }
       fmt.Println(det.DocV2.Details.AppDetails.VersionCode)
-      fmt.Println(det.DocV2.Details.AppDetails.InstallationSize)
       time.Sleep(time.Second)
    }
 }
