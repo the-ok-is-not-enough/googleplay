@@ -174,6 +174,13 @@ type Details struct {
             UploadDate string `json:"16"`
          } `json:"1"`
       } `json:"13"`
+      AggregateRating struct {
+         OneStar uint64 `json:"4"`
+         TwoStar uint64 `json:"5"`
+         ThreeStar uint64 `json:"6"`
+         FourStar uint64 `json:"7"`
+         FiveStar uint64 `json:"8"`
+      } `json:"14"`
    } `json:"4"`
 }
 

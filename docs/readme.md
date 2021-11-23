@@ -66,7 +66,8 @@ smali\gnt.smali
 
 ## How to get Protocol Buffer fields?
 
-https://gitlab.com/AuroraOSS/gplayapi/-/blob/master/src/main/proto/GooglePlay.proto
+- https://github.com/NoMore201/googleplay-api/blob/master/googleplay.proto
+- https://gitlab.com/AuroraOSS/gplayapi/-/blob/master/src/main/proto/GooglePlay.proto
 
 ## How to install split APK?
 
