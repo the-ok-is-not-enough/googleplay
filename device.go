@@ -40,6 +40,8 @@ var DefaultConfig = Config{
          "android.hardware.wifi",
       },
       NativePlatform: []string{
+         // com.vimeo.android.videoapp
+         "x86",
          // com.axis.drawingdesk.v3
          "armeabi-v7a",
       },

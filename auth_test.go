@@ -39,7 +39,6 @@ func TestDetails(t *testing.T) {
       if det.DocV2.Details.AppDetails.VersionCode == 0 {
          t.Fatal(app)
       }
-      fmt.Println(det.DocV2.Details.AppDetails.VersionCode)
       time.Sleep(time.Second)
    }
 }

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-   data = "/data/app/cacerts"
+   data = "/data/local/tmp/cacerts"
    system = "/system/etc/security/cacerts"
 )
 
