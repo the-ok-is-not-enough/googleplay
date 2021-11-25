@@ -1,6 +1,12 @@
 package main
 
 import (
+   "encoding/json"
+   "fmt"
+   "github.com/89z/parse/protobuf"
+   "net/http"
+   "net/url"
+   "time"
 )
 
 type app struct {
@@ -22,23 +28,6 @@ var apps = []app{
    {"100,000,000+", "com.discord"},
    {"1,000,000,000+", "com.netflix.mediaclient"},
    {"10,000,000,000+", "com.google.android.youtube"},
-}
-
-type responseWrapper struct {
-   Payload struct {
-      DetailsResponse struct {
-         DocV2 struct {
-            Offer struct {
-               FormattedAmount FormattedAmount `json:"3"`
-            } `json:"8"`
-            Details struct {
-               AppDetails struct {
-                  VersionCode int32 `json:"3"`
-               } `json:"1"`
-            } `json:"13"`
-         } `json:"4"`
-      } `json:"2"`
-   } `json:"1"`
 }
 
 func main() {
@@ -68,6 +57,28 @@ func main() {
       if err != nil {
          panic(err)
       }
+      var wrap responseWrapper
+      if err := json.Unmarshal(buf, &wrap); err != nil {
+         panic(err)
+      }
+      fmt.Println(app.id + ":")
+      fmt.Printf("%+v\n", wrap.Payload.DetailsResponse.DocV2.Details)
       time.Sleep(time.Second)
    }
+}
+
+type responseWrapper struct {
+   Payload struct {
+      DetailsResponse struct {
+         DocV2 struct {
+            Details struct {
+               AppDetails struct {
+                  VersionCode int32 `json:"3"`
+                  NumDownloads string `json:"13"`
+                  Something int `json:"70"`
+               } `json:"1"`
+            } `json:"13"`
+         } `json:"4"`
+      } `json:"2"`
+   } `json:"1"`
 }
