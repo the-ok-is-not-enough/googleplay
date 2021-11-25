@@ -91,20 +91,98 @@ old:
 - https://github.com/kagasu/GooglePlayStoreApi/issues/15
 - https://github.com/opengapps/apkcrawler/issues/75
 
-Then I ran this Python script:
+Then I checked `com.android.vending` with AndroGuard, which works with 6.1.14
+(2016):
 
-~~~py
-from androguard.misc import AnalyzeAPK
-a,d,dx= AnalyzeAPK('com.android.vending.apk')
-f = open('file.java', 'w')
-
-for dd in d:
-   for clas in dd.get_classes():
-      name = clas.get_name()
-      if 'proto' in name:
-         print(name, file=f)
-         src = dd.get_class(name).get_source()
-         print(src, file=f)
+~~~java
+p8.writeString(1, this.developerName);
+p8.writeInt32(2, this.majorVersionNumber);
+p8.writeInt32(3, this.versionCode);
+p8.writeString(4, this.versionString);
+p8.writeString(5, this.title);
+p8.writeString(7, v0_6); String v0_6 = this.appCategory[v1_6];
+p8.writeInt32(8, this.contentRating);
+p8.writeInt64(9, this.installationSize);
+p8.writeString(10, v0_5); String v0_5 = this.permission[v1_5];
+p8.writeString(11, this.developerEmail);
+p8.writeString(12, this.developerWebsite);
+p8.writeString(13, this.numDownloads);
+p8.writeString(14, this.packageName);
+p8.writeString(15, this.recentChangesHtml);
+p8.writeString(16, this.uploadDate);
+p8.writeMessage(17, v0_4); String v0_4 = this.file[v1_0];
+p8.writeString(18, this.appType);
+p8.writeString(19, v0_3); String v0_3 = this.certificateHash[v1_1];
+p8.writeBool(21, this.variesByAccount);
+p8.writeMessage(22, v0_2); String v0_2 = this.certificateSet[v1_2];
+p8.writeString(23, v0_1); String v0_1 = this.autoAcquireFreeAppIfHigherVersionAvailableTag[v1_3];
+p8.writeBool(24, this.declaresIab);
+p8.writeString(25, v0_0); String v0_0 = this.splitId[v1_4];
+p8.writeBool(26, this.gamepadRequired);
+p8.writeBool(27, this.externallyHosted);
+p8.writeBool(28, this.everExternallyHosted);
+p8.writeString(30, this.installNotes);
+p8.writeInt32(31, this.installLocation);
+p8.writeInt32(32, this.targetSdkVersion);
+p8.writeString(33, this.preregistrationPromoCode);
+p8.writeMessage(34, this.installDetails);
 ~~~
 
-which works with older APKs:
+but fails with any newer version. The next version is 6.2.10. It still has the
+fields, but the code looks different:
+
+~~~java
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(1, this.a);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(2, this.c);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(3, this.e);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(4, this.g);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(5, this.i);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(6, this.k);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(7, this.m);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(8, this.o);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(9, this.q);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(10, this.s);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(11, this.t);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.e(12, this.u);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.e(13, this.w);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(14, this.y);
+v0 += (com.google.protobuf.nano.CodedOutputByteBufferNano.c(15) + 1);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(17, this.B);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(18, this.C);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(19, this.D);
+v0 += (com.google.protobuf.nano.CodedOutputByteBufferNano.c(20) + 1);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(21, this.H);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(23, this.I);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(24, this.K);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(25, this.L);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(26, this.N);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(27, this.O);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(28, this.P);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(29, this.Q);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.b(30, this.R);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(31, this.T);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(32, this.U);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(33, this.V);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(34, this.W);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(35, this.X);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(36, this.Y);
+v0 += (com.google.protobuf.nano.CodedOutputByteBufferNano.c(38) + 1);
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(39, this.ab);
+~~~
+
+Lets look at this string field:
+
+~~~java
+v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(33, this.V);
+~~~
+
+What is `this.V`? Looks to be set here:
+
+~~~java
+case 266:
+  if (this.V == null) {
+      this.V = new com.google.android.finsky.a.r();
+  }
+  p4.a(this.V);
+  break;
+~~~
