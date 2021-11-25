@@ -1,10 +1,8 @@
 package googleplay
 
 import (
-   "bytes"
    "encoding/json"
    "github.com/89z/parse/protobuf"
-   "io"
    "net/http"
    "net/url"
    "strconv"
@@ -54,12 +52,16 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
       return nil, err
    }
    defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
+   mes, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   buf, err := mes.MarshalJSON()
    if err != nil {
       return nil, err
    }
    wrap := new(responseWrapper)
-   if err := protobuf.Bytes(buf).Struct(wrap); err != nil {
+   if err := json.Unmarshal(buf, wrap); err != nil {
       return nil, err
    }
    if wrap.Payload.DeliveryResponse.Status == purchaseRequired.statusCode {
@@ -85,12 +87,16 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       return nil, err
    }
    defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
+   mes, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   buf, err := mes.MarshalJSON()
    if err != nil {
       return nil, err
    }
    wrap := new(responseWrapper)
-   if err := protobuf.Bytes(buf).Struct(wrap); err != nil {
+   if err := json.Unmarshal(buf, wrap); err != nil {
       return nil, err
    }
    return &wrap.Payload.DetailsResponse, nil
@@ -126,16 +132,16 @@ func (a Auth) Purchase(dev *Device, app string) error {
 // or similar. Also, after the POST, you need to wait at least 16 seconds
 // before the `deviceID` can be used.
 func (a Auth) Upload(dev *Device, con Config) error {
-   field, err := protobuf.Struct(con)
+   buf, err := json.Marshal(con)
    if err != nil {
       return err
    }
-   buf, err := field.Bytes()
-   if err != nil {
+   mes := make(protobuf.Message)
+   if err := mes.UnmarshalJSON(buf); err != nil {
       return err
    }
    req, err := http.NewRequest(
-      "POST", origin + "/fdfe/uploadDeviceConfig", bytes.NewReader(buf),
+      "POST", origin + "/fdfe/uploadDeviceConfig", mes.Encode(),
    )
    if err != nil {
       return err
