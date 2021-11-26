@@ -38,12 +38,12 @@ func delivery(app string, ver int) error {
          return err
       }
       defer res.Body.Close()
-      if split.Name != "" {
-         split.Name = fmt.Sprintf("%v-%v-%v.apk", app, split.Name, ver)
+      if split.ID != "" {
+         split.ID = fmt.Sprintf("%v-%v-%v.apk", app, split.ID, ver)
       } else {
-         split.Name = fmt.Sprintf("%v-%v.apk", app, ver)
+         split.ID = fmt.Sprintf("%v-%v.apk", app, ver)
       }
-      file, err := os.Create(split.Name)
+      file, err := os.Create(split.ID)
       if err != nil {
          return err
       }

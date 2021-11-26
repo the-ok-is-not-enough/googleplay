@@ -175,17 +175,17 @@ type Details struct {
          AppDetails struct {
             DeveloperName string `json:"1"`
             VersionCode int32 `json:"3"`
-            Version string `json:"4"`
+            VersionString string `json:"4"`
             InstallationSize InstallationSize `json:"9"`
             UploadDate string `json:"16"`
          } `json:"1"`
       } `json:"13"`
       AggregateRating struct {
-         OneStar uint64 `json:"4"`
-         TwoStar uint64 `json:"5"`
-         ThreeStar uint64 `json:"6"`
-         FourStar uint64 `json:"7"`
-         FiveStar uint64 `json:"8"`
+         OneStarRatings uint64 `json:"4"`
+         TwoStarRatings uint64 `json:"5"`
+         ThreeStarRatings uint64 `json:"6"`
+         FourStarRatings uint64 `json:"7"`
+         FiveStarRatings uint64 `json:"8"`
       } `json:"14"`
    } `json:"4"`
 }
@@ -207,7 +207,7 @@ func (i InstallationSize) String() string {
 }
 
 type Split struct {
-   Name string `json:"1"`
+   ID string `json:"1"`
    DownloadURL string `json:"5"`
 }
 

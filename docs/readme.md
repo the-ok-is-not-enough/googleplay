@@ -64,11 +64,6 @@ smali\gnt.smali
 324- const-string v0, "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwg...
 ~~~
 
-## How to get Protocol Buffer fields?
-
-- https://github.com/NoMore201/googleplay-api/blob/master/googleplay.proto
-- https://gitlab.com/AuroraOSS/gplayapi/-/blob/master/src/main/proto/GooglePlay.proto
-
 ## How to install split APK?
 
 ~~~
