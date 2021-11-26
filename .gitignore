@@ -1,5 +1,4 @@
 *.apk
 *.exe
 *.har
-*.java
 secret.go

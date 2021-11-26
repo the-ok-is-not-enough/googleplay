@@ -1,4 +1,4 @@
-# Field 70
+# November 25 2021
 
 Making a request like this:
 
@@ -23,7 +23,6 @@ In the response we get this:
             "4": "1.2",
             "9": 34655364,
             "13": "500+",
-            "16": "Oct 9, 2021",
             "70": 740,
           }
         }
@@ -97,42 +96,6 @@ version (2016):
 
 ~~~
 versionCode='80441400' versionName='6.1.14'
-~~~
-
-Result:
-
-~~~java
-p8.writeString(1, this.developerName);
-p8.writeInt32(2, this.majorVersionNumber);
-p8.writeInt32(3, this.versionCode);
-p8.writeString(4, this.versionString);
-p8.writeString(5, this.title);
-p8.writeString(7, v0_6); String v0_6 = this.appCategory[v1_6];
-p8.writeInt32(8, this.contentRating);
-p8.writeInt64(9, this.installationSize);
-p8.writeString(10, v0_5); String v0_5 = this.permission[v1_5];
-p8.writeString(11, this.developerEmail);
-p8.writeString(12, this.developerWebsite);
-p8.writeString(13, this.numDownloads);
-p8.writeString(14, this.packageName);
-p8.writeString(15, this.recentChangesHtml);
-p8.writeString(16, this.uploadDate);
-p8.writeMessage(17, v0_4); String v0_4 = this.file[v1_0];
-p8.writeString(18, this.appType);
-p8.writeString(19, v0_3); String v0_3 = this.certificateHash[v1_1];
-p8.writeBool(21, this.variesByAccount);
-p8.writeMessage(22, v0_2); String v0_2 = this.certificateSet[v1_2];
-p8.writeString(23, v0_1); String v0_1 = this.autoAcquireFreeAppIfHigherVersionAvailableTag[v1_3];
-p8.writeBool(24, this.declaresIab);
-p8.writeString(25, v0_0); String v0_0 = this.splitId[v1_4];
-p8.writeBool(26, this.gamepadRequired);
-p8.writeBool(27, this.externallyHosted);
-p8.writeBool(28, this.everExternallyHosted);
-p8.writeString(30, this.installNotes);
-p8.writeInt32(31, this.installLocation);
-p8.writeInt32(32, this.targetSdkVersion);
-p8.writeString(33, this.preregistrationPromoCode);
-p8.writeMessage(34, this.installDetails);
 ~~~
 
 This version:
