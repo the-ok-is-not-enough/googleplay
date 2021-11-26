@@ -1,4 +1,3 @@
-// Lcom/google/android/finsky/protos/Details$DetailsResponse;
 public final class Details$DetailsResponse extends com.google.protobuf.nano.MessageNano {
     public com.google.android.finsky.protos.Details$DiscoveryBadge[] discoveryBadge;
     public com.google.android.finsky.protos.DocV1 docV1;

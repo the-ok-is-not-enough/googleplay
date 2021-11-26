@@ -1,4 +1,3 @@
-// Lcom/google/android/finsky/protos/Response$ResponseWrapper;
 public final class Response$ResponseWrapper extends com.google.protobuf.nano.MessageNano {
     public com.google.android.finsky.protos.ServerCommands commands;
     public com.google.android.finsky.protos.Notification[] notification;

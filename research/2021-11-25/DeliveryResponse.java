@@ -1,4 +1,3 @@
-// Lcom/google/android/finsky/protos/DeliveryResponse;
 public final class DeliveryResponse extends com.google.protobuf.nano.MessageNano {
     public com.google.android.finsky.protos.AndroidAppDeliveryData appDeliveryData;
     public boolean hasStatus;

@@ -1,4 +1,3 @@
-// Lcom/google/android/finsky/protos/DocV2;
 public final class DocV2 extends com.google.protobuf.nano.MessageNano {
     private static volatile com.google.android.finsky.protos.DocV2[] _emptyArray;
     public com.google.android.finsky.protos.Rating$AggregateRating aggregateRating;

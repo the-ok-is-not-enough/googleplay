@@ -1,4 +1,3 @@
-// Lcom/google/android/finsky/protos/Common$Offer;
 public final class Common$Offer extends com.google.protobuf.nano.MessageNano {
     private static volatile com.google.android.finsky.protos.Common$Offer[] _emptyArray;
     public String buyButtonLabel;

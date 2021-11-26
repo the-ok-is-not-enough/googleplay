@@ -1,4 +1,3 @@
-// Lcom/google/android/finsky/protos/Response$Payload;
 public final class Response$Payload extends com.google.protobuf.nano.MessageNano {
     public com.google.android.finsky.protos.AcceptTosResponse acceptTosResponse;
     public com.google.android.finsky.protos.AckNotificationResponse ackNotificationResponse;
