@@ -1,3 +1,4 @@
+// Lcom/google/android/finsky/protos/DocV2;
 public final class DocV2 extends com.google.protobuf.nano.MessageNano {
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p6)
     {

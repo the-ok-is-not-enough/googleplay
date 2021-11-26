@@ -1,3 +1,4 @@
+// Lcom/google/android/finsky/protos/DeliveryResponse;
 public final class DeliveryResponse extends com.google.protobuf.nano.MessageNano {
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p3)
     {

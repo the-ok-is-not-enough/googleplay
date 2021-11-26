@@ -1,3 +1,4 @@
+// Lcom/google/android/finsky/protos/Response$ResponseWrapper;
 public final class Response$ResponseWrapper extends com.google.protobuf.nano.MessageNano {
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p5)
     {

@@ -1,3 +1,4 @@
+// Lcom/google/android/finsky/protos/Details$DetailsResponse;
 public final class Details$DetailsResponse extends com.google.protobuf.nano.MessageNano {
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p6)
     {
