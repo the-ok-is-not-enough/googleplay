@@ -1,4 +1,4 @@
-# November 25 2021
+# Field 70
 
 Making a request like this:
 
@@ -80,19 +80,26 @@ com.google.android.youtube:
 So, what is this field called? I check online, and every single ProtoBuf file is
 old:
 
-- <https://github.com/a-sarja/Google_App_Downloader/issues/2>
-- https://github.com/EFForg/rs-google-play/issues/5
-- https://github.com/GoneToneStudio/node-google-play-api/issues/14
-- https://github.com/Huma123456/gapps/issues/2
-- https://github.com/Juby210/gplayapi-go/issues/5
-- https://github.com/Mayankagg44/App-crawler/issues/6
-- https://github.com/MrChota/gplayapi/issues/2
-- https://github.com/fahadakbar24/google-play-api/issues/4
-- https://github.com/kagasu/GooglePlayStoreApi/issues/15
-- https://github.com/opengapps/apkcrawler/issues/75
+1. <https://github.com/a-sarja/Google_App_Downloader/issues/2>
+1. https://github.com/EFForg/rs-google-play/issues/5
+1. https://github.com/GoneToneStudio/node-google-play-api/issues/14
+1. https://github.com/Huma123456/gapps/issues/2
+1. https://github.com/Juby210/gplayapi-go/issues/5
+1. https://github.com/Mayankagg44/App-crawler/issues/6
+1. https://github.com/MrChota/gplayapi/issues/2
+1. https://github.com/anod/AppWatcher/issues/92
+1. https://github.com/fahadakbar24/google-play-api/issues/4
+1. https://github.com/kagasu/GooglePlayStoreApi/issues/15
+1. https://github.com/opengapps/apkcrawler/issues/75
 
-Then I checked `com.android.vending` with AndroGuard, which works with 6.1.14
-(2016):
+Then I checked `com.android.vending` with AndroGuard, with the last working
+version (2016):
+
+~~~
+versionCode='80441400' versionName='6.1.14'
+~~~
+
+Result:
 
 ~~~java
 p8.writeString(1, this.developerName);
@@ -128,8 +135,13 @@ p8.writeString(33, this.preregistrationPromoCode);
 p8.writeMessage(34, this.installDetails);
 ~~~
 
-but fails with any newer version. The next version is 6.2.10. It still has the
-fields, but the code looks different:
+This version:
+
+~~~
+versionCode='80621000' versionName='6.2.10.A-all [0] 2590673'
+~~~
+
+still has the fields, but the code looks different:
 
 ~~~java
 v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.c(1, this.a);
@@ -168,21 +180,4 @@ v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(35, this.X);
 v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(36, this.Y);
 v0 += (com.google.protobuf.nano.CodedOutputByteBufferNano.c(38) + 1);
 v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(39, this.ab);
-~~~
-
-Lets look at this string field:
-
-~~~java
-v0 += com.google.protobuf.nano.CodedOutputByteBufferNano.d(33, this.V);
-~~~
-
-What is `this.V`? Looks to be set here:
-
-~~~java
-case 266:
-  if (this.V == null) {
-      this.V = new com.google.android.finsky.a.r();
-  }
-  p4.a(this.V);
-  break;
 ~~~
