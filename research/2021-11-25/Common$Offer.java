@@ -1,5 +1,52 @@
 // Lcom/google/android/finsky/protos/Common$Offer;
 public final class Common$Offer extends com.google.protobuf.nano.MessageNano {
+    private static volatile com.google.android.finsky.protos.Common$Offer[] _emptyArray;
+    public String buyButtonLabel;
+    public boolean checkoutFlowRequired;
+    public com.google.android.finsky.protos.Common$Offer[] convertedPrice;
+    public String currencyCode;
+    public String formattedAmount;
+    public String formattedDescription;
+    public String formattedFullAmount;
+    public String formattedName;
+    public long fullPriceMicros;
+    public boolean hasBuyButtonLabel;
+    public boolean hasCheckoutFlowRequired;
+    public boolean hasCurrencyCode;
+    public boolean hasFormattedAmount;
+    public boolean hasFormattedDescription;
+    public boolean hasFormattedFullAmount;
+    public boolean hasFormattedName;
+    public boolean hasFullPriceMicros;
+    public boolean hasInstantPurchaseEnabled;
+    public boolean hasLicensedOfferType;
+    public boolean hasMicros;
+    public boolean hasOfferId;
+    public boolean hasOfferType;
+    public boolean hasOnSaleDate;
+    public boolean hasOnSaleDateDisplayTimeZoneOffsetMsec;
+    public boolean hasPreorder;
+    public boolean hasPreorderFulfillmentDisplayDate;
+    public boolean hasRepeatLastPayment;
+    public boolean hasTemporarilyFree;
+    public boolean instantPurchaseEnabled;
+    public com.google.android.finsky.protos.Common$LicenseTerms licenseTerms;
+    public int licensedOfferType;
+    public long micros;
+    public String offerId;
+    public com.google.android.finsky.protos.Common$OfferPayment[] offerPayment;
+    public int offerType;
+    public long onSaleDate;
+    public int onSaleDateDisplayTimeZoneOffsetMsec;
+    public boolean preorder;
+    public long preorderFulfillmentDisplayDate;
+    public String[] promotionLabel;
+    public com.google.android.finsky.protos.Common$RentalTerms rentalTerms;
+    public boolean repeatLastPayment;
+    public com.google.android.finsky.protos.Common$SubscriptionContentTerms subscriptionContentTerms;
+    public com.google.android.finsky.protos.Common$SubscriptionTerms subscriptionTerms;
+    public boolean temporarilyFree;
+    public com.google.android.finsky.protos.Common$VoucherOfferTerms voucherTerms;
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p10)
     {
         if ((this.hasMicros) || (this.micros != 0)) {

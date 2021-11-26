@@ -1,5 +1,15 @@
 // Lcom/google/android/finsky/protos/Details$DetailsResponse;
 public final class Details$DetailsResponse extends com.google.protobuf.nano.MessageNano {
+    public com.google.android.finsky.protos.Details$DiscoveryBadge[] discoveryBadge;
+    public com.google.android.finsky.protos.DocV1 docV1;
+    public com.google.android.finsky.protos.DocV2 docV2;
+    public boolean enableReviews;
+    public String footerHtml;
+    public boolean hasEnableReviews;
+    public boolean hasFooterHtml;
+    public boolean hasServerLogsCookie;
+    public byte[] serverLogsCookie;
+    public com.google.android.finsky.protos.Review userReview;
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p6)
     {
         if (this.docV1 != null) {

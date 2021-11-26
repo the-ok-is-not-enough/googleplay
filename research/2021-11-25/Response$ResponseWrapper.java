@@ -1,5 +1,12 @@
 // Lcom/google/android/finsky/protos/Response$ResponseWrapper;
 public final class Response$ResponseWrapper extends com.google.protobuf.nano.MessageNano {
+    public com.google.android.finsky.protos.ServerCommands commands;
+    public com.google.android.finsky.protos.Notification[] notification;
+    public com.google.android.finsky.protos.Response$Payload payload;
+    public com.google.android.finsky.protos.PreFetch[] preFetch;
+    public com.google.android.finsky.protos.ServerCookies serverCookies;
+    public com.google.android.finsky.protos.ServerMetadata serverMetadata;
+    public com.google.android.finsky.protos.Targets targets;
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p5)
     {
         if (this.payload != null) {

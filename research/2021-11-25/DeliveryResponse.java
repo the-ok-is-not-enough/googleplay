@@ -1,5 +1,8 @@
 // Lcom/google/android/finsky/protos/DeliveryResponse;
 public final class DeliveryResponse extends com.google.protobuf.nano.MessageNano {
+    public com.google.android.finsky.protos.AndroidAppDeliveryData appDeliveryData;
+    public boolean hasStatus;
+    public int status;
     public final void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano p3)
     {
         if ((this.status != 1) || (this.hasStatus)) {
