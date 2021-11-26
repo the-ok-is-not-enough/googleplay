@@ -8,13 +8,13 @@ type responseWrapper struct { // DONE
                FormattedAmount string `json:"3"` // DONE
             } `json:"8"` // DONE
             Details struct { // DONE
-               AppDetails struct {
-                  DeveloperName string `json:"1"`
-                  VersionCode int32 `json:"3"`
-                  Version string `json:"4"`
-                  InstallationSize int64 `json:"9"`
-                  UploadDate string `json:"16"`
-               } `json:"1"`
+               AppDetails struct { // DONE
+                  DeveloperName string `json:"1"` // DONE
+                  VersionCode int32 `json:"3"` // DONE
+                  Version string `json:"4"` // DONE
+                  InstallationSize int64 `json:"9"` // DONE
+                  UploadDate string `json:"16"` // DONE
+               } `json:"1"` // DONE
             } `json:"13"` // DONE
             AggregateRating struct {
                OneStar uint64 `json:"4"`
@@ -25,8 +25,8 @@ type responseWrapper struct { // DONE
             } `json:"14"`
          } `json:"4"` // DONE
       } `json:"2"` // DONE
-      DeliveryResponse struct {
-         Status int32 `json:"1"`
+      DeliveryResponse struct { // DONE
+         Status int32 `json:"1"` // DONE
          AppDeliveryData struct {
             DownloadURL string `json:"3"`
             SplitDeliveryData []struct {
@@ -34,6 +34,6 @@ type responseWrapper struct { // DONE
                DownloadURL string `json:"5"`
             } `json:"15"`
          } `json:"2"`
-      } `json:"21"`
+      } `json:"21"` // DONE
    } `json:"1"` // DONE
 } // DONE
