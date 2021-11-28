@@ -3,7 +3,6 @@ package main
 import (
    "fmt"
    "os"
-   "net/http"
    "path/filepath"
    "time"
    gp "github.com/89z/googleplay"
@@ -23,37 +22,24 @@ func delivery(app string, ver int) error {
    if err := dev.Decode(rd); err != nil {
       return err
    }
-   del, err := auth.Delivery(dev, app, ver)
+   del, err := auth.DeliveryResponse(dev, app, ver)
    if err != nil {
       return err
    }
-   splits := del.AppDeliveryData.SplitDeliveryData
-   splits = append(splits, gp.Split{
-      DownloadURL: del.AppDeliveryData.DownloadURL,
-   })
-   for _, split := range splits {
-      fmt.Println("GET", split.DownloadURL)
-      res, err := http.Get(split.DownloadURL)
+   data := del.AppDeliveryData()
+   if err := download(data.DownloadURL(), "", app, ver); err != nil {
+      return err
+   }
+   for _, split := range data.SplitDeliveryData() {
+      err := download(split.DownloadURL(), split.ID(), app, ver)
       if err != nil {
          return err
       }
-      defer res.Body.Close()
-      if split.ID != "" {
-         split.ID = fmt.Sprintf("%v-%v-%v.apk", app, split.ID, ver)
-      } else {
-         split.ID = fmt.Sprintf("%v-%v.apk", app, ver)
-      }
-      file, err := os.Create(split.ID)
-      if err != nil {
-         return err
-      }
-      defer file.Close()
-      file.ReadFrom(res.Body)
    }
    return nil
 }
 
-func details(app string) (*gp.Details, error) {
+func detailsResponse(app string) (*gp.DetailsResponse, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
@@ -67,7 +53,7 @@ func details(app string) (*gp.Details, error) {
    if err := dev.Decode(rd); err != nil {
       return nil, err
    }
-   return auth.Details(dev, app)
+   return auth.DetailsResponse(dev, app)
 }
 
 func device() (string, error) {
@@ -75,11 +61,12 @@ func device() (string, error) {
    if err != nil {
       return "", err
    }
-   dev, err := gp.NewDevice(gp.DefaultCheckin)
+   dev, err := gp.NewDevice()
    if err != nil {
       return "", err
    }
-   if err := auth.Upload(dev, gp.DefaultConfig); err != nil {
+   con := gp.NewConfig()
+   if err := auth.Upload(dev, con); err != nil {
       return "", err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)

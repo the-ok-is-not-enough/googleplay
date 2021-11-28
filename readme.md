@@ -28,9 +28,7 @@ googleplay -d
 Get app details:
 
 ~~~
-PS C:\> googleplay -a com.google.android.youtube
-{Offer:{FormattedAmount:$0} Details:{AppDetails:{DeveloperName:Google LLC
-VersionCode:1524221376 Version:16.44.32 UploadDate:Nov 2, 2021}}}
+googleplay -a com.google.android.youtube
 ~~~
 
 Purchase app. Only needs to be done once per Google account:
@@ -47,12 +45,6 @@ googleplay -a com.google.android.youtube -v 1524221376
 
 ## Module
 
-Docs here:
-
 https://godocs.io/github.com/89z/googleplay
-
-Example here:
-
-https://github.com/89z/googleplay/tree/master/cmd
 
 [1]://f002.backblazeb2.com/file/ql8mlh/Spooked+%28The+Office%29.mp4

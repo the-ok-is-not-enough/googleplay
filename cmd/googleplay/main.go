@@ -1,9 +1,35 @@
 package main
 
 import (
-   "fmt"
    "flag"
+   "fmt"
+   "net/http"
+   "os"
 )
+
+func download(addr, id, app string, ver int) error {
+   fmt.Println("GET", addr)
+   res, err := http.Get(addr)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   var name string
+   if id != "" {
+      name = fmt.Sprintf("%v-%v-%v.apk", app, id, ver)
+   } else {
+      name = fmt.Sprintf("%v-%v.apk", app, ver)
+   }
+   file, err := os.Create(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   if _, err := file.ReadFrom(res.Body); err != nil {
+      return err
+   }
+   return nil
+}
 
 func main() {
    var (
@@ -35,11 +61,12 @@ func main() {
       }
       fmt.Println("Create", cache)
    case app != "" && !purch && ver == 0:
-      det, err := details(app)
+      res, err := detailsResponse(app)
       if err != nil {
          panic(err)
       }
-      fmt.Printf("%+v\n", det.DocV2)
+      code := res.DocV2().Details().AppDetails().VersionCode()
+      fmt.Println("VersionCode", code)
    case app != "" && purch:
       err := purchase(app)
       if err != nil {
