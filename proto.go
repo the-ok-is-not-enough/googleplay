@@ -109,6 +109,8 @@ func (a Auth) Upload(dev *Device, con Config) error {
    return res.Body.Close()
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 type Config struct {
    protobuf.Message
 }
