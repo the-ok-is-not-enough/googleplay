@@ -15,6 +15,10 @@ import (
    "strings"
 )
 
+const androidJA3 =
+   "769,49195-49196-52393-49199-49200-52392-158-159-49161-49162-49171-49172-" +
+   "51-57-156-157-47-53,65281-0-23-35-13-16-11-10,23,0"
+
 func signature(email, password string) (string, error) {
    data, err := base64.StdEncoding.DecodeString(androidKey)
    if err != nil {
@@ -34,7 +38,7 @@ func signature(email, password string) (string, error) {
    }
    var (
       msg bytes.Buffer
-      zero devZero
+      zero nopSource
    )
    msg.WriteString(email)
    msg.WriteByte(0)
@@ -132,8 +136,8 @@ func (t Token) Encode(dst io.Writer) error {
    return enc.Encode(t)
 }
 
-type devZero struct{}
+type nopSource struct{}
 
-func (devZero) Read(b []byte) (int, error) {
+func (nopSource) Read(b []byte) (int, error) {
    return len(b), nil
 }

@@ -19,10 +19,6 @@ const (
    origin = "https://android.clients.google.com"
 )
 
-const androidJA3 =
-   "769,49195-49196-52393-49199-49200-52392-158-159-49161-49162-49171-49172-" +
-   "51-57-156-157-47-53,65281-0-23-35-13-16-11-10,23,0"
-
 const androidKey =
    "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
@@ -60,9 +56,9 @@ func numberFormat(val float64, metric []string) string {
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
-   body := "doc=" + url.QueryEscape(app)
+   app = url.QueryEscape(app)
    req, err := http.NewRequest(
-      "POST", origin + "/fdfe/purchase", strings.NewReader(body),
+      "POST", origin + "/fdfe/purchase", strings.NewReader("doc=" + app),
    )
    if err != nil {
       return err

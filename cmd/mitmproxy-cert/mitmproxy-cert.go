@@ -17,7 +17,7 @@ const (
 )
 
 // outputs the MD5 "hash" of the certificate subject name
-func subjectHashOld(buf []byte) ([]byte, error) {
+func subjectHash(buf []byte) ([]byte, error) {
    block, _ := pem.Decode(buf)
    cert, err := x509.ParseCertificate(block.Bytes)
    if err != nil {
@@ -27,17 +27,27 @@ func subjectHashOld(buf []byte) ([]byte, error) {
    return []byte{md[3], md[2], md[1], md[0]}, nil
 }
 
-func main() {
+func getCert(arg []string) (string, error) {
+   if len(arg) == 2 {
+      return arg[1], nil
+   }
    cert, err := os.UserHomeDir()
+   if err != nil {
+      return "", err
+   }
+   return filepath.Join(cert, "/.mitmproxy/mitmproxy-ca-cert.cer"), nil
+}
+
+func main() {
+   cert, err := getCert(os.Args)
    if err != nil {
       panic(err)
    }
-   cert = filepath.Join(cert, "/.mitmproxy/mitmproxy-ca-cert.cer")
    buf, err := os.ReadFile(cert)
    if err != nil {
       panic(err)
    }
-   hash, err := subjectHashOld(buf)
+   hash, err := subjectHash(buf)
    if err != nil {
       panic(err)
    }
