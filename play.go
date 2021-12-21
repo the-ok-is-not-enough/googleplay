@@ -49,6 +49,18 @@ func dumpRequest(req *http.Request) error {
    return nil
 }
 
+func numberFormat(val float64, metric []string) string {
+   var key int
+   for val >= 1000 {
+      val /= 1000
+      key++
+   }
+   if key >= len(metric) {
+      return ""
+   }
+   return strconv.FormatFloat(val, 'f', 3, 64) + metric[key]
+}
+
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
    buf := url.Values{
@@ -116,11 +128,11 @@ func (d Device) String() string {
 }
 
 type response struct {
-   statusCode uint64
+   code uint64
    status string
 }
 
 func (r response) Error() string {
-   code := int(r.statusCode)
+   code := int(r.code)
    return strconv.Itoa(code) + " " + r.status
 }

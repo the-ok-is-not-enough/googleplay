@@ -44,18 +44,6 @@ var DefaultConfig = Config{
    },
 }
 
-func numberFormat(val float64, metric []string) string {
-   var key int
-   for val >= 1000 {
-      val /= 1000
-      key++
-   }
-   if key >= len(metric) {
-      return ""
-   }
-   return strconv.FormatFloat(val, 'f', 3, 64) + metric[key]
-}
-
 func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
@@ -76,18 +64,22 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
       return nil, err
    }
    defer res.Body.Close()
-   mes, err := protobuf.Decode(res.Body)
+   responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }
-   appDeliveryData := mes.Get(1, 21, 2)
+   deliveryResponse := responseWrapper.Get(1, 21)
+   if deliveryResponse.GetUint64(1) == purchaseRequired.code {
+      return nil, purchaseRequired
+   }
+   appDeliveryData := deliveryResponse.Get(2)
    var del Delivery
    del.DownloadURL = appDeliveryData.GetString(3)
-   for _, mes := range appDeliveryData.GetMessages(15) {
-      split := SplitDeliveryData{
-         mes.GetString(1), mes.GetString(5),
+   for _, split := range appDeliveryData.GetMessages(15) {
+      dSplit := SplitDeliveryData{
+         split.GetString(1), split.GetString(5),
       }
-      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
+      del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
    }
    return &del, nil
 }
@@ -110,11 +102,11 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       return nil, err
    }
    defer res.Body.Close()
-   mes, err := protobuf.Decode(res.Body)
+   responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }
-   docV2 := mes.Get(1, 2, 4)
+   docV2 := responseWrapper.Get(1, 2, 4)
    var det Details
    det.InstallationSize.Size = docV2.GetUint64(13, 1, 9)
    det.NumDownloads.Num = docV2.GetUint64(13, 1, 70)
@@ -132,23 +124,24 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
 // or similar. Also, after the POST, you need to wait at least 16 seconds
 // before the `deviceID` can be used.
 func (a Auth) Upload(dev *Device, con Config) error {
-   mes := protobuf.Message{
-      1: protobuf.Message{
-         1: con.TouchScreen,
-         2: con.Keyboard,
-         3: con.Navigation,
-         4: con.ScreenLayout,
-         5: con.HasHardKeyboard,
-         6: con.HasFiveWayNavigation,
-         7: con.ScreenDensity,
-         8: con.GLESversion,
-         10: con.SystemAvailableFeature,
-         11: con.NativePlatform,
-         15: con.GLextension,
+   uploadDeviceConfigRequest := protobuf.Message{
+      {1, "deviceConfiguration"}: protobuf.Message{
+         {1, "touchScreen"}: con.TouchScreen,
+         {2, "keyboard"}: con.Keyboard,
+         {3, "navigation"}: con.Navigation,
+         {4, "screenLayout"}: con.ScreenLayout,
+         {5, "hasHardKeyboard"}: con.HasHardKeyboard,
+         {6, "hasFiveWayNavigation"}: con.HasFiveWayNavigation,
+         {7, "screenDensity"}: con.ScreenDensity,
+         {8, "glEsVersion"}: con.GLESversion,
+         {10, "systemAvailableFeature"}: con.SystemAvailableFeature,
+         {11, "nativePlatform"}: con.NativePlatform,
+         {15, "glExtension"}: con.GLextension,
       },
    }
    req, err := http.NewRequest(
-      "POST", origin + "/fdfe/uploadDeviceConfig", mes.Encode(),
+      "POST", origin + "/fdfe/uploadDeviceConfig",
+      uploadDeviceConfigRequest.Encode(),
    )
    if err != nil {
       return err
