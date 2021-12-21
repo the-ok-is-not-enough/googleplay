@@ -5,6 +5,7 @@ import (
    "crypto/x509"
    "encoding/hex"
    "encoding/pem"
+   "flag"
    "fmt"
    "os"
    "os/exec"
@@ -27,22 +28,19 @@ func subjectHash(buf []byte) ([]byte, error) {
    return []byte{md[3], md[2], md[1], md[0]}, nil
 }
 
-func getCert(arg []string) (string, error) {
-   if len(arg) == 2 {
-      return arg[1], nil
-   }
-   cert, err := os.UserHomeDir()
-   if err != nil {
-      return "", err
-   }
-   return filepath.Join(cert, "/.mitmproxy/mitmproxy-ca-cert.cer"), nil
-}
-
 func main() {
-   cert, err := getCert(os.Args)
+   home, err := os.UserHomeDir()
    if err != nil {
       panic(err)
    }
+   var cert string
+   flag.StringVar(
+      &cert,
+      "c",
+      filepath.Join(home, "/.mitmproxy/mitmproxy-ca-cert.cer"),
+      "certificate",
+   )
+   flag.Parse()
    buf, err := os.ReadFile(cert)
    if err != nil {
       panic(err)
