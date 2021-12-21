@@ -3,7 +3,6 @@ package googleplay
 import (
    "github.com/89z/parse/protobuf"
    "net/http"
-   "net/url"
    "strconv"
 )
 
@@ -51,12 +50,15 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "User-Agent": {agent},
-      "X-DFE-Device-ID": {dev.String()},
-   }
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app) + "&vc=" + strconv.Itoa(ver) 
+   val := make(values)
+   val["Authorization"] = "Bearer " + a.Auth
+   val["User-Agent"] = agent
+   val["X-DFE-Device-ID"] = dev.String()
+   req.Header = val.header()
+   val = make(values)
+   val["doc"] = app
+   val["vc"] = strconv.Itoa(ver)
+   req.URL.RawQuery = val.encode()
    LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
@@ -88,11 +90,11 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "X-DFE-Device-ID": {dev.String()},
-   }
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   val := make(values)
+   val["Authorization"] = "Bearer " + a.Auth
+   val["X-DFE-Device-ID"] = dev.String()
+   req.Header = val.header()
+   req.URL.RawQuery = values{"doc": app}.encode()
    LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
@@ -143,11 +145,11 @@ func (a Auth) Upload(dev *Device, con Config) error {
    if err != nil {
       return err
    }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "User-Agent": {agent},
-      "X-DFE-Device-ID": {dev.String()},
-   }
+   val := make(values)
+   val["Authorization"] = "Bearer " + a.Auth
+   val["User-Agent"] = agent
+   val["X-DFE-Device-ID"] = dev.String()
+   req.Header = val.header()
    LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
