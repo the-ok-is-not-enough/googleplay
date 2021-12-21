@@ -26,16 +26,18 @@ func delivery(app string, ver int) error {
    if err != nil {
       return err
    }
-   data := del.AppDeliveryData()
-   if err := download(data.DownloadURL(), "", app, ver); err != nil {
+   data := del.AppDeliveryData
+   if err := download(data.DownloadURL, "", app, ver); err != nil {
       return err
    }
+   /*
    for _, split := range data.SplitDeliveryData() {
       err := download(split.DownloadURL(), split.ID(), app, ver)
       if err != nil {
          return err
       }
    }
+   */
    return nil
 }
 
