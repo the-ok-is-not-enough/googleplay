@@ -43,7 +43,7 @@ func main() {
    }
    push := hex.EncodeToString(hash) + ".0"
    commands := [][]string{
-      {"adb", "shell", "mkdir", data},
+      {"adb", "shell", "mkdir", "-p", data},
       {"adb", "shell", "cp", system + "/*", data},
       {"adb", "push", cert, data + "/" + push},
       {"adb", "root"},
