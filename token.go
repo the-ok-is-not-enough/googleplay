@@ -68,13 +68,12 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   body := url.Values{
-      "Email": {email},
-      "EncryptedPasswd": {sig},
-      "sdk_version": {"20"}, // Newer versions fail.
-   }.Encode()
+   val := make(values)
+   val["Email"] = email
+   val["EncryptedPasswd"] = sig
+   val["sdk_version"] = "20" // Newer versions fail.
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(body),
+      "POST", origin + "/auth", val.reader(),
    )
    if err != nil {
       return nil, err
@@ -112,12 +111,11 @@ type Token struct {
 
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
-   body := url.Values{
-      "Token": {t.Token},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
+   val := make(values)
+   val["Token"] = t.Token
+   val["service"] = "oauth2:https://www.googleapis.com/auth/googleplay"
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(body),
+      "POST", origin + "/auth", val.reader(),
    )
    if err != nil {
       return nil, err
