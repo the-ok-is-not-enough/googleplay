@@ -11,7 +11,6 @@ import (
    "io"
    "math/big"
    "net/http"
-   "net/url"
    "strconv"
    "strings"
 )

@@ -107,8 +107,8 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    }
    docV2 := responseWrapper.Get(1, 2, 4)
    var det Details
-   det.InstallationSize.Size = docV2.GetUint64(13, 1, 9)
-   det.NumDownloads.Num = docV2.GetUint64(13, 1, 70)
+   det.InstallationSize.Value = docV2.GetUint64(13, 1, 9)
+   det.NumDownloads.Value = docV2.GetUint64(13, 1, 70)
    det.Offer.CurrencyCode = docV2.GetString(8, 2)
    det.Offer.Micros = docV2.GetUint64(8, 1)
    det.Title = docV2.GetString(5)
@@ -194,21 +194,21 @@ type Details struct {
 }
 
 type InstallationSize struct {
-   Size uint64
+   Value uint64
 }
 
 func (i InstallationSize) String() string {
-   val := float64(i.Size)
+   val := float64(i.Value)
    metric := []string{" B", " kB", " MB"}
    return numberFormat(val, metric)
 }
 
 type NumDownloads struct {
-   Num uint64
+   Value uint64
 }
 
 func (n NumDownloads) String() string {
-   val := float64(n.Num)
+   val := float64(n.Value)
    metric := []string{"", " k", " M", " B"}
    return numberFormat(val, metric)
 }
