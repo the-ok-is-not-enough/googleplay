@@ -14,6 +14,33 @@ import (
    "time"
 )
 
+var LogLevel logLevel
+
+type logLevel int
+
+func (l logLevel) dump(req *http.Request) error {
+   switch l {
+   case 0:
+      fmt.Println(req.Method, req.URL)
+   case 1:
+      buf, err := httputil.DumpRequest(req, true)
+      if err != nil {
+         return err
+      }
+      os.Stdout.Write(buf)
+      if !bytes.HasSuffix(buf, []byte{'\n'}) {
+         os.Stdout.WriteString("\n")
+      }
+   case 2:
+      buf, err := httputil.DumpRequestOut(req, true)
+      if err != nil {
+         return err
+      }
+      os.Stdout.Write(buf)
+   }
+   return nil
+}
+
 const (
    Sleep = 16 * time.Second
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
@@ -24,24 +51,6 @@ const androidKey =
    "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-
-var Verbose bool
-
-func dump(req *http.Request) error {
-   if Verbose {
-      buf, err := httputil.DumpRequest(req, true)
-      if err != nil {
-         return err
-      }
-      os.Stdout.Write(buf)
-      if !bytes.HasSuffix(buf, []byte{'\n'}) {
-         os.Stdout.WriteString("\n")
-      }
-   } else {
-      fmt.Println(req.Method, req.URL)
-   }
-   return nil
-}
 
 func numberFormat(val float64, metric []string) string {
    var key int
@@ -70,7 +79,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   dump(req)
+   LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -90,7 +99,7 @@ func NewDevice() (*Device, error) {
    if err != nil {
       return nil, err
    }
-   dump(req)
+   LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err

@@ -49,7 +49,9 @@ func main() {
    flag.IntVar(&version, "v", 0, "version")
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
-   googleplay.Verbose = verbose
+   if verbose {
+      googleplay.LogLevel = 1
+   }
    switch {
    case email != "":
       cache, err := token(email, pass)

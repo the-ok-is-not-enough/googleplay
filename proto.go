@@ -57,7 +57,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
       "X-DFE-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = "doc=" + url.QueryEscape(app) + "&vc=" + strconv.Itoa(ver) 
-   dump(req)
+   LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -93,7 +93,7 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       "X-DFE-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   dump(req)
+   LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -148,7 +148,7 @@ func (a Auth) Upload(dev *Device, con Config) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   dump(req)
+   LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
