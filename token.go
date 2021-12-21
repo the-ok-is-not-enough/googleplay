@@ -6,15 +6,12 @@ import (
    "crypto/sha1"
    "encoding/base64"
    "encoding/json"
-   "fmt"
    "github.com/89z/parse/crypto"
    "github.com/89z/parse/net"
    "io"
    "math/big"
    "net/http"
-   "net/http/httputil"
    "net/url"
-   "os"
    "strings"
 )
 
@@ -56,8 +53,12 @@ func signature(email, password string) (string, error) {
    return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
 }
 
+type Auth struct {
+   Auth string
+}
+
 type Token struct {
-   url.Values
+   Token string
 }
 
 // Request refresh token.
@@ -70,14 +71,13 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   buf := url.Values{
+   body := url.Values{
       "Email": {email},
       "EncryptedPasswd": {sig},
-      // Newer versions fail.
-      "sdk_version": {"20"},
+      "sdk_version": {"20"}, // Newer versions fail.
    }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(buf),
+      "POST", origin + "/auth", strings.NewReader(body),
    )
    if err != nil {
       return nil, err
@@ -88,42 +88,14 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   if val := net.ParseQuery(query); val != nil {
-      return &Token{val}, nil
-   }
-   return nil, fmt.Errorf("parseQuery %q", query)
-}
-
-// Read Token from file.
-func (t *Token) Decode(r io.Reader) error {
-   return json.NewDecoder(r).Decode(&t.Values)
-}
-
-// Write Token to file.
-func (t Token) Encode(w io.Writer) error {
-   enc := json.NewEncoder(w)
-   enc.SetIndent("", " ")
-   return enc.Encode(t.Values)
-}
-
-type devZero struct{}
-
-func (devZero) Read(b []byte) (int, error) {
-   return len(b), nil
-}
-
-type Auth struct {
-   url.Values
+   tok := net.ParseQuery(res.Body).Get("Token")
+   return &Token{tok}, nil
 }
 
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
    body := url.Values{
-      "Token": {t.Get("Token")},
+      "Token": {t.Token},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
    }.Encode()
    req, err := http.NewRequest(
@@ -135,22 +107,29 @@ func (t Token) Auth() (*Auth, error) {
    req.Header = http.Header{
       "Content-Type": {"application/x-www-form-urlencoded"},
    }
-   buf, err := httputil.DumpRequest(req, true)
-   if err != nil {
-      return nil, err
-   }
-   os.Stdout.Write(append(buf, '\n'))
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   if val := net.ParseQuery(query); val != nil {
-      return &Auth{val}, nil
-   }
-   return nil, fmt.Errorf("parseQuery %q", query)
+   auth := net.ParseQuery(res.Body).Get("Auth")
+   return &Auth{auth}, nil
+}
+
+// Read Token from file.
+func (t *Token) Decode(src io.Reader) error {
+   return json.NewDecoder(src).Decode(t)
+}
+
+// Write Token to file.
+func (t Token) Encode(dst io.Writer) error {
+   enc := json.NewEncoder(dst)
+   enc.SetIndent("", " ")
+   return enc.Encode(t)
+}
+
+type devZero struct{}
+
+func (devZero) Read(b []byte) (int, error) {
+   return len(b), nil
 }

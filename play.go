@@ -40,7 +40,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       return err
    }
    req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Get("Auth")},
+      "Authorization": {"Bearer " + a.Auth},
       "Content-Type": {"application/x-www-form-urlencoded"},
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
