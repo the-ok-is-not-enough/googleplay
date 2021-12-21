@@ -7,7 +7,7 @@ import (
    "strconv"
 )
 
-func (a Auth) DeliveryResponse(dev *Device, app string, ver int) (*DeliveryResponse, error) {
+func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
@@ -21,6 +21,7 @@ func (a Auth) DeliveryResponse(dev *Device, app string, ver int) (*DeliveryRespo
       "doc": {app},
       "vc": {strconv.Itoa(ver)},
    }.Encode()
+   dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -30,12 +31,29 @@ func (a Auth) DeliveryResponse(dev *Device, app string, ver int) (*DeliveryRespo
    if err != nil {
       return nil, err
    }
-   var del DeliveryResponse
-   del.AppDeliveryData.DownloadURL = mes.GetString(1, 21, 2, 3)
+   var del Delivery
+   appDeliveryData := mes.Get(1, 21, 2)
+   del.DownloadURL = appDeliveryData.GetString(3)
+   for _, mes := range appDeliveryData.GetMessages(15) {
+      split := SplitDeliveryData{
+         mes.GetString(1), mes.GetString(5),
+      }
+      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
+   }
    return &del, nil
 }
 
-func (a Auth) DetailsResponse(dev *Device, app string) (*DetailsResponse, error) {
+type SplitDeliveryData struct {
+   ID string
+   DownloadURL string
+}
+
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
+}
+
+func (a Auth) Details(dev *Device, app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
@@ -47,6 +65,7 @@ func (a Auth) DetailsResponse(dev *Device, app string) (*DetailsResponse, error)
    req.URL.RawQuery = url.Values{
       "doc": {app},
    }.Encode()
+   dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -56,8 +75,8 @@ func (a Auth) DetailsResponse(dev *Device, app string) (*DetailsResponse, error)
    if err != nil {
       return nil, err
    }
-   var det DetailsResponse
-   det.DocV2.Details.AppDetails.VersionCode = mes.GetUint64(1, 2, 4, 13, 1, 3)
+   var det Details
+   det.VersionCode = mes.GetUint64(1, 2, 4, 13, 1, 3)
    return &det, nil
 }
 
@@ -93,6 +112,7 @@ func (a Auth) Upload(dev *Device, con Config) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
+   dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -101,24 +121,24 @@ func (a Auth) Upload(dev *Device, con Config) error {
 }
 
 type Config struct {
-   // this can be 0, but it must be included:
-   TouchScreen uint64
-   // this can be 0, but it must be included:
-   Keyboard uint64
-   // this can be 0, but it must be included:
-   Navigation uint64
-   // this can be 0, but it must be included:
-   ScreenLayout uint64
-   // this can be 0, but it must be included:
-   HasHardKeyboard uint64
+   GLESversion uint64
+   GLextension []string
    // this can be 0, but it must be included:
    HasFiveWayNavigation uint64
    // this can be 0, but it must be included:
-   ScreenDensity uint64
-   GLESversion uint64
-   SystemAvailableFeature []string
+   HasHardKeyboard uint64
+   // this can be 0, but it must be included:
+   Keyboard uint64
    NativePlatform []string
-   GLextension []string
+   // this can be 0, but it must be included:
+   Navigation uint64
+   // this can be 0, but it must be included:
+   ScreenDensity uint64
+   // this can be 0, but it must be included:
+   ScreenLayout uint64
+   SystemAvailableFeature []string
+   // this can be 0, but it must be included:
+   TouchScreen uint64
 }
 
 func NewConfig() Config {
@@ -160,18 +180,6 @@ func NewConfig() Config {
    }
 }
 
-type DeliveryResponse struct {
-   AppDeliveryData struct {
-      DownloadURL string
-   }
-}
-
-type DetailsResponse struct {
-   DocV2 struct {
-      Details struct {
-         AppDetails struct {
-            VersionCode uint64
-         }
-      }
-   }
+type Details struct {
+   VersionCode uint64
 }

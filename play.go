@@ -2,6 +2,7 @@ package googleplay
 
 import (
    "encoding/json"
+   "fmt"
    "io"
    "net/http"
    "net/url"
@@ -26,7 +27,17 @@ const androidKey =
 
 const origin = "https://android.clients.google.com"
 
-var purchaseRequired = response{3, "purchase required"}
+var (
+   Verbose bool
+   purchaseRequired = response{3, "purchase required"}
+)
+
+func dumpRequest(req *http.Request) {
+   if Verbose {
+   } else {
+      fmt.Println(req.Method, req.URL)
+   }
+}
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
@@ -45,6 +56,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
+   dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -64,6 +76,7 @@ func NewDevice() (*Device, error) {
    if err != nil {
       return nil, err
    }
+   dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err

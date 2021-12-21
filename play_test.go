@@ -7,6 +7,8 @@ import (
    "time"
 )
 
+const email = "srpen6@gmail.com"
+
 type app struct {
    id string
    code int
@@ -36,7 +38,7 @@ func TestDelivery(t *testing.T) {
    if err := dev.Decode(file); err != nil {
       t.Fatal(err)
    }
-   del, err := auth.DeliveryResponse(dev, apps[0].id, apps[0].code)
+   del, err := auth.Delivery(dev, apps[0].id, apps[0].code)
    if err != nil {
       t.Fatal(err)
    }
@@ -49,15 +51,15 @@ func TestDetails(t *testing.T) {
       t.Fatal(err)
    }
    dev := new(Device)
-   r, err := os.Open(cache + "/googleplay/device.json")
+   file, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
-   defer r.Close()
-   if err := dev.Decode(r); err != nil {
+   defer file.Close()
+   if err := dev.Decode(file); err != nil {
       t.Fatal(err)
    }
-   det, err := auth.DetailsResponse(dev, apps[0].id)
+   det, err := auth.Details(dev, apps[0].id)
    if err != nil {
       t.Fatal(err)
    }
@@ -70,12 +72,12 @@ func getAuth() (*Auth, string, error) {
       return nil, "", err
    }
    tok := new(Token)
-   r, err := os.Open(cache + "/googleplay/token.json")
+   file, err := os.Open(cache + "/googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
-   defer r.Close()
-   if err := tok.Decode(r); err != nil {
+   defer file.Close()
+   if err := tok.Decode(file); err != nil {
       return nil, "", err
    }
    auth, err := tok.Auth()
@@ -95,12 +97,12 @@ func TestDevice(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   r, err := os.Open(cache + "/googleplay/token.json")
+   src, err := os.Open(cache + "/googleplay/token.json")
    if err != nil {
       t.Fatal(err)
    }
-   defer r.Close()
-   if err := tok.Decode(r); err != nil {
+   defer src.Close()
+   if err := tok.Decode(src); err != nil {
       t.Fatal(err)
    }
    auth, err := tok.Auth()
@@ -110,36 +112,34 @@ func TestDevice(t *testing.T) {
    if err := auth.Upload(dev, NewConfig()); err != nil {
       t.Fatal(err)
    }
-   w, err := os.Create(cache + "/googleplay/device.json")
+   dst, err := os.Create(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
-   defer w.Close()
-   if err := dev.Encode(w); err != nil {
+   defer dst.Close()
+   if err := dev.Encode(dst); err != nil {
       t.Fatal(err)
    }
    time.Sleep(Sleep)
 }
-
-const email = "srpen6@gmail.com"
 
 func TestTokenEncode(t *testing.T) {
    tok, err := NewToken(email, password)
    if err != nil {
       t.Fatal(err)
    }
-   c, err := os.UserCacheDir()
+   cache, err := os.UserCacheDir()
    if err != nil {
       t.Fatal(err)
    }
-   c += "/googleplay"
-   os.Mkdir(c, os.ModeDir)
-   f, err := os.Create(c + "/token.json")
+   cache += "/googleplay"
+   os.Mkdir(cache, os.ModeDir)
+   file, err := os.Create(cache + "/token.json")
    if err != nil {
       t.Fatal(err)
    }
-   defer f.Close()
-   if err := tok.Encode(f); err != nil {
+   defer file.Close()
+   if err := tok.Encode(file); err != nil {
       t.Fatal(err)
    }
 }

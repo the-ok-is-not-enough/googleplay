@@ -14,48 +14,45 @@ func delivery(app string, ver int) error {
       return err
    }
    dev := new(gp.Device)
-   rd, err := os.Open(cache + "/googleplay/device.json")
+   src, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return err
    }
-   defer rd.Close()
-   if err := dev.Decode(rd); err != nil {
+   defer src.Close()
+   if err := dev.Decode(src); err != nil {
       return err
    }
-   del, err := auth.DeliveryResponse(dev, app, ver)
+   del, err := auth.Delivery(dev, app, ver)
    if err != nil {
       return err
    }
-   data := del.AppDeliveryData
-   if err := download(data.DownloadURL, "", app, ver); err != nil {
+   if err := download(del.DownloadURL, "", app, ver); err != nil {
       return err
    }
-   /*
-   for _, split := range data.SplitDeliveryData() {
-      err := download(split.DownloadURL(), split.ID(), app, ver)
+   for _, split := range del.SplitDeliveryData {
+      err := download(split.DownloadURL, split.ID, app, ver)
       if err != nil {
          return err
       }
    }
-   */
    return nil
 }
 
-func detailsResponse(app string) (*gp.DetailsResponse, error) {
+func details(app string) (*gp.Details, error) {
    auth, cache, err := getAuth()
    if err != nil {
       return nil, err
    }
    dev := new(gp.Device)
-   rd, err := os.Open(cache + "/googleplay/device.json")
+   src, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return nil, err
    }
-   defer rd.Close()
-   if err := dev.Decode(rd); err != nil {
+   defer src.Close()
+   if err := dev.Decode(src); err != nil {
       return nil, err
    }
-   return auth.DetailsResponse(dev, app)
+   return auth.Details(dev, app)
 }
 
 func device() (string, error) {
@@ -91,12 +88,12 @@ func getAuth() (*gp.Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   rd, err := os.Open(cache + "/googleplay/token.json")
+   src, err := os.Open(cache + "/googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
-   defer rd.Close()
-   if err := tok.Decode(rd); err != nil {
+   defer src.Close()
+   if err := tok.Decode(src); err != nil {
       return nil, "", err
    }
    auth, err := tok.Auth()
@@ -112,12 +109,12 @@ func purchase(app string) error {
       return err
    }
    dev := new(gp.Device)
-   rd, err := os.Open(cache + "/googleplay/device.json")
+   src, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       return err
    }
-   defer rd.Close()
-   if err := dev.Decode(rd); err != nil {
+   defer src.Close()
+   if err := dev.Decode(src); err != nil {
       return err
    }
    return auth.Purchase(dev, app)

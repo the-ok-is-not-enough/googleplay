@@ -61,7 +61,7 @@ func main() {
       }
       fmt.Println("Create", cache)
    case app != "" && !purch && ver == 0:
-      res, err := detailsResponse(app)
+      res, err := details(app)
       if err != nil {
          panic(err)
       }
