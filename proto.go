@@ -53,7 +53,7 @@ func numberFormat(val float64, metric []string) string {
    if key >= len(metric) {
       return ""
    }
-   return strconv.FormatFloat(val, 'f', 3, 64) + " " + metric[key]
+   return strconv.FormatFloat(val, 'f', 3, 64) + metric[key]
 }
 
 func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
@@ -115,12 +115,13 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       return nil, err
    }
    var det Details
+   det.InstallationSize.Size = mes.GetUint64(1, 2, 4, 13, 1, 9)
+   det.NumDownloads.Num = mes.GetUint64(1, 2, 4, 13, 1, 70)
+   det.Offer.CurrencyCode = mes.GetString(1, 2, 4, 8, 2)
+   det.Offer.Micros = mes.GetUint64(1, 2, 4, 8, 1)
    det.Title = mes.GetString(1, 2, 4, 5)
    det.VersionCode = mes.GetUint64(1, 2, 4, 13, 1, 3)
    det.VersionString = mes.GetString(1, 2, 4, 13, 1, 4)
-   det.InstallationSize.Size = mes.GetUint64(1, 2, 4, 13, 1, 9)
-   det.Offer.Micros = mes.GetUint64(1, 2, 4, 8, 1)
-   det.Offer.CurrencyCode = mes.GetString(1, 2, 4, 8, 2)
    return &det, nil
 }
 
@@ -190,12 +191,23 @@ type Delivery struct {
    SplitDeliveryData []SplitDeliveryData
 }
 
+type NumDownloads struct {
+   Num uint64
+}
+
+func (n NumDownloads) String() string {
+   val := float64(n.Num)
+   metric := []string{"", " k", " M", " B"}
+   return numberFormat(val, metric)
+}
+
 type Details struct {
+   InstallationSize InstallationSize
+   NumDownloads NumDownloads
+   Offer Offer
    Title string
    VersionCode uint64
    VersionString string
-   InstallationSize InstallationSize
-   Offer Offer
 }
 
 type InstallationSize struct {
@@ -204,7 +216,7 @@ type InstallationSize struct {
 
 func (i InstallationSize) String() string {
    val := float64(i.Size)
-   metric := []string{"B", "kB", "MB"}
+   metric := []string{" B", " kB", " MB"}
    return numberFormat(val, metric)
 }
 

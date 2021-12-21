@@ -64,6 +64,15 @@ smali\gnt.smali
 324- const-string v0, "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwg...
 ~~~
 
+## How to get Protocol Buffer fields?
+
+Check `com.android.vending` with AndroGuard, with the last working version
+(2016):
+
+~~~
+versionCode='80441400' versionName='6.1.14'
+~~~
+
 ## How to install split APK?
 
 ~~~
