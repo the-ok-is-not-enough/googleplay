@@ -65,8 +65,15 @@ func main() {
       if err != nil {
          panic(err)
       }
-      code := res.DocV2().Details().AppDetails().VersionCode()
+      doc := res.DocV2()
+      code := doc.Details().AppDetails().VersionCode()
       fmt.Println("VersionCode", code)
+      amount := doc.Offer().FormattedAmount()
+      if amount != "" {
+         fmt.Println("FormattedAmount", amount)
+      } else {
+         fmt.Println("FormattedAmount $0")
+      }
    case app != "" && purch:
       err := purchase(app)
       if err != nil {

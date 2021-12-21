@@ -109,8 +109,6 @@ func (a Auth) Upload(dev *Device, con Config) error {
    return res.Body.Close()
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 type Config struct {
    protobuf.Message
 }
@@ -125,10 +123,10 @@ func NewConfig() Config {
    dev.SetNavigation(0)
    // this can be 0, but it must be included:
    dev.SetScreenLayout(0)
-   // this can be false, but it must be included:
-   dev.SetHasHardKeyboard(false)
-   // this can be false, but it must be included:
-   dev.SetHasFiveWayNavigation(false)
+   // this can be 0, but it must be included:
+   dev.SetHasHardKeyboard(0)
+   // this can be 0, but it must be included:
+   dev.SetHasFiveWayNavigation(0)
    // this can be 0, but it must be included:
    dev.SetScreenDensity(0)
    // com.axis.drawingdesk.v3
@@ -214,56 +212,24 @@ func NewDeviceConfiguration() DeviceConfiguration {
    }
 }
 
-func (d DeviceConfiguration) SetGLESversion(v int) bool {
-   return d.Set(8, v)
-}
-
-func (d DeviceConfiguration) SetGLextension(v []string) bool {
-   return d.Set(15, v)
-}
-
-func (d DeviceConfiguration) SetHasFiveWayNavigation(v bool) bool {
-   return d.Set(6, v)
-}
-
-func (d DeviceConfiguration) SetHasHardKeyboard(v bool) bool {
-   return d.Set(5, v)
-}
-
-func (d DeviceConfiguration) SetKeyboard(v int) bool {
-   return d.Set(2, v)
-}
-
-func (d DeviceConfiguration) SetNativePlatform(v []string) bool {
-   return d.Set(11, v)
-}
-
-func (d DeviceConfiguration) SetNavigation(v int) bool {
-   return d.Set(3, v)
-}
-
-func (d DeviceConfiguration) SetScreenDensity(v int) bool {
-   return d.Set(7, v)
-}
-
-func (d DeviceConfiguration) SetScreenLayout(v int) bool {
-   return d.Set(4, v)
-}
-
-func (d DeviceConfiguration) SetSystemAvailableFeature(v []string) bool {
-   return d.Set(10, v)
-}
-
-func (d DeviceConfiguration) SetTouchScreen(v int) bool {
-   return d.Set(1, v)
-}
-
 type DocV2 struct {
    protobuf.Message
 }
 
 func (d DocV2) Details() Details {
    return Details{d.Get(13)}
+}
+
+func (d DocV2) Offer() Offer {
+   return Offer{d.Get(8)}
+}
+
+type Offer struct {
+   protobuf.Message
+}
+
+func (o Offer) FormattedAmount() string {
+   return o.GetString(3)
 }
 
 type SplitDeliveryData struct {
@@ -296,4 +262,50 @@ type responseWrapper struct {
 
 func (r responseWrapper) payload() payload {
    return payload{r.Get(1)}
+}
+
+func (d DeviceConfiguration) SetTouchScreen(v uint64) bool {
+   return d.Set(1, v)
+}
+
+func (d DeviceConfiguration) SetKeyboard(v uint64) bool {
+   return d.Set(2, v)
+}
+
+func (d DeviceConfiguration) SetNavigation(v uint64) bool {
+   return d.Set(3, v)
+}
+
+func (d DeviceConfiguration) SetScreenLayout(v uint64) bool {
+   return d.Set(4, v)
+}
+
+func (d DeviceConfiguration) SetHasHardKeyboard(v uint64) bool {
+   return d.Set(5, v)
+}
+
+func (d DeviceConfiguration) SetHasFiveWayNavigation(v uint64) bool {
+   return d.Set(6, v)
+}
+
+func (d DeviceConfiguration) SetScreenDensity(v uint64) bool {
+   return d.Set(7, v)
+}
+
+func (d DeviceConfiguration) SetGLESversion(v uint64) bool {
+   return d.Set(8, v)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+func (d DeviceConfiguration) SetSystemAvailableFeature(v []string) bool {
+   return d.Set(10, v)
+}
+
+func (d DeviceConfiguration) SetNativePlatform(v []string) bool {
+   return d.Set(11, v)
+}
+
+func (d DeviceConfiguration) SetGLextension(v []string) bool {
+   return d.Set(15, v)
 }
