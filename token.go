@@ -38,13 +38,13 @@ func signature(email, password string) (string, error) {
    }
    var (
       msg bytes.Buffer
-      zero nopSource
+      nop nopSource
    )
    msg.WriteString(email)
    msg.WriteByte(0)
    msg.WriteString(password)
    login, err := rsa.EncryptOAEP(
-      sha1.New(), zero, &key, msg.Bytes(), nil,
+      sha1.New(), nop, &key, msg.Bytes(), nil,
    )
    if err != nil {
       return "", err
