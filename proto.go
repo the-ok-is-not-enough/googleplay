@@ -76,9 +76,9 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    var del Delivery
    del.DownloadURL = appDeliveryData.GetString(3)
    for _, split := range appDeliveryData.GetMessages(15) {
-      dSplit := SplitDeliveryData{
-         split.GetString(1), split.GetString(5),
-      }
+      var dSplit SplitDeliveryData
+      dSplit.ID = split.GetString(1)
+      dSplit.DownloadURL = split.GetString(5)
       del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
    }
    return &del, nil

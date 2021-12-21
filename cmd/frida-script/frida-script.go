@@ -1,17 +1,85 @@
 package main
 
 import (
+   "flag"
    "fmt"
    "github.com/xi2/xz"
    "net/http"
    "os"
    "os/exec"
    "path/filepath"
+   "strings"
 )
 
-const server =
-   "https://github.com/frida/frida/releases/download/" +
-   "15.1.10/frida-server-15.1.10-android-x86.xz"
+const version = "15.1.10"
+
+func newServer(version, cpu string) string {
+   var str strings.Builder
+   str.WriteString("https://github.com/frida/frida/releases/download/")
+   str.WriteString(version)
+   str.WriteString("/frida-server-")
+   str.WriteString(version)
+   str.WriteString("-android-")
+   str.WriteString(cpu)
+   str.WriteString(".xz")
+   return str.String()
+}
+
+func main() {
+   var x86_64 bool
+   flag.BoolVar(&x86_64, "64", false, "x86_64")
+   flag.Parse()
+   if flag.NArg() != 1 {
+      fmt.Println("frida-script [flags] [package]")
+      flag.PrintDefaults()
+      return
+   }
+   pack := flag.Arg(0)
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      panic(err)
+   }
+   cache = filepath.Join(cache, "googleplay")
+   os.Mkdir(cache, os.ModeDir)
+   // download script
+   cacheScript := filepath.Join(cache, filepath.Base(script))
+   if err := downloadScript(cacheScript); err != nil {
+      panic(err)
+   }
+   // download server
+   cpu := "x86"
+   if x86_64 {
+      cpu += "_64"
+   }
+   server := newServer(version, cpu)
+   cacheServer := filepath.Join(cache, stem(server))
+   if err := downloadServer(server, cacheServer); err != nil {
+      panic(err)
+   }
+   // commands
+   commands := []command{
+      run("adb", "root"),
+      run("adb", "wait-for-device"),
+      run("adb", "push", cacheServer, "/data/app/frida-server"),
+      run("adb", "shell", "chmod", "755", "/data/app/frida-server"),
+      start("adb", "shell", "/data/app/frida-server"),
+      run("frida", "--no-pause", "-U", "-l", cacheScript, "-f", pack),
+   }
+   for _, cmd := range commands {
+      cmd.Stderr = os.Stderr
+      cmd.Stdout = os.Stdout
+      fmt.Println(cmd.Args)
+      cmd.Start()
+      if cmd.wait {
+         err := cmd.Wait()
+         if err != nil {
+            panic(err)
+         }
+      } else {
+         defer cmd.Wait()
+      }
+   }
+}
 
 const script =
    "https://raw.githubusercontent.com/httptoolkit/frida-android-unpinning/" +
@@ -40,7 +108,7 @@ func downloadScript(dst string) error {
    return nil
 }
 
-func downloadServer(dst string) error {
+func downloadServer(server, dst string) error {
    fmt.Println("Stat", dst)
    _, err := os.Stat(dst)
    if err == nil {
@@ -90,49 +158,3 @@ func start(name string, arg ...string) command {
    }
 }
 
-func main() {
-   if len(os.Args) != 2 {
-      fmt.Println("frida-script [package]")
-      return
-   }
-   pack := os.Args[1]
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      panic(err)
-   }
-   cache = filepath.Join(cache, "googleplay")
-   os.Mkdir(cache, os.ModeDir)
-   // download script
-   cacheScript := filepath.Join(cache, filepath.Base(script))
-   if err := downloadScript(cacheScript); err != nil {
-      panic(err)
-   }
-   // download server
-   cacheServer := filepath.Join(cache, stem(server))
-   if err := downloadServer(cacheServer); err != nil {
-      panic(err)
-   }
-   // commands
-   commands := []command{
-      run("adb", "root"),
-      run("adb", "wait-for-device"),
-      run("adb", "push", cacheServer, "/data/app/frida-server"),
-      run("adb", "shell", "chmod", "755", "/data/app/frida-server"),
-      start("adb", "shell", "/data/app/frida-server"),
-      run("frida", "--no-pause", "-U", "-l", cacheScript, "-f", pack),
-   }
-   for _, cmd := range commands {
-      cmd.Stderr = os.Stderr
-      cmd.Stdout = os.Stdout
-      fmt.Println(cmd.Args)
-      cmd.Start()
-      if cmd.wait {
-         err := cmd.Wait()
-         if err != nil {
-            panic(err)
-         }
-      } else {
-         defer cmd.Wait()
-      }
-   }
-}
