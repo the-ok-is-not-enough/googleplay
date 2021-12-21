@@ -46,6 +46,8 @@ var DefaultConfig = Config{
    },
 }
 
+var purchaseRequired = response{3, "purchase required"}
+
 func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {

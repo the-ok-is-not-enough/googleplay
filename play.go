@@ -28,10 +28,7 @@ const androidKey =
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
 
-var (
-   Verbose bool
-   purchaseRequired = response{3, "purchase required"}
-)
+var Verbose bool
 
 func dumpRequest(req *http.Request) error {
    if Verbose {
