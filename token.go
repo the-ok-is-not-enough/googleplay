@@ -89,8 +89,9 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    defer res.Body.Close()
-   tok := net.ParseQuery(res.Body).Get("Token")
-   return &Token{tok}, nil
+   var tok Token
+   tok.Token = net.ReadQuery(res.Body).Get("Token")
+   return &tok, nil
 }
 
 // Exchange refresh token for access token.
@@ -114,8 +115,9 @@ func (t Token) Auth() (*Auth, error) {
       return nil, err
    }
    defer res.Body.Close()
-   auth := net.ParseQuery(res.Body).Get("Auth")
-   return &Auth{auth}, nil
+   var auth Auth
+   auth.Auth = net.ReadQuery(res.Body).Get("Auth")
+   return &auth, nil
 }
 
 // Read Token from file.

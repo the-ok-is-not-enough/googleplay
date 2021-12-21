@@ -191,16 +191,6 @@ type Delivery struct {
    SplitDeliveryData []SplitDeliveryData
 }
 
-type NumDownloads struct {
-   Num uint64
-}
-
-func (n NumDownloads) String() string {
-   val := float64(n.Num)
-   metric := []string{"", " k", " M", " B"}
-   return numberFormat(val, metric)
-}
-
 type Details struct {
    InstallationSize InstallationSize
    NumDownloads NumDownloads
@@ -217,6 +207,16 @@ type InstallationSize struct {
 func (i InstallationSize) String() string {
    val := float64(i.Size)
    metric := []string{" B", " kB", " MB"}
+   return numberFormat(val, metric)
+}
+
+type NumDownloads struct {
+   Num uint64
+}
+
+func (n NumDownloads) String() string {
+   val := float64(n.Num)
+   metric := []string{"", " k", " M", " B"}
    return numberFormat(val, metric)
 }
 
