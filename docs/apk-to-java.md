@@ -1,4 +1,6 @@
-# AndroGuard
+# APK to Java
+
+## AndroGuard
 
 ~~~py
 from androguard.misc import AnalyzeAPK
@@ -14,3 +16,13 @@ for dd in d:
          src = dd.get_class(name).get_source()
          print(src, file=f)
 ~~~
+
+https://github.com/androguard/androguard
+
+## Jadx
+
+https://github.com/skylot/jadx
+
+better than AndroGuard:
+
+https://github.com/compenguy/panharmonicon/issues/1
