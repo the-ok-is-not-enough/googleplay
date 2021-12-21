@@ -40,8 +40,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   splits := del.AppDeliveryData().SplitDeliveryData()
-   fmt.Printf("%+v\n", splits)
+   fmt.Printf("%+v\n", del)
 }
 
 func TestDetails(t *testing.T) {
@@ -62,8 +61,7 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   ver := det.DocV2().Details().AppDetails().VersionCode()
-   fmt.Println(ver)
+   fmt.Printf("%+v\n", det)
 }
 
 func getAuth() (*Auth, string, error) {

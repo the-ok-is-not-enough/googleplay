@@ -2,12 +2,9 @@ package googleplay
 
 import (
    "encoding/json"
-   "fmt"
    "io"
    "net/http"
-   "net/http/httputil"
    "net/url"
-   "os"
    "strconv"
    "strings"
    "time"
@@ -31,30 +28,6 @@ const origin = "https://android.clients.google.com"
 
 var purchaseRequired = response{3, "purchase required"}
 
-func roundTrip(req *http.Request) (*http.Response, error) {
-   buf, err := httputil.DumpRequest(req, false)
-   if err != nil {
-      return nil, err
-   }
-   os.Stdout.Write(buf)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   if res.StatusCode != http.StatusOK {
-      buf, err := httputil.DumpResponse(res, false)
-      if err != nil {
-         return nil, err
-      }
-      return nil, fmt.Errorf("%s", buf)
-   }
-   return res, nil
-}
-
-type Auth struct {
-   url.Values
-}
-
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
    buf := url.Values{
@@ -72,7 +45,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   res, err := roundTrip(req)
+   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
    }
@@ -91,7 +64,7 @@ func NewDevice() (*Device, error) {
    if err != nil {
       return nil, err
    }
-   res, err := roundTrip(req)
+   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }

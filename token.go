@@ -12,7 +12,9 @@ import (
    "io"
    "math/big"
    "net/http"
+   "net/http/httputil"
    "net/url"
+   "os"
    "strings"
 )
 
@@ -96,36 +98,6 @@ func NewToken(email, password string) (*Token, error) {
    return nil, fmt.Errorf("parseQuery %q", query)
 }
 
-// Exchange refresh token for access token.
-func (t Token) Auth() (*Auth, error) {
-   buf := url.Values{
-      "Token": {t.Get("Token")},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(buf),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header = http.Header{
-      "Content-Type": {"application/x-www-form-urlencoded"},
-   }
-   res, err := roundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   if val := net.ParseQuery(query); val != nil {
-      return &Auth{val}, nil
-   }
-   return nil, fmt.Errorf("parseQuery %q", query)
-}
-
 // Read Token from file.
 func (t *Token) Decode(r io.Reader) error {
    return json.NewDecoder(r).Decode(&t.Values)
@@ -142,4 +114,43 @@ type devZero struct{}
 
 func (devZero) Read(b []byte) (int, error) {
    return len(b), nil
+}
+
+type Auth struct {
+   url.Values
+}
+
+// Exchange refresh token for access token.
+func (t Token) Auth() (*Auth, error) {
+   body := url.Values{
+      "Token": {t.Get("Token")},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", origin + "/auth", strings.NewReader(body),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header = http.Header{
+      "Content-Type": {"application/x-www-form-urlencoded"},
+   }
+   buf, err := httputil.DumpRequest(req, true)
+   if err != nil {
+      return nil, err
+   }
+   os.Stdout.Write(append(buf, '\n'))
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   query, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   if val := net.ParseQuery(query); val != nil {
+      return &Auth{val}, nil
+   }
+   return nil, fmt.Errorf("parseQuery %q", query)
 }
