@@ -27,24 +27,42 @@ https://godocs.io/github.com/89z/parse/crypto
 
 ## How to get Android public key?
 
-Make a request like this:
-
-~~~
-POST /checkin HTTP/1.1
-Host: android.clients.google.com
-Content-Type: application/x-protobuffer
-~~~
-
-With a body like this:
+Use a program like this:
 
 ~~~go
-protobuf.Message{
-   3: "", 4: protobuf.Message{},
+package main
+
+import (
+   "fmt"
+   "github.com/89z/parse/protobuf"
+   "net/http"
+)
+
+func main() {
+   src := protobuf.Message{
+      {3, ""}: "", {4, ""}: "",
+   }
+   req, err := http.NewRequest(
+      "POST", "http://android.clients.google.com/checkin", src.Encode(),
+   )
+   if err != nil {
+      panic(err)
+   }
+   req.Header.Set("Content-Type", "application/x-protobuffer")
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      panic(err)
+   }
+   defer res.Body.Close()
+   dst, err := protobuf.Decode(res.Body)
+   if err != nil {
+      panic(err)
+   }
+   fmt.Println(dst)
 }
 ~~~
 
-Unmarshal the response, and check the messages under key 5 until you find a key
-matching:
+Check the messages under key 5 until you find a key matching:
 
 ~~~
 google_login_public_key
