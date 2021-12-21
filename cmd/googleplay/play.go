@@ -64,8 +64,7 @@ func device() (string, error) {
    if err != nil {
       return "", err
    }
-   con := gp.NewConfig()
-   if err := auth.Upload(dev, con); err != nil {
+   if err := auth.Upload(dev, gp.DefaultConfig); err != nil {
       return "", err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)

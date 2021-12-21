@@ -28,7 +28,9 @@ googleplay -d
 Get app details:
 
 ~~~
-googleplay -a com.google.android.youtube
+PS C:\> googleplay -a com.google.android.youtube
+&{Title:YouTube VersionCode:1524493760 VersionString:16.46.37
+InstallationSize:38.717 MB Offer:0.00 USD}
 ~~~
 
 Purchase app. Only needs to be done once per Google account:

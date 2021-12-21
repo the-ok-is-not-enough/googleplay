@@ -3,6 +3,7 @@ package main
 import (
    "flag"
    "fmt"
+   "github.com/89z/googleplay"
    "net/http"
    "os"
 )
@@ -34,8 +35,8 @@ func download(addr, id, app string, ver int) error {
 func main() {
    var (
       app, email, pass string
-      dev, purch bool
-      ver int
+      dev, purch, verbose bool
+      version int
    )
    flag.StringVar(&app, "a", "", "app")
    flag.BoolVar(&dev, "d", false, "create device")
@@ -45,8 +46,10 @@ func main() {
       &purch, "purchase", false,
       "Purchase app. Only needs to be done once per Google account.",
    )
-   flag.IntVar(&ver, "v", 0, "version")
+   flag.IntVar(&version, "v", 0, "version")
+   flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
+   googleplay.Verbose = verbose
    switch {
    case email != "":
       cache, err := token(email, pass)
@@ -60,7 +63,7 @@ func main() {
          panic(err)
       }
       fmt.Println("Create", cache)
-   case app != "" && !purch && ver == 0:
+   case app != "" && !purch && version == 0:
       res, err := details(app)
       if err != nil {
          panic(err)
@@ -71,8 +74,8 @@ func main() {
       if err != nil {
          panic(err)
       }
-   case app != "" && ver != 0:
-      err := delivery(app, ver)
+   case app != "" && version != 0:
+      err := delivery(app, version)
       if err != nil {
          panic(err)
       }

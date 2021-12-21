@@ -7,6 +7,55 @@ import (
    "strconv"
 )
 
+var DefaultConfig = Config{
+   // com.axis.drawingdesk.v3
+   GLESversion: 0x0003_0001,
+   GLextension: []string{
+      // com.instagram.android
+      "GL_OES_compressed_ETC1_RGB8_texture",
+   },
+   NativePlatform: []string{
+      // com.vimeo.android.videoapp
+      "x86",
+      // com.axis.drawingdesk.v3
+      "armeabi-v7a",
+   },
+   SystemAvailableFeature: []string{
+      // com.smarty.voomvoom
+      "android.hardware.bluetooth",
+      // com.pinterest
+      "android.hardware.camera",
+      // com.pinterest
+      "android.hardware.location",
+      // com.smarty.voomvoom
+      "android.hardware.location.gps",
+      // com.vimeo.android.videoapp
+      "android.hardware.microphone",
+      // org.videolan.vlc
+      "android.hardware.screen.landscape",
+      // com.pinterest
+      "android.hardware.screen.portrait",
+      // com.smarty.voomvoom
+      "android.hardware.sensor.accelerometer",
+      // com.google.android.youtube
+      "android.hardware.touchscreen",
+      // com.google.android.youtube
+      "android.hardware.wifi",
+   },
+}
+
+func numberFormat(val float64, metric []string) string {
+   var key int
+   for val >= 1000 {
+      val /= 1000
+      key++
+   }
+   if key >= len(metric) {
+      return ""
+   }
+   return strconv.FormatFloat(val, 'f', 3, 64) + " " + metric[key]
+}
+
 func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
@@ -43,16 +92,6 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    return &del, nil
 }
 
-type SplitDeliveryData struct {
-   ID string
-   DownloadURL string
-}
-
-type Delivery struct {
-   DownloadURL string
-   SplitDeliveryData []SplitDeliveryData
-}
-
 func (a Auth) Details(dev *Device, app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
@@ -76,7 +115,12 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       return nil, err
    }
    var det Details
+   det.Title = mes.GetString(1, 2, 4, 5)
    det.VersionCode = mes.GetUint64(1, 2, 4, 13, 1, 3)
+   det.VersionString = mes.GetString(1, 2, 4, 13, 1, 4)
+   det.InstallationSize.Size = mes.GetUint64(1, 2, 4, 13, 1, 9)
+   det.Offer.Micros = mes.GetUint64(1, 2, 4, 8, 1)
+   det.Offer.CurrencyCode = mes.GetString(1, 2, 4, 8, 2)
    return &det, nil
 }
 
@@ -141,45 +185,40 @@ type Config struct {
    TouchScreen uint64
 }
 
-func NewConfig() Config {
-   return Config{
-      // com.axis.drawingdesk.v3
-      GLESversion: 0x0003_0001,
-      GLextension: []string{
-         // com.instagram.android
-         "GL_OES_compressed_ETC1_RGB8_texture",
-      },
-      NativePlatform: []string{
-         // com.vimeo.android.videoapp
-         "x86",
-         // com.axis.drawingdesk.v3
-         "armeabi-v7a",
-      },
-      SystemAvailableFeature: []string{
-         // com.smarty.voomvoom
-         "android.hardware.bluetooth",
-         // com.pinterest
-         "android.hardware.camera",
-         // com.pinterest
-         "android.hardware.location",
-         // com.smarty.voomvoom
-         "android.hardware.location.gps",
-         // com.vimeo.android.videoapp
-         "android.hardware.microphone",
-         // org.videolan.vlc
-         "android.hardware.screen.landscape",
-         // com.pinterest
-         "android.hardware.screen.portrait",
-         // com.smarty.voomvoom
-         "android.hardware.sensor.accelerometer",
-         // com.google.android.youtube
-         "android.hardware.touchscreen",
-         // com.google.android.youtube
-         "android.hardware.wifi",
-      },
-   }
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
 }
 
 type Details struct {
+   Title string
    VersionCode uint64
+   VersionString string
+   InstallationSize InstallationSize
+   Offer Offer
+}
+
+type InstallationSize struct {
+   Size uint64
+}
+
+func (i InstallationSize) String() string {
+   val := float64(i.Size)
+   metric := []string{"B", "kB", "MB"}
+   return numberFormat(val, metric)
+}
+
+type Offer struct {
+   Micros uint64
+   CurrencyCode string
+}
+
+func (o Offer) String() string {
+   val := float64(o.Micros) / 1_000_000
+   return strconv.FormatFloat(val, 'f', 2, 64) + " " + o.CurrencyCode
+}
+
+type SplitDeliveryData struct {
+   ID string
+   DownloadURL string
 }

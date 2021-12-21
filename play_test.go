@@ -109,7 +109,7 @@ func TestDevice(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   if err := auth.Upload(dev, NewConfig()); err != nil {
+   if err := auth.Upload(dev, DefaultConfig); err != nil {
       t.Fatal(err)
    }
    dst, err := os.Create(cache + "/googleplay/device.json")

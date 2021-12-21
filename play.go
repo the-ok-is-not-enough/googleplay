@@ -5,7 +5,9 @@ import (
    "fmt"
    "io"
    "net/http"
+   "net/http/httputil"
    "net/url"
+   "os"
    "strconv"
    "strings"
    "time"
@@ -32,11 +34,20 @@ var (
    purchaseRequired = response{3, "purchase required"}
 )
 
-func dumpRequest(req *http.Request) {
+func dumpRequest(req *http.Request) error {
    if Verbose {
+      buf, err := httputil.DumpRequest(req, true)
+      if err != nil {
+         return err
+      }
+      os.Stdout.Write(buf)
+      if buf[len(buf)-1] != '\n' {
+         os.Stdout.WriteString("\n")
+      }
    } else {
       fmt.Println(req.Method, req.URL)
    }
+   return nil
 }
 
 // Purchase app. Only needs to be done once per Google account.
