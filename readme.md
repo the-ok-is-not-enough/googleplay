@@ -42,7 +42,7 @@ googleplay -a com.google.android.youtube -purchase
 Download APK. If APK is split, all pieces will be downloaded:
 
 ~~~
-googleplay -a com.google.android.youtube -v 1524221376
+googleplay -a com.google.android.youtube -v 1524493760
 ~~~
 
 ## Repo

@@ -56,7 +56,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   req.URL.RawQuery = "vc=" + strconv.Itoa(ver) + "&doc=" + url.QueryEscape(app)
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app) + "&vc=" + strconv.Itoa(ver) 
    dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
