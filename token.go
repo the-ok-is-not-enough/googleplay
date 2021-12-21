@@ -87,7 +87,7 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   dumpRequest(req)
+   dump(req)
    res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -113,7 +113,7 @@ func (t Token) Auth() (*Auth, error) {
    req.Header = http.Header{
       "Content-Type": {"application/x-www-form-urlencoded"},
    }
-   dumpRequest(req)
+   dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -138,6 +138,6 @@ func (t Token) Encode(dst io.Writer) error {
 
 type nopSource struct{}
 
-func (nopSource) Read(b []byte) (int, error) {
-   return len(b), nil
+func (nopSource) Read(buf []byte) (int, error) {
+   return len(buf), nil
 }

@@ -1,6 +1,7 @@
 package googleplay
 
 import (
+   "bytes"
    "encoding/json"
    "fmt"
    "io"
@@ -26,14 +27,14 @@ const androidKey =
 
 var Verbose bool
 
-func dumpRequest(req *http.Request) error {
+func dump(req *http.Request) error {
    if Verbose {
       buf, err := httputil.DumpRequest(req, true)
       if err != nil {
          return err
       }
       os.Stdout.Write(buf)
-      if buf[len(buf)-1] != '\n' {
+      if !bytes.HasSuffix(buf, []byte{'\n'}) {
          os.Stdout.WriteString("\n")
       }
    } else {
@@ -69,7 +70,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   dumpRequest(req)
+   dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -89,7 +90,7 @@ func NewDevice() (*Device, error) {
    if err != nil {
       return nil, err
    }
-   dumpRequest(req)
+   dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
