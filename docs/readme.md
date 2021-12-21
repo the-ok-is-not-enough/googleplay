@@ -27,41 +27,35 @@ https://godocs.io/github.com/89z/parse/crypto
 
 ## How to get Android public key?
 
-Get this APK:
+Make a request like this:
 
 ~~~
-com.google.android.gms
+POST /checkin HTTP/1.1
+Host: android.clients.google.com
+Content-Type: application/x-protobuffer
 ~~~
 
-Then extract:
+With a body like this:
 
-~~~
-apktool d com.google.android.gms.apk
-~~~
-
-The Android public key modulus length should always be 128, which Base64 encoded
-looks like:
-
-~~~
-AAAAgA
+~~~go
+protobuf.Message{
+   3: "", 4: protobuf.Message{},
+}
 ~~~
 
-So you should be able to search the extracted files for one of these:
+Unmarshal the response, and check the messages under key 5 until you find a key
+matching:
 
 ~~~
-AAAAg
-public key available
+google_login_public_key
 ~~~
 
-Result:
+The value should look something like this:
 
 ~~~
-smali\gnt.smali
-320: const-string v1, "no public key available, using default"
-321-
-322- invoke-interface {v0, v1}, Lalyp;->u(Ljava/lang/String;)V
-323-
-324- const-string v0, "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwg...
+AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3sr
+RXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kM
+JR3P/LgHax/6rmf5AAAAAwEAAQ==
 ~~~
 
 ## How to get Protocol Buffer fields?

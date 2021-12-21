@@ -80,8 +80,8 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   var del Delivery
    appDeliveryData := mes.Get(1, 21, 2)
+   var del Delivery
    del.DownloadURL = appDeliveryData.GetString(3)
    for _, mes := range appDeliveryData.GetMessages(15) {
       split := SplitDeliveryData{
@@ -114,14 +114,15 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
+   docV2 := mes.Get(1, 2, 4)
    var det Details
-   det.InstallationSize.Size = mes.GetUint64(1, 2, 4, 13, 1, 9)
-   det.NumDownloads.Num = mes.GetUint64(1, 2, 4, 13, 1, 70)
-   det.Offer.CurrencyCode = mes.GetString(1, 2, 4, 8, 2)
-   det.Offer.Micros = mes.GetUint64(1, 2, 4, 8, 1)
-   det.Title = mes.GetString(1, 2, 4, 5)
-   det.VersionCode = mes.GetUint64(1, 2, 4, 13, 1, 3)
-   det.VersionString = mes.GetString(1, 2, 4, 13, 1, 4)
+   det.InstallationSize.Size = docV2.GetUint64(13, 1, 9)
+   det.NumDownloads.Num = docV2.GetUint64(13, 1, 70)
+   det.Offer.CurrencyCode = docV2.GetString(8, 2)
+   det.Offer.Micros = docV2.GetUint64(8, 1)
+   det.Title = docV2.GetString(5)
+   det.VersionCode = docV2.GetUint64(13, 1, 3)
+   det.VersionString = docV2.GetString(13, 1, 4)
    return &det, nil
 }
 

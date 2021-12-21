@@ -16,6 +16,7 @@ import (
 const (
    Sleep = 16 * time.Second
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
+   origin = "https://android.clients.google.com"
 )
 
 const androidJA3 =
@@ -26,8 +27,6 @@ const androidKey =
    "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-
-const origin = "https://android.clients.google.com"
 
 var (
    Verbose bool
