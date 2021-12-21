@@ -41,8 +41,6 @@ var DefaultConfig = Config{
       "android.hardware.touchscreen",
       // com.google.android.youtube
       "android.hardware.wifi",
-      // com.iqiyi.i18n.tv
-      // "android.software.leanback",
    },
 }
 

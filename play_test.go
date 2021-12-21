@@ -22,7 +22,6 @@ var apps = map[int]app{
    4: {id: "com.smarty.voomvoom"},
    5: {id: "com.vimeo.android.videoapp"},
    6: {id: "org.videolan.vlc"},
-   7: {id: "com.iqiyi.i18n.tv"},
 }
 
 func TestDetails(t *testing.T) {
@@ -44,7 +43,9 @@ func TestDetails(t *testing.T) {
       if err != nil {
          t.Fatal(err)
       }
-      fmt.Printf("%+v\n", det)
+      if det.VersionCode == 0 {
+         t.Fatal(det)
+      }
       time.Sleep(time.Second)
    }
 }

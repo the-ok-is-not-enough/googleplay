@@ -67,6 +67,14 @@ Check `com.android.vending` with AndroGuard, with the last working version
 versionCode='80441400' versionName='6.1.14'
 ~~~
 
+## How to get TV apps?
+
+https://play.google.com/store/apps/details?id=com.iqiyi.i18n.tv
+
+In general, you can probably just get the regular app instead:
+
+https://play.google.com/store/apps/details?id=com.iqiyi.i18n
+
 ## How to install split APK?
 
 ~~~
