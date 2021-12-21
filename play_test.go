@@ -14,14 +14,39 @@ type app struct {
    code int
 }
 
-var apps = []app{
+var apps = map[int]app{
    0: {"com.google.android.youtube", 1524221376},
-   1: {"com.axis.drawingdesk.v3", 190},
-   2: {"com.instagram.android", 321403734},
-   3: {"com.pinterest", 9398020},
-   4: {"com.smarty.voomvoom", 369},
-   5: {"com.vimeo.android.videoapp", 3510004},
-   6: {"org.videolan.vlc", 13040205},
+   1: {id: "com.axis.drawingdesk.v3"},
+   2: {id: "com.instagram.android"},
+   3: {id: "com.pinterest"},
+   4: {id: "com.smarty.voomvoom"},
+   5: {id: "com.vimeo.android.videoapp"},
+   6: {id: "org.videolan.vlc"},
+   7: {id: "com.iqiyi.i18n.tv"},
+}
+
+func TestDetails(t *testing.T) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   dev := new(Device)
+   file, err := os.Open(cache + "/googleplay/device.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer file.Close()
+   if err := dev.Decode(file); err != nil {
+      t.Fatal(err)
+   }
+   for _, app := range apps {
+      det, err := auth.Details(dev, app.id)
+      if err != nil {
+         t.Fatal(err)
+      }
+      fmt.Printf("%+v\n", det)
+      time.Sleep(time.Second)
+   }
 }
 
 func TestDelivery(t *testing.T) {
@@ -43,27 +68,6 @@ func TestDelivery(t *testing.T) {
       t.Fatal(err)
    }
    fmt.Printf("%+v\n", del)
-}
-
-func TestDetails(t *testing.T) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   dev := new(Device)
-   file, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer file.Close()
-   if err := dev.Decode(file); err != nil {
-      t.Fatal(err)
-   }
-   det, err := auth.Details(dev, apps[0].id)
-   if err != nil {
-      t.Fatal(err)
-   }
-   fmt.Printf("%+v\n", det)
 }
 
 func getAuth() (*Auth, string, error) {
