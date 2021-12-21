@@ -11,6 +11,40 @@ import (
    "time"
 )
 
+func main() {
+   dev, err := NewDevice()
+   if err != nil {
+      panic(err)
+   }
+   if err := upload(dev); err != nil {
+      panic(err)
+   }
+   time.Sleep(9 * time.Second)
+   req, err := http.NewRequest(
+      "GET",
+      origin + "/fdfe/delivery?doc=com.google.android.youtube&vc=1524493760",
+      nil,
+   )
+   if err != nil {
+      panic(err)
+   }
+   req.Header = http.Header{
+      "Authorization": {auth},
+      "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      panic(err)
+   }
+   defer res.Body.Close()
+   buf, err := httputil.DumpResponse(res, true)
+   if err != nil {
+      panic(err)
+   }
+   os.Stdout.Write(buf)
+}
+
 const origin = "https://android.clients.google.com"
 
 type Device struct {
@@ -70,36 +104,4 @@ func upload(dev *Device) error {
    return nil
 }
 
-func main() {
-   dev, err := NewDevice()
-   if err != nil {
-      panic(err)
-   }
-   if err := upload(dev); err != nil {
-      panic(err)
-   }
-   time.Sleep(9 * time.Second)
-   req, err := http.NewRequest(
-      "GET",
-      origin + "/fdfe/delivery?doc=com.google.android.youtube&vc=1524493760",
-      nil,
-   )
-   if err != nil {
-      panic(err)
-   }
-   req.Header = http.Header{
-      "Authorization": {auth},
-      "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
-      "X-DFE-Device-ID": {dev.String()},
-   }
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      panic(err)
-   }
-   defer res.Body.Close()
-   buf, err := httputil.DumpResponse(res, true)
-   if err != nil {
-      panic(err)
-   }
-   os.Stdout.Write(buf)
-}
+

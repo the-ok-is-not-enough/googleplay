@@ -89,7 +89,8 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
 }
 
 func (a Auth) Details(dev *Device, app string) (*Details, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   addr := "/fdfe/details?doc=" + url.QueryEscape(app)
+   req, err := http.NewRequest("GET", origin + addr, nil)
    if err != nil {
       return nil, err
    }
@@ -97,9 +98,6 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       "Authorization": {"Bearer " + a.Auth},
       "X-DFE-Device-ID": {dev.String()},
    }
-   req.URL.RawQuery = url.Values{
-      "doc": {app},
-   }.Encode()
    dumpRequest(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {

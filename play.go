@@ -60,11 +60,9 @@ func numberFormat(val float64, metric []string) string {
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
-   buf := url.Values{
-      "doc": {app},
-   }.Encode()
+   body := "doc=" + url.QueryEscape(app)
    req, err := http.NewRequest(
-      "POST", origin + "/fdfe/purchase", strings.NewReader(buf),
+      "POST", origin + "/fdfe/purchase", strings.NewReader(body),
    )
    if err != nil {
       return err
