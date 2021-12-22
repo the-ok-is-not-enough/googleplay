@@ -6,25 +6,6 @@
 aapt dump badging file.apk
 ~~~
 
-## How to get Android JA3?
-
-First install:
-
-https://github.com/emanuele-f/PCAPdroid
-
-Start app, then change from HTTP Server to PCAP File. Then click start, if
-prompted to save, choose Downloads. Start Android Chrome and wait for a page to
-load. Then stop monitoring, and copy file to computer:
-
-~~~
-adb ls /sdcard/Download
-adb pull /sdcard/Download/PCAPdroid_22_Oct_15_19_28.pcap
-~~~
-
-Then my other package can get you the rest of the way:
-
-https://godocs.io/github.com/89z/parse/crypto
-
 ## How to get Android public key?
 
 Use a program like this:

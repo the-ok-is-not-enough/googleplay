@@ -79,7 +79,7 @@ func NewToken(email, password string) (*Token, error) {
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
    LogLevel.dump(req)
-   res, err := crypto.NewTransport(hello.ClientHelloSpec).RoundTrip(req)
+   res, err := hello.Transport().RoundTrip(req)
    if err != nil {
       return nil, err
    }
