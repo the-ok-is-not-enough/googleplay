@@ -26,6 +26,10 @@ func newServer(version, cpu string) string {
 }
 
 func main() {
+   _, err := exec.LookPath("frida")
+   if err != nil {
+      panic("pip install frida-tools")
+   }
    var x86_64 bool
    flag.BoolVar(&x86_64, "64", false, "x86_64")
    flag.Parse()
@@ -147,13 +151,14 @@ type command struct {
 }
 
 func run(name string, arg ...string) command {
-   return command{
-      exec.Command(name, arg...), true,
-   }
+   var cmd command
+   cmd.Cmd = exec.Command(name, arg...)
+   cmd.wait = true
+   return cmd
 }
 
 func start(name string, arg ...string) command {
-   return command{
-      exec.Command(name, arg...), false,
-   }
+   var cmd command
+   cmd.Cmd = exec.Command(name, arg...)
+   return cmd
 }
