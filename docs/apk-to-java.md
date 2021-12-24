@@ -21,6 +21,10 @@ https://github.com/androguard/androguard
 
 ## Jadx
 
+~~~
+jadx.bat com.pandora.android-21101001.apk
+~~~
+
 https://github.com/skylot/jadx
 
 better than AndroGuard:

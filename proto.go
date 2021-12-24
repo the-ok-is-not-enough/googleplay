@@ -36,11 +36,19 @@ var DefaultConfig = Config{
       "android.hardware.screen.portrait",
       // com.smarty.voomvoom
       "android.hardware.sensor.accelerometer",
+      // org.thoughtcrime.securesms
+      "android.hardware.telephony",
       // com.google.android.youtube
       "android.hardware.touchscreen",
       // com.google.android.youtube
       "android.hardware.wifi",
    },
+   SystemSharedLibrary: []string{
+      // com.miui.weather2
+      "global-miui11-empty.jar",
+   },
+   // com.valvesoftware.android.steam.community
+   TouchScreen: 3,
 }
 
 var purchaseRequired = response{3, "purchase required"}
@@ -133,6 +141,7 @@ func (a Auth) Upload(dev *Device, con Config) error {
          {6, "hasFiveWayNavigation"}: con.HasFiveWayNavigation,
          {7, "screenDensity"}: con.ScreenDensity,
          {8, "glEsVersion"}: con.GLESversion,
+         {9, "systemSharedLibrary"}: con.SystemSharedLibrary,
          {10, "systemAvailableFeature"}: con.SystemAvailableFeature,
          {11, "nativePlatform"}: con.NativePlatform,
          {15, "glExtension"}: con.GLextension,
@@ -175,6 +184,7 @@ type Config struct {
    // this can be 0, but it must be included:
    ScreenLayout uint64
    SystemAvailableFeature []string
+   SystemSharedLibrary []string
    // this can be 0, but it must be included:
    TouchScreen uint64
 }

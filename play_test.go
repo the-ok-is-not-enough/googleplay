@@ -22,6 +22,9 @@ var apps = map[int]app{
    4: {id: "com.smarty.voomvoom"},
    5: {id: "com.vimeo.android.videoapp"},
    6: {id: "org.videolan.vlc"},
+   7: {id: "org.thoughtcrime.securesms"},
+   8: {id: "com.valvesoftware.android.steam.community"},
+   9: {id: "com.miui.weather2"},
 }
 
 func TestDetails(t *testing.T) {
