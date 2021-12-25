@@ -20,11 +20,6 @@ const (
    origin = "https://android.clients.google.com"
 )
 
-const androidKey =
-   "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
-   "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
-   "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-
 var LogLevel logLevel
 
 func numberFormat(val float64, metric []string) string {
