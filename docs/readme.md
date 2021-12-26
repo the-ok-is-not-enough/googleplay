@@ -59,8 +59,8 @@ JR3P/LgHax/6rmf5AAAAAwEAAQ==
 
 ## How to get Protocol Buffer fields?
 
-Check `com.android.vending` with AndroGuard, with the last working version
-(2016):
+Check Google Play Store (`com.android.vending`) with JADX, with the last
+working version (2016):
 
 ~~~
 versionCode='80441400' versionName='6.1.14'

@@ -62,6 +62,10 @@ type Auth struct {
    Auth string
 }
 
+type Token struct {
+   Token string
+}
+
 // Request refresh token.
 func NewToken(email, password string) (*Token, error) {
    hello, err := crypto.ParseJA3(crypto.AndroidJA3)
@@ -99,18 +103,6 @@ func NewToken(email, password string) (*Token, error) {
       }
    }
    return nil, notFound{"Token"}
-}
-
-type notFound struct {
-   input string
-}
-
-func (n notFound) Error() string {
-   return strconv.Quote(n.input) + " not found"
-}
-
-type Token struct {
-   Token string
 }
 
 // Exchange refresh token for access token.
@@ -159,4 +151,12 @@ type nopSource struct{}
 
 func (nopSource) Read(buf []byte) (int, error) {
    return len(buf), nil
+}
+
+type notFound struct {
+   input string
+}
+
+func (n notFound) Error() string {
+   return strconv.Quote(n.input) + " not found"
 }

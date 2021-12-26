@@ -20,6 +20,7 @@ const (
    origin = "https://android.clients.google.com"
 )
 
+// This is needed for cmd/googleplay.
 var LogLevel logLevel
 
 func numberFormat(val float64, metric []string) string {

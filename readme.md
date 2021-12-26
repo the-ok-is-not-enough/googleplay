@@ -1,4 +1,4 @@
-# googleplay
+# GooglePlay
 
 > Fear plays an interesting role in our lives. How dare we let it motivate us?
 > How dare we let it into our decision-making, into our livelihoods, into our
@@ -10,6 +10,23 @@
 > [Spooked (The Office) (2011)][1]
 
 Download APK from Google Play or send API requests
+
+## How to install?
+
+Download Go from here:
+
+https://golang.org/dl
+
+and extract archive. Then download GooglePlay:
+
+https://github.com/89z/googleplay/archive/refs/heads/master.zip
+
+and extract archive. Then navigate to `googleplay-master/cmd/googleplay`, and
+enter:
+
+~~~
+go build
+~~~
 
 ## Tool examples
 
