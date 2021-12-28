@@ -15,7 +15,7 @@ package main
 
 import (
    "fmt"
-   "github.com/89z/parse/protobuf"
+   "github.com/89z/format/protobuf"
    "net/http"
 )
 

@@ -4,6 +4,7 @@ import (
    "bytes"
    "encoding/json"
    "fmt"
+   "github.com/89z/format/measure"
    "io"
    "net/http"
    "net/http/httputil"
@@ -22,18 +23,6 @@ const (
 
 // This is needed for cmd/googleplay.
 var LogLevel logLevel
-
-func numberFormat(val float64, metric []string) string {
-   var key int
-   for val >= 1000 {
-      val /= 1000
-      key++
-   }
-   if key >= len(metric) {
-      return ""
-   }
-   return strconv.FormatFloat(val, 'f', 3, 64) + metric[key]
-}
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
@@ -153,4 +142,20 @@ func (v values) header() http.Header {
 func (v values) reader() io.Reader {
    enc := v.encode()
    return strings.NewReader(enc)
+}
+
+type NumDownloads struct {
+   Value uint64
+}
+
+func (n NumDownloads) String() string {
+   return measure.Number.FormatUint(n.Value)
+}
+
+type Size struct {
+   Value uint64
+}
+
+func (i Size) String() string {
+   return measure.Size.FormatUint(i.Value)
 }

@@ -4,49 +4,24 @@ import (
    "flag"
    "fmt"
    "github.com/89z/googleplay"
-   "net/http"
-   "os"
 )
-
-func download(addr, id, app string, ver int) error {
-   fmt.Println("GET", addr)
-   res, err := http.Get(addr)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   var name string
-   if id != "" {
-      name = fmt.Sprintf("%v-%v-%v.apk", app, id, ver)
-   } else {
-      name = fmt.Sprintf("%v-%v.apk", app, ver)
-   }
-   file, err := os.Create(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   if _, err := file.ReadFrom(res.Body); err != nil {
-      return err
-   }
-   return nil
-}
 
 func main() {
    var (
-      app, email, pass string
+      app, email, output, password string
       dev, purch, verbose bool
-      version int
+      version int64
    )
    flag.StringVar(&app, "a", "", "app")
    flag.BoolVar(&dev, "d", false, "create device")
    flag.StringVar(&email, "e", "", "email")
-   flag.StringVar(&pass, "p", "", "password")
+   flag.StringVar(&output, "o", "", "output folder, must already exist")
+   flag.StringVar(&password, "p", "", "password")
    flag.BoolVar(
       &purch, "purchase", false,
       "Purchase app. Only needs to be done once per Google account.",
    )
-   flag.IntVar(&version, "v", 0, "version")
+   flag.Int64Var(&version, "v", 0, "version")
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
@@ -54,7 +29,7 @@ func main() {
    }
    switch {
    case email != "":
-      cache, err := token(email, pass)
+      cache, err := token(email, password)
       if err != nil {
          panic(err)
       }
@@ -77,7 +52,7 @@ func main() {
          panic(err)
       }
    case app != "" && version != 0:
-      err := delivery(app, version)
+      err := delivery(output, app, version)
       if err != nil {
          panic(err)
       }

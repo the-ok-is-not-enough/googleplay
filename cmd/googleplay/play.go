@@ -2,13 +2,32 @@ package main
 
 import (
    "fmt"
+   "net/http"
    "os"
    "path/filepath"
+   "strconv"
    "time"
    gp "github.com/89z/googleplay"
 )
 
-func delivery(app string, ver int) error {
+func filename(output, app, id string, ver int64) string {
+   var buf []byte
+   if output != "" {
+      buf = append(buf, output...)
+      buf = append(buf, '/')
+   }
+   buf = append(buf, app...)
+   buf = append(buf, '-')
+   if id != "" {
+      buf = append(buf, id...)
+      buf = append(buf, '-')
+   }
+   buf = strconv.AppendInt(buf, ver, 10)
+   buf = append(buf, ".apk"...)
+   return string(buf)
+}
+
+func delivery(output, app string, ver int64) error {
    auth, cache, err := getAuth()
    if err != nil {
       return err
@@ -26,14 +45,34 @@ func delivery(app string, ver int) error {
    if err != nil {
       return err
    }
-   if err := download(del.DownloadURL, "", app, ver); err != nil {
+   dst := filename(output, app, "", ver)
+   if err := download(del.DownloadURL, dst); err != nil {
       return err
    }
    for _, split := range del.SplitDeliveryData {
-      err := download(split.DownloadURL, split.ID, app, ver)
+      dst := filename(output, app, split.ID, ver)
+      err := download(split.DownloadURL, dst)
       if err != nil {
          return err
       }
+   }
+   return nil
+}
+
+func download(src, dst string) error {
+   fmt.Println("GET", src)
+   res, err := http.Get(src)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   file, err := os.Create(dst)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   if _, err := file.ReadFrom(res.Body); err != nil {
+      return err
    }
    return nil
 }

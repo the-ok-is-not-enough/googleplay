@@ -1,7 +1,7 @@
 package googleplay
 
 import (
-   "github.com/89z/parse/protobuf"
+   "github.com/89z/format/protobuf"
    "net/http"
    "strconv"
 )
@@ -22,8 +22,12 @@ var DefaultConfig = Config{
    SystemAvailableFeature: []string{
       // com.smarty.voomvoom
       "android.hardware.bluetooth",
+      // com.xiaomi.smarthome
+      "android.hardware.bluetooth_le",
       // com.pinterest
       "android.hardware.camera",
+      // com.xiaomi.smarthome
+      "android.hardware.camera.autofocus",
       // com.pinterest
       "android.hardware.location",
       // com.smarty.voomvoom
@@ -40,6 +44,8 @@ var DefaultConfig = Config{
       "android.hardware.telephony",
       // com.google.android.youtube
       "android.hardware.touchscreen",
+      // com.xiaomi.smarthome
+      "android.hardware.usb.host",
       // com.google.android.youtube
       "android.hardware.wifi",
    },
@@ -53,7 +59,7 @@ var DefaultConfig = Config{
 
 var purchaseRequired = response{3, "purchase required"}
 
-func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
+func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
@@ -65,7 +71,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int) (*Delivery, error) {
    req.Header = val.header()
    val = make(values)
    val["doc"] = app
-   val["vc"] = strconv.Itoa(ver)
+   val["vc"] = strconv.FormatInt(ver, 10)
    req.URL.RawQuery = val.encode()
    LogLevel.dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -115,14 +121,25 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    }
    docV2 := responseWrapper.Get(1, 2, 4)
    var det Details
-   det.InstallationSize.Value = docV2.GetUint64(13, 1, 9)
    det.NumDownloads.Value = docV2.GetUint64(13, 1, 70)
    det.Offer.CurrencyCode = docV2.GetString(8, 2)
    det.Offer.Micros = docV2.GetUint64(8, 1)
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
+   det.Size.Value = docV2.GetUint64(13, 1, 34, 2)
    det.Title = docV2.GetString(5)
    det.VersionCode = docV2.GetUint64(13, 1, 3)
    det.VersionString = docV2.GetString(13, 1, 4)
    return &det, nil
+}
+
+type Details struct {
+   NumDownloads NumDownloads
+   Offer Offer
+   Size Size
+   Title string
+   VersionCode uint64
+   VersionString string
 }
 
 // This seems to return `StatusOK`, even with invalid requests, and the response
@@ -192,35 +209,6 @@ type Config struct {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
-}
-
-type Details struct {
-   InstallationSize InstallationSize
-   NumDownloads NumDownloads
-   Offer Offer
-   Title string
-   VersionCode uint64
-   VersionString string
-}
-
-type InstallationSize struct {
-   Value uint64
-}
-
-func (i InstallationSize) String() string {
-   val := float64(i.Value)
-   metric := []string{" B", " kB", " MB"}
-   return numberFormat(val, metric)
-}
-
-type NumDownloads struct {
-   Value uint64
-}
-
-func (n NumDownloads) String() string {
-   val := float64(n.Value)
-   metric := []string{"", " k", " M", " B"}
-   return numberFormat(val, metric)
 }
 
 type Offer struct {

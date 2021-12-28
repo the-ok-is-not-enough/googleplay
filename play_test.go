@@ -11,7 +11,7 @@ const email = "srpen6@gmail.com"
 
 type app struct {
    id string
-   code int
+   code int64
 }
 
 var apps = map[int]app{
@@ -25,6 +25,7 @@ var apps = map[int]app{
    7: {id: "org.thoughtcrime.securesms"},
    8: {id: "com.valvesoftware.android.steam.community"},
    9: {id: "com.miui.weather2"},
+   10: {id: "com.xiaomi.smarthome"},
 }
 
 func TestDetails(t *testing.T) {

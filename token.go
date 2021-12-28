@@ -7,7 +7,7 @@ import (
    "crypto/sha1"
    "encoding/base64"
    "encoding/json"
-   "github.com/89z/parse/crypto"
+   "github.com/89z/format/crypto"
    "io"
    "math/big"
    "net/http"
