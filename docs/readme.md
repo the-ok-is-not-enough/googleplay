@@ -8,54 +8,7 @@ aapt dump badging file.apk
 
 ## How to get Android public key?
 
-Use a program like this:
-
-~~~go
-package main
-
-import (
-   "fmt"
-   "github.com/89z/format/protobuf"
-   "net/http"
-)
-
-func main() {
-   src := protobuf.Message{
-      {3, ""}: "", {4, ""}: "",
-   }
-   req, err := http.NewRequest(
-      "POST", "http://android.clients.google.com/checkin", src.Encode(),
-   )
-   if err != nil {
-      panic(err)
-   }
-   req.Header.Set("Content-Type", "application/x-protobuffer")
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      panic(err)
-   }
-   defer res.Body.Close()
-   dst, err := protobuf.Decode(res.Body)
-   if err != nil {
-      panic(err)
-   }
-   fmt.Println(dst)
-}
-~~~
-
-Check the messages under key 5 until you find a key matching:
-
-~~~
-google_login_public_key
-~~~
-
-The value should look something like this:
-
-~~~
-AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3sr
-RXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kM
-JR3P/LgHax/6rmf5AAAAAwEAAQ==
-~~~
+Check the `cmd/public-key` folder.
 
 ## How to get Protocol Buffer fields?
 
@@ -79,3 +32,18 @@ https://play.google.com/store/apps/details?id=com.iqiyi.i18n
 ~~~
 adb install-multiple (Get-ChildItem *.apk)
 ~~~
+
+## Will you add features?
+
+I created this tool for a very limited use (getting latest version string for
+`com.google.android.youtube`). I am happy to fix bugs or add support for apps,
+but I am not really interested in adding any features at this time. However if
+you want to create an issue to make a suggestion, go ahead, but know that it
+will probably not be implemented. However the module itself is open source [1],
+so people can easily make their own tools using the module.
+
+If you insist that some feature be implemented, I am willing to implement
+features for people who are willing to make a donation to me. If that is your
+situation, make sure to mention that in any communication.
+
+1. https://godocs.io/github.com/89z/googleplay

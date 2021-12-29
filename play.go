@@ -4,7 +4,7 @@ import (
    "bytes"
    "encoding/json"
    "fmt"
-   "github.com/89z/format/measure"
+   "github.com/89z/format"
    "io"
    "net/http"
    "net/http/httputil"
@@ -149,7 +149,7 @@ type NumDownloads struct {
 }
 
 func (n NumDownloads) String() string {
-   return measure.Number.FormatUint(n.Value)
+   return format.Number.LabelUint(n.Value)
 }
 
 type Size struct {
@@ -157,5 +157,5 @@ type Size struct {
 }
 
 func (i Size) String() string {
-   return measure.Size.FormatUint(i.Value)
+   return format.Size.LabelUint(i.Value)
 }
