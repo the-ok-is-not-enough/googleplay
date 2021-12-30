@@ -70,10 +70,9 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   req.URL.RawQuery = url.Values{
-      "doc": {app},
-      "vc": {strconv.FormatInt(ver, 10)},
-   }.Encode()
+   req.URL.RawQuery =
+      "doc=" + url.QueryEscape(app) +
+      "&vc=" + strconv.FormatInt(ver, 10)
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
