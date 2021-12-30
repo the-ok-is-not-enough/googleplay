@@ -49,8 +49,14 @@ var DefaultConfig = Config{
       "android.hardware.usb.host",
       // com.google.android.youtube
       "android.hardware.wifi",
+      // com.sec.android.app.launcher
+      "com.samsung.android.api.version.2601",
+      // com.sec.android.app.launcher
+      "com.samsung.feature.samsung_experience_mobile",
    },
    SystemSharedLibrary: []string{
+      // com.sec.android.app.launcher
+      "com.samsung.device",
       // com.miui.weather2
       "global-miui11-empty.jar",
    },
@@ -70,9 +76,10 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   req.URL.RawQuery =
-      "doc=" + url.QueryEscape(app) +
-      "&vc=" + strconv.FormatInt(ver, 10)
+   req.URL.RawQuery = url.Values{
+      "doc": {app},
+      "vc": {strconv.FormatInt(ver, 10)},
+   }.Encode()
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {

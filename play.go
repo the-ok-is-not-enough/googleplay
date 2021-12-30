@@ -21,10 +21,9 @@ var LogLevel format.LogLevel
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
+   query := "doc=" + url.QueryEscape(app)
    req, err := http.NewRequest(
-      "POST",
-      origin + "/fdfe/purchase",
-      strings.NewReader("doc=" + url.QueryEscape(app)),
+      "POST", origin + "/fdfe/purchase", strings.NewReader(query),
    )
    if err != nil {
       return err
@@ -69,28 +68,19 @@ func NewDevice() (*Device, error) {
 }
 
 // Read Device from file.
-func (d *Device) Decode(r io.Reader) error {
-   return json.NewDecoder(r).Decode(d)
+func (d *Device) Decode(src io.Reader) error {
+   return json.NewDecoder(src).Decode(d)
 }
 
 // Write Device to file.
-func (d Device) Encode(w io.Writer) error {
-   enc := json.NewEncoder(w)
+func (d Device) Encode(dst io.Writer) error {
+   enc := json.NewEncoder(dst)
    enc.SetIndent("", " ")
    return enc.Encode(d)
 }
 
 func (d Device) String() string {
    return strconv.FormatInt(d.Android_ID, 16)
-}
-
-type response struct {
-   code uint64
-   status string
-}
-
-func (r response) Error() string {
-   return strconv.FormatUint(r.code, 10) + " " + r.status
 }
 
 type NumDownloads struct {
@@ -107,4 +97,13 @@ type Size struct {
 
 func (i Size) String() string {
    return format.Size.LabelUint(i.Value)
+}
+
+type response struct {
+   code uint64
+   status string
+}
+
+func (r response) Error() string {
+   return strconv.FormatUint(r.code, 10) + " " + r.status
 }

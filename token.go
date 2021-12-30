@@ -109,11 +109,12 @@ func NewToken(email, password string) (*Token, error) {
 
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
-   body :=
-      "Token=" + t.Token +
-      "&service=oauth2:https://www.googleapis.com/auth/googleplay"
+   val := url.Values{
+      "Token": {t.Token},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(body),
+      "POST", origin + "/auth", strings.NewReader(val),
    )
    if err != nil {
       return nil, err
