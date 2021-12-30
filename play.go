@@ -1,15 +1,11 @@
 package googleplay
 
 import (
-   "bytes"
    "encoding/json"
-   "fmt"
    "github.com/89z/format"
    "io"
    "net/http"
-   "net/http/httputil"
    "net/url"
-   "os"
    "strconv"
    "strings"
    "time"
@@ -21,24 +17,25 @@ const (
    origin = "https://android.clients.google.com"
 )
 
-// This is needed for cmd/googleplay.
-var LogLevel logLevel
+var LogLevel format.LogLevel
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
    req, err := http.NewRequest(
-      "POST", origin + "/fdfe/purchase", values{"doc": app}.reader(),
+      "POST",
+      origin + "/fdfe/purchase",
+      strings.NewReader("doc=" + url.QueryEscape(app)),
    )
    if err != nil {
       return err
    }
-   val := make(values)
-   val["Authorization"] = "Bearer " + a.Auth
-   val["Content-Type"] = "application/x-www-form-urlencoded"
-   val["User-Agent"] = agent
-   val["X-DFE-Device-ID"] = dev.String()
-   req.Header = val.header()
-   LogLevel.dump(req)
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "Content-Type": {"application/x-www-form-urlencoded"},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -58,7 +55,7 @@ func NewDevice() (*Device, error) {
    if err != nil {
       return nil, err
    }
-   LogLevel.dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -87,31 +84,6 @@ func (d Device) String() string {
    return strconv.FormatInt(d.Android_ID, 16)
 }
 
-type logLevel int
-
-func (l logLevel) dump(req *http.Request) error {
-   switch l {
-   case 0:
-      fmt.Println(req.Method, req.URL)
-   case 1:
-      buf, err := httputil.DumpRequest(req, true)
-      if err != nil {
-         return err
-      }
-      os.Stdout.Write(buf)
-      if !bytes.HasSuffix(buf, []byte{'\n'}) {
-         os.Stdout.WriteString("\n")
-      }
-   case 2:
-      buf, err := httputil.DumpRequestOut(req, true)
-      if err != nil {
-         return err
-      }
-      os.Stdout.Write(buf)
-   }
-   return nil
-}
-
 type response struct {
    code uint64
    status string
@@ -119,29 +91,6 @@ type response struct {
 
 func (r response) Error() string {
    return strconv.FormatUint(r.code, 10) + " " + r.status
-}
-
-type values map[string]string
-
-func (v values) encode() string {
-   vals := make(url.Values)
-   for key, val := range v {
-      vals.Set(key, val)
-   }
-   return vals.Encode()
-}
-
-func (v values) header() http.Header {
-   vals := make(http.Header)
-   for key, val := range v {
-      vals.Set(key, val)
-   }
-   return vals
-}
-
-func (v values) reader() io.Reader {
-   enc := v.encode()
-   return strings.NewReader(enc)
 }
 
 type NumDownloads struct {

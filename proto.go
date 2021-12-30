@@ -3,6 +3,7 @@ package googleplay
 import (
    "github.com/89z/format/protobuf"
    "net/http"
+   "net/url"
    "strconv"
 )
 
@@ -64,16 +65,16 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   val := make(values)
-   val["Authorization"] = "Bearer " + a.Auth
-   val["User-Agent"] = agent
-   val["X-DFE-Device-ID"] = dev.String()
-   req.Header = val.header()
-   val = make(values)
-   val["doc"] = app
-   val["vc"] = strconv.FormatInt(ver, 10)
-   req.URL.RawQuery = val.encode()
-   LogLevel.dump(req)
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   req.URL.RawQuery = url.Values{
+      "doc": {app},
+      "vc": {strconv.FormatInt(ver, 10)},
+   }.Encode()
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -104,12 +105,12 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   val := make(values)
-   val["Authorization"] = "Bearer " + a.Auth
-   val["X-DFE-Device-ID"] = dev.String()
-   req.Header = val.header()
-   req.URL.RawQuery = values{"doc": app}.encode()
-   LogLevel.dump(req)
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -171,12 +172,12 @@ func (a Auth) Upload(dev *Device, con Config) error {
    if err != nil {
       return err
    }
-   val := make(values)
-   val["Authorization"] = "Bearer " + a.Auth
-   val["User-Agent"] = agent
-   val["X-DFE-Device-ID"] = dev.String()
-   req.Header = val.header()
-   LogLevel.dump(req)
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err

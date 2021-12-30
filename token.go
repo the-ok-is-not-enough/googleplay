@@ -11,6 +11,7 @@ import (
    "io"
    "math/big"
    "net/http"
+   "net/url"
    "strconv"
    "strings"
 )
@@ -76,18 +77,19 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   val := make(values)
-   val["Email"] = email
-   val["EncryptedPasswd"] = sig
-   val["sdk_version"] = "20" // Newer versions fail.
+   val := url.Values{
+      "Email": {email},
+      "EncryptedPasswd": {sig},
+      "sdk_version": {"20"}, // Newer versions fail.
+   }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", val.reader(),
+      "POST", origin + "/auth", strings.NewReader(val),
    )
    if err != nil {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.dump(req)
+   LogLevel.Dump(req)
    res, err := hello.Transport().RoundTrip(req)
    if err != nil {
       return nil, err
@@ -107,17 +109,18 @@ func NewToken(email, password string) (*Token, error) {
 
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
-   val := make(values)
-   val["Token"] = t.Token
-   val["service"] = "oauth2:https://www.googleapis.com/auth/googleplay"
+   val := url.Values{
+      "Token": {t.Token},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", val.reader(),
+      "POST", origin + "/auth", strings.NewReader(val),
    )
    if err != nil {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err

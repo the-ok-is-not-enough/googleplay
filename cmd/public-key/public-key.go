@@ -10,14 +10,10 @@ func main() {
    src := protobuf.Message{
       {3, ""}: "", {4, ""}: "",
    }
-   req, err := http.NewRequest(
-      "POST", "http://android.clients.google.com/checkin", src.Encode(),
+   res, err := http.Post(
+      "http://android.clients.google.com/checkin",
+      "application/x-protobuffer", src.Encode(),
    )
-   if err != nil {
-      panic(err)
-   }
-   req.Header.Set("Content-Type", "application/x-protobuffer")
-   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       panic(err)
    }
