@@ -12,6 +12,62 @@ import (
    "strings"
 )
 
+func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (*GooglePlayClient, error) {
+   authData := &AuthData{
+      AASToken: aasToken,
+      Email:    email,
+      Locale:   "en_GB",
+   }
+   client := GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
+   checkInResp, err := client.checkIn()
+   if err != nil {
+      return nil, err
+   }
+   client.AuthData.GsfID = fmt.Sprintf("%x", checkInResp.GetAndroidId())
+   authData.AuthToken = token
+   return &client, nil
+}
+
+func (client *GooglePlayClient) checkIn() (*gpproto.AndroidCheckinResponse, error) {
+   req := &gpproto.AndroidCheckinRequest{
+      Version: ptrInt32(3),
+      DeviceConfiguration: client.DeviceInfo.GetDeviceConfigProto(),
+      Checkin: &gpproto.AndroidCheckinProto{
+         Build: &gpproto.AndroidBuildProto{
+            SdkVersion: ptrInt32(29),
+         },
+      },
+   }
+   b, err := proto.Marshal(req)
+   if err != nil {
+      return nil, err
+   }
+   r, err := http.NewRequest("POST", UrlBase + "/checkin", bytes.NewReader(b))
+   if err != nil {
+      return nil, err
+   }
+   r.Header.Set("Content-Type", "application/x-protobuffer")
+   b, _, err = doReq(r)
+   if err != nil {
+      return nil, err
+   }
+   check := new(gpproto.AndroidCheckinResponse)
+   if err := proto.Unmarshal(b, check); err != nil {
+      return nil, err
+   }
+   return check, nil
+}
+
+func (client *GooglePlayClient) GetAppDetails(packageName string) (*App, error) {
+   r, _ := http.NewRequest("GET", UrlDetails+"?doc="+packageName, nil)
+   payload, err := client.doAuthedReq(r)
+   if err != nil {
+      return nil, err
+   }
+   return buildAppFromItem(payload.DetailsResponse.Item), nil
+   
+}
+
 func (i *DeviceInfo) GetDeviceConfigProto() *gpproto.DeviceConfigurationProto {
    return &gpproto.DeviceConfigurationProto{
       GlEsVersion:            &i.GLVersion,
@@ -27,68 +83,6 @@ func (i *DeviceInfo) GetDeviceConfigProto() *gpproto.DeviceConfigurationProto {
       TouchScreen:            &i.TouchScreen,
       DeviceFeature:          i.GetDeviceFeatures(),
    }
-}
-
-func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (*GooglePlayClient, error) {
-   authData := &AuthData{
-      AASToken: aasToken,
-      Email:    email,
-      Locale:   "en_GB",
-   }
-   client := GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
-   _, err := client.GenerateGsfID()
-   if err != nil {
-      return nil, err
-   }
-   deviceConfigRes, err := client.uploadDeviceConfig()
-   if err != nil {
-      return nil, err
-   }
-   authData.DeviceConfigToken = deviceConfigRes.GetUploadDeviceConfigToken()
-   authData.AuthToken = token
-   return &client, nil
-}
-
-func (client *GooglePlayClient) uploadDeviceConfig() (*gpproto.UploadDeviceConfigResponse, error) {
-   b, err := proto.Marshal(&gpproto.UploadDeviceConfigRequest{DeviceConfiguration: client.DeviceInfo.GetDeviceConfigProto()})
-   if err != nil {
-      return nil, err
-   }
-   r, err := http.NewRequest("POST", UrlUploadDeviceConfig, bytes.NewReader(b))
-   if err != nil {
-      return nil, err
-   }
-   payload, err := client.doAuthedReq(r)
-   if err != nil {
-      return nil, err
-   }
-   return payload.UploadDeviceConfigResponse, nil
-}
-
-func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (resp *gpproto.AndroidCheckinResponse, err error) {
-   b, err := proto.Marshal(req)
-   if err != nil {
-      return
-   }
-   r, _ := http.NewRequest("POST", UrlBase + "/checkin", bytes.NewReader(b))
-   r.Header.Set("Content-Type", "application/x-protobuffer")
-   b, _, err = doReq(r)
-   if err != nil {
-      return
-   }
-   resp = &gpproto.AndroidCheckinResponse{}
-   err = proto.Unmarshal(b, resp)
-   return
-}
-
-func (client *GooglePlayClient) GetAppDetails(packageName string) (*App, error) {
-   r, _ := http.NewRequest("GET", UrlDetails+"?doc="+packageName, nil)
-   payload, err := client.doAuthedReq(r)
-   if err != nil {
-      return nil, err
-   }
-   return buildAppFromItem(payload.DetailsResponse.Item), nil
-   
 }
 
 type App struct {
@@ -154,13 +148,6 @@ func buildAppFromItem(item *gpproto.Item) *App {
 }
 
 var Pixel3a = &DeviceInfo{
-   Build: &DeviceBuildInfo{
-      AndroidBuildProto: &gpproto.AndroidBuildProto{
-         Radio:          ptrStr("g670-00011-190411-B-5457439"),
-         Bootloader:     ptrStr("b4s4-0.1-5613380"),
-         SdkVersion:     ptrInt32(29),
-      },
-   },
    Features:        []string{
       "android.hardware.faketouch",
       "android.hardware.screen.portrait",
@@ -208,22 +195,6 @@ func (i *DeviceInfo) GetDeviceFeatures() (ret []*gpproto.DeviceFeature) {
       ret = append(ret, &gpproto.DeviceFeature{Name: &name, Value: &int0})
    }
    return ret
-}
-
-func (client *GooglePlayClient) GenerateGsfID() (string, error) {
-   req := &gpproto.AndroidCheckinRequest{
-      Version:             ptrInt32(3),
-      Checkin: &gpproto.AndroidCheckinProto{
-         Build:           client.DeviceInfo.Build.AndroidBuildProto,
-      },
-      DeviceConfiguration: client.DeviceInfo.GetDeviceConfigProto(),
-   }
-   checkInResp, err := client.checkIn(req)
-   if err != nil {
-      return "", err
-   }
-   client.AuthData.GsfID = fmt.Sprintf("%x", checkInResp.GetAndroidId())
-   return client.AuthData.GsfID, nil
 }
 
 func doReq(r *http.Request) ([]byte, int, error) {
@@ -283,22 +254,10 @@ func (client *GooglePlayClient) doAuthedReq(r *http.Request) (*gpproto.Payload, 
 }
 
 const (
-	ImageTypeAppScreenshot = iota + 1
-	ImageTypePlayStorePageBackground
-	ImageTypeYoutubeVideoLink
-	ImageTypeAppIcon
-	ImageTypeCategoryIcon
-	ImageTypeYoutubeVideoThumbnail = 13
-
-	UrlBase               = "https://android.clients.google.com"
-	UrlFdfe               = UrlBase + "/fdfe"
-	UrlAuth               = UrlBase + "/auth"
-	UrlDetails            = UrlFdfe + "/details"
-	UrlDelivery           = UrlFdfe + "/delivery"
-	UrlPurchase           = UrlFdfe + "/purchase"
-	UrlToc                = UrlFdfe + "/toc"
-	UrlTosAccept          = UrlFdfe + "/acceptTos"
-	UrlUploadDeviceConfig = UrlFdfe + "/uploadDeviceConfig"
+   UrlBase               = "https://android.clients.google.com"
+   UrlFdfe               = UrlBase + "/fdfe"
+   UrlAuth               = UrlBase + "/auth"
+   UrlDetails            = UrlFdfe + "/details"
 )
 
 type GooglePlayClient struct {
