@@ -102,7 +102,6 @@ const (
 	UrlBase               = "https://android.clients.google.com"
 	UrlFdfe               = UrlBase + "/fdfe"
 	UrlAuth               = UrlBase + "/auth"
-	UrlCheckIn            = UrlBase + "/checkin"
 	UrlDetails            = UrlFdfe + "/details"
 	UrlDelivery           = UrlFdfe + "/delivery"
 	UrlPurchase           = UrlFdfe + "/purchase"
@@ -160,37 +159,10 @@ func (client *GooglePlayClient) SaveSession(file string) error {
 	return json.NewEncoder(f).Encode(client.AuthData)
 }
 
-func (client *GooglePlayClient) GenerateGsfID() (string, error) {
-   req := client.DeviceInfo.GenerateAndroidCheckInRequest()
-   checkInResp, err := client.checkIn(req)
-   if err != nil {
-      return "", err
-   }
-   client.AuthData.GsfID = fmt.Sprintf("%x", checkInResp.GetAndroidId())
-   return client.AuthData.GsfID, nil
-}
-
-func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (resp *gpproto.AndroidCheckinResponse, err error) {
-   b, err := proto.Marshal(req)
-   if err != nil {
-      return
-   }
-   r, _ := http.NewRequest("POST", UrlCheckIn, bytes.NewReader(b))
-   r.Header.Set("Content-Type", "application/x-protobuffer")
-   b, _, err = doReq(r)
-   if err != nil {
-      return
-   }
-   resp = &gpproto.AndroidCheckinResponse{}
-   err = proto.Unmarshal(b, resp)
-   return
-}
-
 type AuthData struct {
    AASToken                      string
    AuthToken                     string
    DFECookie                     string
-   DeviceCheckInConsistencyToken string
    DeviceConfigToken             string
    Email                         string
    GsfID                         string
