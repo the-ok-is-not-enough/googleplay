@@ -16,118 +16,91 @@ import (
    "strings"
 )
 
-type (
-	App struct {
-		PackageName        string
-		AppInfo            *AppInfo
-		CategoryImage      *gpproto.Image
-		CategoryID         int
-		CategoryName       string
-		Changes            string
-		ContainsAds        bool
-		CoverImage         *gpproto.Image
-		Description        string
-		DeveloperName      string
-		DisplayName        string
-		DownloadString     string
-		EarlyAccess        bool
-		IconImage          *gpproto.Image
-		InstantAppLink     string
-		IsFree             bool
-		IsSystem           bool
-		LiveStreamUrl      string
-		OfferDetails       map[string]string
-		OfferType          int32
-		Price              string
-		PromotionStreamUrl string
-		Screenshots        []*gpproto.Image
-		ShareUrl           string
-		ShortDescription   string
-		Size               int64
-		TargetSdk          int
-		TestingProgram     *TestingProgram
-		UpdatedOn          string
-		VersionCode        int
-		VersionName        string
-		Video              *gpproto.Image
-	}
-
-	AppInfo struct {
-		AppInfoMap map[string]string
-	}
-
-	TestingProgram struct {
-		Image                    *gpproto.Image
-		DisplayName              string
-		Email                    string
-		IsAvailable              bool
-		isSubscribed             bool
-		IsSubscribedAndInstalled bool
-	}
-
-	TestingProgramStatus struct {
-		Subscribed   bool
-		Unsubscribed bool
-	}
-)
-
-func (client *GooglePlayClient) GetAppDetails(packageName string) (*App, error) {
-	r, _ := http.NewRequest("GET", UrlDetails+"?doc="+packageName, nil)
-	payload, err := client.doAuthedReq(r)
-	if err != nil {
-		return nil, err
-	}
-	return buildApp(payload.DetailsResponse), nil
+type App struct {
+   AppInfo            *AppInfo
+   CategoryID         int
+   CategoryImage      *gpproto.Image
+   CategoryName       string
+   Changes            string
+   ContainsAds        bool
+   CoverImage         *gpproto.Image
+   Description        string
+   DeveloperName      string
+   DisplayName        string
+   DownloadString     string
+   EarlyAccess        bool
+   IconImage          *gpproto.Image
+   InstantAppLink     string
+   IsFree             bool
+   IsSystem           bool
+   LiveStreamUrl      string
+   OfferDetails       map[string]string
+   OfferType          int32
+   PackageName        string
+   Price              string
+   PromotionStreamUrl string
+   Screenshots        []*gpproto.Image
+   ShareUrl           string
+   ShortDescription   string
+   Size               int64
+   TargetSdk          int
+   UpdatedOn          string
+   VersionCode        int
+   VersionName        string
+   Video              *gpproto.Image
 }
 
-func buildApp(res *gpproto.DetailsResponse) *App {
-	return buildAppFromItem(res.Item)
+type AppInfo struct {
+       AppInfoMap map[string]string
+}
+
+func (client *GooglePlayClient) GetAppDetails(packageName string) (*App, error) {
+   r, _ := http.NewRequest("GET", UrlDetails+"?doc="+packageName, nil)
+   payload, err := client.doAuthedReq(r)
+   if err != nil {
+      return nil, err
+   }
+   return buildAppFromItem(payload.DetailsResponse.Item), nil
+   
 }
 
 func buildAppFromItem(item *gpproto.Item) *App {
-	details := item.Details.AppDetails
-	app := &App{
-		PackageName:      *item.Id,
-		CategoryID:       int(item.GetCategoryId()),
-		DisplayName:      item.GetTitle(),
-		Description:      item.GetDescriptionHtml(),
-		ShortDescription: item.GetPromotionalDescription(),
-		ShareUrl:         item.GetShareUrl(),
-		VersionName:      details.GetVersionString(),
-		VersionCode:      int(details.GetVersionCode()),
-		CategoryName:     details.GetCategoryName(),
-		Size:             details.GetInfoDownloadSize(),
-		DownloadString:   details.GetDownloadLabelAbbreviated(),
-		Changes:          details.GetRecentChangesHtml(),
-		ContainsAds:      details.InstallNotes != nil,
-		EarlyAccess:      details.EarlyAccessInfo != nil,
-		DeveloperName:    details.GetDeveloperName(),
-		TargetSdk:        int(details.GetTargetSdkVersion()),
-		UpdatedOn:        details.GetInfoUpdatedOn(),
-	}
-
-	if len(item.Offer) > 0 {
-		offer := item.Offer[0]
-		app.OfferType = offer.GetOfferType()
-		app.IsFree = offer.GetMicros() == 0
-		app.Price = offer.GetFormattedAmount()
-	}
-
-	if app.DeveloperName == "" {
-		app.DeveloperName = item.GetCreator()
-	}
-
-	if details.InstantLink != nil {
-		app.InstantAppLink = details.GetInstantLink()
-	}
-
-	parseAppInfo(app, item)
-	parseStreamUrls(app, item)
-	parseImages(app, item)
-
-	parseTestingProgram(app, details)
-
-	return app
+   details := item.Details.AppDetails
+   app := &App{
+      PackageName:      *item.Id,
+      CategoryID:       int(item.GetCategoryId()),
+      DisplayName:      item.GetTitle(),
+      Description:      item.GetDescriptionHtml(),
+      ShortDescription: item.GetPromotionalDescription(),
+      ShareUrl:         item.GetShareUrl(),
+      VersionName:      details.GetVersionString(),
+      VersionCode:      int(details.GetVersionCode()),
+      CategoryName:     details.GetCategoryName(),
+      Size:             details.GetInfoDownloadSize(),
+      DownloadString:   details.GetDownloadLabelAbbreviated(),
+      Changes:          details.GetRecentChangesHtml(),
+      ContainsAds:      details.InstallNotes != nil,
+      EarlyAccess:      details.EarlyAccessInfo != nil,
+      DeveloperName:    details.GetDeveloperName(),
+      TargetSdk:        int(details.GetTargetSdkVersion()),
+      UpdatedOn:        details.GetInfoUpdatedOn(),
+   }
+   if len(item.Offer) > 0 {
+   offer := item.Offer[0]
+   app.OfferType = offer.GetOfferType()
+   app.IsFree = offer.GetMicros() == 0
+   app.Price = offer.GetFormattedAmount()
+   }
+   if app.DeveloperName == "" {
+   app.DeveloperName = item.GetCreator()
+   }
+   if details.InstantLink != nil {
+   app.InstantAppLink = details.GetInstantLink()
+   }
+   parseAppInfo(app, item)
+   parseStreamUrls(app, item)
+   parseImages(app, item)
+   return app
 }
 
 func parseAppInfo(app *App, item *gpproto.Item) {
@@ -169,20 +142,6 @@ func parseImages(app *App, item *gpproto.Item) {
 			for _, imageContainer := range item.Annotations.SectionImage.ImageContainer {
 				app.Screenshots = append(app.Screenshots, imageContainer.Image)
 			}
-		}
-	}
-}
-
-func parseTestingProgram(app *App, details *gpproto.AppDetails) {
-	if details.TestingProgramInfo != nil {
-		testingProgram := details.TestingProgramInfo
-		app.TestingProgram = &TestingProgram{
-			Image:                    testingProgram.Image,
-			DisplayName:              testingProgram.GetDisplayName(),
-			Email:                    testingProgram.GetEmail(),
-			IsAvailable:              true,
-			isSubscribed:             testingProgram.GetSubscribed(),
-			IsSubscribedAndInstalled: testingProgram.GetSubscribedAndInstalled(),
 		}
 	}
 }
@@ -332,20 +291,22 @@ func parseResponse(res string) map[string]string {
 }
 
 func (client *GooglePlayClient) _doAuthedReq(r *http.Request) (_ *gpproto.Payload, err error) {
-	client.setDefaultHeaders(r)
-	b, status, err := doReq(r)
-	if err != nil {
-		return
-	}
-	if status == 401 {
-		return nil, GPTokenExpired
-	}
-	resp := &gpproto.ResponseWrapper{}
-	err = proto.Unmarshal(b, resp)
-	if err != nil {
-		return
-	}
-	return resp.Payload, nil
+   data := client.AuthData
+   r.Header.Set("Authorization", "Bearer "+data.AuthToken)
+   r.Header.Set("X-DFE-Device-Id", data.GsfID)
+   b, status, err := doReq(r)
+   if err != nil {
+      return
+   }
+   if status == 401 {
+      return nil, GPTokenExpired
+   }
+   resp := &gpproto.ResponseWrapper{}
+   err = proto.Unmarshal(b, resp)
+   if err != nil {
+      return
+   }
+   return resp.Payload, nil
 }
 
 func (client *GooglePlayClient) doAuthedReq(r *http.Request) (res *gpproto.Payload, err error) {
@@ -486,8 +447,3 @@ func (client *GooglePlayClient) setAuthParams(params *url.Values) {
    params.Set("client_sig", "38918a453d07199354f8b19af05ec6562ced5788")
 }
 
-func (client *GooglePlayClient) setDefaultHeaders(r *http.Request) {
-   data := client.AuthData
-   r.Header.Set("Authorization", "Bearer "+data.AuthToken)
-   r.Header.Set("X-DFE-Device-Id", data.GsfID)
-}
