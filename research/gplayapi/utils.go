@@ -16,6 +16,22 @@ import (
    "strings"
 )
 
+func (client *GooglePlayClient) GenerateGsfID() (string, error) {
+   req := &gpproto.AndroidCheckinRequest{
+      Version:             ptrInt32(3),
+      Checkin: &gpproto.AndroidCheckinProto{
+         Build:           client.DeviceInfo.Build.AndroidBuildProto,
+      },
+      DeviceConfiguration: client.DeviceInfo.GetDeviceConfigProto(),
+   }
+   checkInResp, err := client.checkIn(req)
+   if err != nil {
+      return "", err
+   }
+   client.AuthData.GsfID = fmt.Sprintf("%x", checkInResp.GetAndroidId())
+   return client.AuthData.GsfID, nil
+}
+
 func doReq(r *http.Request) ([]byte, int, error) {
    buf, err := httputil.DumpRequest(r, true)
    if err != nil {
@@ -119,13 +135,9 @@ type GooglePlayClient struct {
 }
 
 var (
-	GPTokenExpired = errors.New("unauthorized, gp token expired")
-	httpClient = &http.Client{}
+   GPTokenExpired = errors.New("unauthorized, gp token expired")
+   httpClient = &http.Client{}
 )
-
-func NewClient(email, aasToken string) (*GooglePlayClient, error) {
-	return NewClientWithDeviceInfo(email, aasToken, Pixel3a)
-}
 
 func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (client *GooglePlayClient, err error) {
    authData := &AuthData{
