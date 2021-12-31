@@ -5,9 +5,7 @@ import (
    "testing"
 )
 
-const (
-   packageName = "com.google.android.projection.gearhead.phonescreen"
-)
+const packageName = "com.google.android.projection.gearhead.phonescreen"
 
 func TestPlay(t *testing.T) {
    client, err := NewClientWithDeviceInfo("srpen6@gmail.com", token, Pixel3a)
@@ -18,5 +16,5 @@ func TestPlay(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   fmt.Printf("%+v\n", app)
+   fmt.Println("VersionCode", app.VersionCode)
 }

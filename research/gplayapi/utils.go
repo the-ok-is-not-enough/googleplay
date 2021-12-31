@@ -3,13 +3,30 @@ package gplayapi
 import (
    "encoding/json"
    "errors"
+   "fmt"
    "google.golang.org/protobuf/proto"
    "gplayapi/gpproto"
    "io"
    "net/http"
+   "net/http/httputil"
    "os"
    "strings"
 )
+
+func doReq(r *http.Request) ([]byte, int, error) {
+   buf, err := httputil.DumpRequest(r, true)
+   if err != nil {
+      return nil, 0, err
+   }
+   fmt.Printf("%q\n", buf)
+   res, err := httpClient.Do(r)
+   if err != nil {
+      return nil, 0, err
+   }
+   defer res.Body.Close()
+   b, err := io.ReadAll(res.Body)
+   return b, res.StatusCode, err
+}
 
 func ptrBool(b bool) *bool {
 	return &b
@@ -21,16 +38,6 @@ func ptrStr(str string) *string {
 
 func ptrInt32(i int32) *int32 {
 	return &i
-}
-
-func doReq(r *http.Request) ([]byte, int, error) {
-	res, err := httpClient.Do(r)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer res.Body.Close()
-	b, err := io.ReadAll(res.Body)
-	return b, res.StatusCode, err
 }
 
 func parseResponse(res string) map[string]string {
@@ -111,7 +118,6 @@ type GooglePlayClient struct {
 
 var (
 	GPTokenExpired = errors.New("unauthorized, gp token expired")
-
 	httpClient = &http.Client{}
 )
 
@@ -120,32 +126,27 @@ func NewClient(email, aasToken string) (*GooglePlayClient, error) {
 }
 
 func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (client *GooglePlayClient, err error) {
-	authData := &AuthData{
-		Email:    email,
-		AASToken: aasToken,
-		Locale:   "en_GB",
-	}
-	client = &GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
-
-	_, err = client.GenerateGsfID()
-	if err != nil {
-		return
-	}
-
-	deviceConfigRes, err := client.uploadDeviceConfig()
-	if err != nil {
-		return
-	}
-	authData.DeviceConfigToken = deviceConfigRes.GetUploadDeviceConfigToken()
-
-	token, err := client.GenerateGPToken()
-	if err != nil {
-		return
-	}
-	authData.AuthToken = token
-
-	_, err = client.toc()
-	return
+   authData := &AuthData{
+   Email:    email,
+   AASToken: aasToken,
+   Locale:   "en_GB",
+   }
+   client = &GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
+   _, err = client.GenerateGsfID()
+   if err != nil {
+   return
+   }
+   deviceConfigRes, err := client.uploadDeviceConfig()
+   if err != nil {
+   return
+   }
+   authData.DeviceConfigToken = deviceConfigRes.GetUploadDeviceConfigToken()
+   token, err := client.GenerateGPToken()
+   if err != nil {
+   return
+   }
+   authData.AuthToken = token
+   return
 }
 
 func (client *GooglePlayClient) SaveSession(file string) error {
@@ -154,18 +155,4 @@ func (client *GooglePlayClient) SaveSession(file string) error {
 		return err
 	}
 	return json.NewEncoder(f).Encode(client.AuthData)
-}
-
-func LoadSession(file string) (*GooglePlayClient, error) {
-	return LoadSessionWithDeviceInfo(file, Pixel3a)
-}
-
-func LoadSessionWithDeviceInfo(file string, deviceInfo *DeviceInfo) (client *GooglePlayClient, err error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return
-	}
-	client = &GooglePlayClient{DeviceInfo: deviceInfo}
-	err = json.NewDecoder(f).Decode(&client.AuthData)
-	return
 }
