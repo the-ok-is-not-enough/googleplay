@@ -9,37 +9,9 @@ import (
    "net/http"
    "net/url"
    "strconv"
-   "encoding/json"
-   "strings"
 )
-
-var (
-   _ = json.Unmarshal
-   _ = strings.NewReader
-)
-
 
 func (client *GooglePlayClient) GenerateGsfID() (string, error) {
-   /*
-   req, err := http.NewRequest(
-      "POST", UrlCheckIn, strings.NewReader(`{"checkin":{},"version":3}`),
-   )
-   if err != nil {
-      return "", err
-   }
-   buf, _, err := doReq(req)
-   if err != nil {
-      return "", err
-   }
-   var Device struct {
-      Android_ID int64
-   }
-   if err := json.Unmarshal(buf, &Device); err != nil {
-      return "", err
-   }
-   client.AuthData.GsfID = fmt.Sprintf("%x", Device.Android_ID)
-   return client.AuthData.GsfID, nil
-   */
    req := client.DeviceInfo.GenerateAndroidCheckInRequest()
    checkInResp, err := client.checkIn(req)
    if err != nil {
@@ -55,9 +27,7 @@ func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (res
       return
    }
    r, _ := http.NewRequest("POST", UrlCheckIn, bytes.NewReader(b))
-   client.setAuthHeaders(r)
    r.Header.Set("Content-Type", "application/x-protobuffer")
-   r.Header.Set("Host", "android.clients.google.com")
    b, _, err = doReq(r)
    if err != nil {
       return
@@ -100,7 +70,6 @@ func (client *GooglePlayClient) GenerateGPToken() (string, error) {
 	params.Set("service", "oauth2:https://www.googleapis.com/auth/googleplay")
 
 	r, _ := http.NewRequest("POST", UrlAuth+"?"+params.Encode(), nil)
-	client.setAuthHeaders(r)
 	b, _, err := doReq(r)
 	if err != nil {
 		return "", nil
@@ -111,17 +80,6 @@ func (client *GooglePlayClient) GenerateGPToken() (string, error) {
 		return "", errors.New("authentication failed: could not generate oauth token")
 	}
 	return token, nil
-}
-
-func (client *GooglePlayClient) acceptTos(tosToken string) error {
-	r, _ := http.NewRequest("POST", UrlTosAccept+"?toscme=false&tost="+tosToken, nil)
-	_, err := client.doAuthedReq(r)
-	return err
-}
-
-func (client *GooglePlayClient) setAuthHeaders(r *http.Request) {
-   r.Header.Set("app", "com.google.android.gms")
-   r.Header.Set("User-Agent", client.DeviceInfo.GetAuthUserAgent())
 }
 
 func (client *GooglePlayClient) setDefaultAuthParams(params *url.Values) {
@@ -141,11 +99,6 @@ func (client *GooglePlayClient) setAuthParams(params *url.Values) {
 
 func (client *GooglePlayClient) setDefaultHeaders(r *http.Request) {
    data := client.AuthData
-   r.Header.Set("X-DFE-Content-Filters", "")
    r.Header.Set("Authorization", "Bearer "+data.AuthToken)
    r.Header.Set("X-DFE-Device-Id", data.GsfID)
 }
-
-
-
-
