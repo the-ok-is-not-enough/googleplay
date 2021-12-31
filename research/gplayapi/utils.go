@@ -18,7 +18,7 @@ func doReq(r *http.Request) ([]byte, int, error) {
    if err != nil {
       return nil, 0, err
    }
-   fmt.Printf("%q\n", buf)
+   fmt.Printf("%q\n\n", buf)
    res, err := httpClient.Do(r)
    if err != nil {
       return nil, 0, err

@@ -9,7 +9,63 @@ import (
    "net/http"
    "net/url"
    "strconv"
+   "encoding/json"
+   "strings"
 )
+
+var (
+   _ = json.Unmarshal
+   _ = strings.NewReader
+)
+
+
+func (client *GooglePlayClient) GenerateGsfID() (string, error) {
+   /*
+   req, err := http.NewRequest(
+      "POST", UrlCheckIn, strings.NewReader(`{"checkin":{},"version":3}`),
+   )
+   if err != nil {
+      return "", err
+   }
+   buf, _, err := doReq(req)
+   if err != nil {
+      return "", err
+   }
+   var Device struct {
+      Android_ID int64
+   }
+   if err := json.Unmarshal(buf, &Device); err != nil {
+      return "", err
+   }
+   client.AuthData.GsfID = fmt.Sprintf("%x", Device.Android_ID)
+   return client.AuthData.GsfID, nil
+   */
+   req := client.DeviceInfo.GenerateAndroidCheckInRequest()
+   checkInResp, err := client.checkIn(req)
+   if err != nil {
+      return "", err
+   }
+   client.AuthData.GsfID = fmt.Sprintf("%x", checkInResp.GetAndroidId())
+   return client.AuthData.GsfID, nil
+}
+
+func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (resp *gpproto.AndroidCheckinResponse, err error) {
+   b, err := proto.Marshal(req)
+   if err != nil {
+      return
+   }
+   r, _ := http.NewRequest("POST", UrlCheckIn, bytes.NewReader(b))
+   client.setAuthHeaders(r)
+   r.Header.Set("Content-Type", "application/x-protobuffer")
+   r.Header.Set("Host", "android.clients.google.com")
+   b, _, err = doReq(r)
+   if err != nil {
+      return
+   }
+   resp = &gpproto.AndroidCheckinResponse{}
+   err = proto.Unmarshal(b, resp)
+   return
+}
 
 type AuthData struct {
 	Email                         string
@@ -20,36 +76,6 @@ type AuthData struct {
 	DeviceConfigToken             string
 	DFECookie                     string
 	Locale                        string
-}
-
-func (client *GooglePlayClient) GenerateGsfID() (gsfID string, err error) {
-	req := client.DeviceInfo.GenerateAndroidCheckInRequest()
-	checkInResp, err := client.checkIn(req)
-	if err != nil {
-		return
-	}
-	gsfID = fmt.Sprintf("%x", checkInResp.GetAndroidId())
-	client.AuthData.GsfID = gsfID
-	client.AuthData.DeviceCheckInConsistencyToken = checkInResp.GetDeviceCheckinConsistencyToken()
-	return
-}
-
-func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (resp *gpproto.AndroidCheckinResponse, err error) {
-	b, err := proto.Marshal(req)
-	if err != nil {
-		return
-	}
-	r, _ := http.NewRequest("POST", UrlCheckIn, bytes.NewReader(b))
-	client.setAuthHeaders(r)
-	r.Header.Set("Content-Type", "application/x-protobuffer")
-	r.Header.Set("Host", "android.clients.google.com")
-	b, _, err = doReq(r)
-	if err != nil {
-		return
-	}
-	resp = &gpproto.AndroidCheckinResponse{}
-	err = proto.Unmarshal(b, resp)
-	return
 }
 
 func (client *GooglePlayClient) uploadDeviceConfig() (*gpproto.UploadDeviceConfigResponse, error) {
@@ -94,17 +120,11 @@ func (client *GooglePlayClient) acceptTos(tosToken string) error {
 }
 
 func (client *GooglePlayClient) setAuthHeaders(r *http.Request) {
-	r.Header.Set("app", "com.google.android.gms")
-	r.Header.Set("User-Agent", client.DeviceInfo.GetAuthUserAgent())
-	if client.AuthData.GsfID != "" {
-		r.Header.Set("device", client.AuthData.GsfID)
-	}
+   r.Header.Set("app", "com.google.android.gms")
+   r.Header.Set("User-Agent", client.DeviceInfo.GetAuthUserAgent())
 }
 
 func (client *GooglePlayClient) setDefaultAuthParams(params *url.Values) {
-   if client.AuthData.GsfID != "" {
-      params.Set("androidId", client.AuthData.GsfID)
-   }
    params.Set("sdk_version", strconv.Itoa(int(client.DeviceInfo.Build.GetSdkVersion())))
    params.Set("email", client.AuthData.Email)
    params.Set("google_play_services_version", strconv.Itoa(int(client.DeviceInfo.Build.GetGoogleServices())))
