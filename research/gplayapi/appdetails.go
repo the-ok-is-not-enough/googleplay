@@ -2,7 +2,6 @@ package gplayapi
 
 import (
    "bytes"
-   "encoding/json"
    "errors"
    "fmt"
    "google.golang.org/protobuf/proto"
@@ -11,10 +10,75 @@ import (
    "net/http"
    "net/http/httputil"
    "net/url"
-   "os"
    "strconv"
    "strings"
 )
+
+func (client *GooglePlayClient) GenerateGPToken() (string, error) {
+   params := &url.Values{}
+   params.Set("sdk_version", strconv.Itoa(int(client.DeviceInfo.Build.GetSdkVersion())))
+   params.Set("email", client.AuthData.Email)
+   params.Set("google_play_services_version", strconv.Itoa(int(client.DeviceInfo.Build.GetGoogleServices())))
+   params.Set("callerSig", "38918a453d07199354f8b19af05ec6562ced5788")
+   params.Set("Token", client.AuthData.AASToken)
+   params.Set("check_email", "1")
+   params.Set("client_sig", "38918a453d07199354f8b19af05ec6562ced5788")
+   params.Set("app", "com.google.android.gms")
+   params.Set("service", "oauth2:https://www.googleapis.com/auth/googleplay")
+   r, _ := http.NewRequest("POST", UrlAuth+"?"+params.Encode(), nil)
+   b, _, err := doReq(r)
+   if err != nil {
+      return "", nil
+   }
+   resp := parseResponse(string(b))
+   token, ok := resp["Auth"]
+   if !ok {
+      return "", errors.New("authentication failed: could not generate oauth token")
+   }
+   return token, nil
+}
+
+func (client *GooglePlayClient) uploadDeviceConfig() (*gpproto.UploadDeviceConfigResponse, error) {
+   b, err := proto.Marshal(&gpproto.UploadDeviceConfigRequest{DeviceConfiguration: client.DeviceInfo.GetDeviceConfigProto()})
+   if err != nil {
+      return nil, err
+   }
+   r, err := http.NewRequest("POST", UrlUploadDeviceConfig, bytes.NewReader(b))
+   if err != nil {
+      return nil, err
+   }
+   payload, err := client.doAuthedReq(r)
+   if err != nil {
+      return nil, err
+   }
+   return payload.UploadDeviceConfigResponse, nil
+}
+
+func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (resp *gpproto.AndroidCheckinResponse, err error) {
+   b, err := proto.Marshal(req)
+   if err != nil {
+      return
+   }
+   r, _ := http.NewRequest("POST", UrlBase + "/checkin", bytes.NewReader(b))
+   r.Header.Set("Content-Type", "application/x-protobuffer")
+   b, _, err = doReq(r)
+   if err != nil {
+      return
+   }
+   resp = &gpproto.AndroidCheckinResponse{}
+   err = proto.Unmarshal(b, resp)
+   return
+}
+
+func (client *GooglePlayClient) GetAppDetails(packageName string) (*App, error) {
+   r, _ := http.NewRequest("GET", UrlDetails+"?doc="+packageName, nil)
+   payload, err := client.doAuthedReq(r)
+   if err != nil {
+      return nil, err
+   }
+   return buildAppFromItem(payload.DetailsResponse.Item), nil
+   
+}
 
 type App struct {
    AppInfo            *AppInfo
@@ -52,16 +116,6 @@ type App struct {
 
 type AppInfo struct {
        AppInfoMap map[string]string
-}
-
-func (client *GooglePlayClient) GetAppDetails(packageName string) (*App, error) {
-   r, _ := http.NewRequest("GET", UrlDetails+"?doc="+packageName, nil)
-   payload, err := client.doAuthedReq(r)
-   if err != nil {
-      return nil, err
-   }
-   return buildAppFromItem(payload.DetailsResponse.Item), nil
-   
 }
 
 func buildAppFromItem(item *gpproto.Item) *App {
@@ -144,22 +198,6 @@ func parseImages(app *App, item *gpproto.Item) {
 			}
 		}
 	}
-}
-
-func (client *GooglePlayClient) checkIn(req *gpproto.AndroidCheckinRequest) (resp *gpproto.AndroidCheckinResponse, err error) {
-   b, err := proto.Marshal(req)
-   if err != nil {
-      return
-   }
-   r, _ := http.NewRequest("POST", UrlBase + "/checkin", bytes.NewReader(b))
-   r.Header.Set("Content-Type", "application/x-protobuffer")
-   b, _, err = doReq(r)
-   if err != nil {
-      return
-   }
-   resp = &gpproto.AndroidCheckinResponse{}
-   err = proto.Unmarshal(b, resp)
-   return
 }
 
 var Pixel3a = &DeviceInfo{
@@ -309,24 +347,19 @@ func (client *GooglePlayClient) _doAuthedReq(r *http.Request) (_ *gpproto.Payloa
    return resp.Payload, nil
 }
 
-func (client *GooglePlayClient) doAuthedReq(r *http.Request) (res *gpproto.Payload, err error) {
-	res, err = client._doAuthedReq(r)
-	if err == GPTokenExpired {
-		err = client.RegenerateGPToken()
-		if err != nil {
-			return
-		}
-		if client.SessionFile != "" {
-			client.SaveSession(client.SessionFile)
-		}
-		res, err = client._doAuthedReq(r)
-	}
-	return
-}
-
-func (client *GooglePlayClient) RegenerateGPToken() (err error) {
-	client.AuthData.AuthToken, err = client.GenerateGPToken()
-	return
+func (client *GooglePlayClient) doAuthedReq(r *http.Request) (*gpproto.Payload, error) {
+   res, err := client._doAuthedReq(r)
+   if err == GPTokenExpired {
+      tok, err := client.GenerateGPToken()
+      if err != nil {
+         return nil, err
+      }
+      client.AuthData.AuthToken = tok
+      return client._doAuthedReq(r)
+   } else if err != nil {
+      return nil, err
+   }
+   return res, nil
 }
 
 const (
@@ -349,11 +382,8 @@ const (
 )
 
 type GooglePlayClient struct {
-	AuthData   *AuthData
-	DeviceInfo *DeviceInfo
-
-	// SessionFile if SessionFile is set then session will be saved to it after modification
-	SessionFile string
+   AuthData   *AuthData
+   DeviceInfo *DeviceInfo
 }
 
 var (
@@ -385,14 +415,6 @@ func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (cl
    return
 }
 
-func (client *GooglePlayClient) SaveSession(file string) error {
-	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	return json.NewEncoder(f).Encode(client.AuthData)
-}
-
 type AuthData struct {
    AASToken                      string
    AuthToken                     string
@@ -402,48 +424,3 @@ type AuthData struct {
    GsfID                         string
    Locale                        string
 }
-
-func (client *GooglePlayClient) uploadDeviceConfig() (*gpproto.UploadDeviceConfigResponse, error) {
-   b, err := proto.Marshal(&gpproto.UploadDeviceConfigRequest{DeviceConfiguration: client.DeviceInfo.GetDeviceConfigProto()})
-   if err != nil {
-      return nil, err
-   }
-   r, err := http.NewRequest("POST", UrlUploadDeviceConfig, bytes.NewReader(b))
-   if err != nil {
-      return nil, err
-   }
-   payload, err := client.doAuthedReq(r)
-   if err != nil {
-      return nil, err
-   }
-   return payload.UploadDeviceConfigResponse, nil
-}
-
-func (client *GooglePlayClient) GenerateGPToken() (string, error) {
-   params := &url.Values{}
-   params.Set("sdk_version", strconv.Itoa(int(client.DeviceInfo.Build.GetSdkVersion())))
-   params.Set("email", client.AuthData.Email)
-   params.Set("google_play_services_version", strconv.Itoa(int(client.DeviceInfo.Build.GetGoogleServices())))
-   params.Set("callerSig", "38918a453d07199354f8b19af05ec6562ced5788")
-   client.setAuthParams(params)
-   params.Set("app", "com.google.android.gms")
-   params.Set("service", "oauth2:https://www.googleapis.com/auth/googleplay")
-   r, _ := http.NewRequest("POST", UrlAuth+"?"+params.Encode(), nil)
-   b, _, err := doReq(r)
-   if err != nil {
-      return "", nil
-   }
-   resp := parseResponse(string(b))
-   token, ok := resp["Auth"]
-   if !ok {
-      return "", errors.New("authentication failed: could not generate oauth token")
-   }
-   return token, nil
-}
-
-func (client *GooglePlayClient) setAuthParams(params *url.Values) {
-   params.Set("Token", client.AuthData.AASToken)
-   params.Set("check_email", "1")
-   params.Set("client_sig", "38918a453d07199354f8b19af05ec6562ced5788")
-}
-
