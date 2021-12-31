@@ -9,33 +9,44 @@ import (
    "io"
    "net/http"
    "net/http/httputil"
-   "net/url"
-   "strconv"
    "strings"
 )
 
-func (client *GooglePlayClient) GenerateGPToken() (string, error) {
-   params := &url.Values{}
-   params.Set("sdk_version", strconv.Itoa(int(client.DeviceInfo.Build.GetSdkVersion())))
-   params.Set("email", client.AuthData.Email)
-   params.Set("google_play_services_version", strconv.Itoa(int(client.DeviceInfo.Build.GetGoogleServices())))
-   params.Set("callerSig", "38918a453d07199354f8b19af05ec6562ced5788")
-   params.Set("Token", client.AuthData.AASToken)
-   params.Set("check_email", "1")
-   params.Set("client_sig", "38918a453d07199354f8b19af05ec6562ced5788")
-   params.Set("app", "com.google.android.gms")
-   params.Set("service", "oauth2:https://www.googleapis.com/auth/googleplay")
-   r, _ := http.NewRequest("POST", UrlAuth+"?"+params.Encode(), nil)
-   b, _, err := doReq(r)
+func (i *DeviceInfo) GetDeviceConfigProto() *gpproto.DeviceConfigurationProto {
+   return &gpproto.DeviceConfigurationProto{
+      GlEsVersion:            &i.GLVersion,
+      GlExtension:            i.GLExtensions,
+      HasFiveWayNavigation:   ptrBool(false),
+      HasHardKeyboard:        ptrBool(false),
+      Keyboard:               &i.Keyboard,
+      Navigation:             &i.Navigation,
+      ScreenDensity:          &i.Screen.Density,
+      ScreenLayout:           &i.ScreenLayout,
+      SystemAvailableFeature: i.Features,
+      SystemSharedLibrary:    i.SharedLibraries,
+      TouchScreen:            &i.TouchScreen,
+      DeviceFeature:          i.GetDeviceFeatures(),
+   }
+}
+
+func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (*GooglePlayClient, error) {
+   authData := &AuthData{
+      AASToken: aasToken,
+      Email:    email,
+      Locale:   "en_GB",
+   }
+   client := GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
+   _, err := client.GenerateGsfID()
    if err != nil {
-      return "", nil
+      return nil, err
    }
-   resp := parseResponse(string(b))
-   token, ok := resp["Auth"]
-   if !ok {
-      return "", errors.New("authentication failed: could not generate oauth token")
+   deviceConfigRes, err := client.uploadDeviceConfig()
+   if err != nil {
+      return nil, err
    }
-   return token, nil
+   authData.DeviceConfigToken = deviceConfigRes.GetUploadDeviceConfigToken()
+   authData.AuthToken = token
+   return &client, nil
 }
 
 func (client *GooglePlayClient) uploadDeviceConfig() (*gpproto.UploadDeviceConfigResponse, error) {
@@ -121,83 +132,25 @@ type AppInfo struct {
 func buildAppFromItem(item *gpproto.Item) *App {
    details := item.Details.AppDetails
    app := &App{
-      PackageName:      *item.Id,
       CategoryID:       int(item.GetCategoryId()),
-      DisplayName:      item.GetTitle(),
-      Description:      item.GetDescriptionHtml(),
-      ShortDescription: item.GetPromotionalDescription(),
-      ShareUrl:         item.GetShareUrl(),
-      VersionName:      details.GetVersionString(),
-      VersionCode:      int(details.GetVersionCode()),
       CategoryName:     details.GetCategoryName(),
-      Size:             details.GetInfoDownloadSize(),
-      DownloadString:   details.GetDownloadLabelAbbreviated(),
       Changes:          details.GetRecentChangesHtml(),
       ContainsAds:      details.InstallNotes != nil,
-      EarlyAccess:      details.EarlyAccessInfo != nil,
+      Description:      item.GetDescriptionHtml(),
       DeveloperName:    details.GetDeveloperName(),
+      DisplayName:      item.GetTitle(),
+      DownloadString:   details.GetDownloadLabelAbbreviated(),
+      EarlyAccess:      details.EarlyAccessInfo != nil,
+      PackageName:      *item.Id,
+      ShareUrl:         item.GetShareUrl(),
+      ShortDescription: item.GetPromotionalDescription(),
+      Size:             details.GetInfoDownloadSize(),
       TargetSdk:        int(details.GetTargetSdkVersion()),
       UpdatedOn:        details.GetInfoUpdatedOn(),
+      VersionCode:      int(details.GetVersionCode()),
+      VersionName:      details.GetVersionString(),
    }
-   if len(item.Offer) > 0 {
-   offer := item.Offer[0]
-   app.OfferType = offer.GetOfferType()
-   app.IsFree = offer.GetMicros() == 0
-   app.Price = offer.GetFormattedAmount()
-   }
-   if app.DeveloperName == "" {
-   app.DeveloperName = item.GetCreator()
-   }
-   if details.InstantLink != nil {
-   app.InstantAppLink = details.GetInstantLink()
-   }
-   parseAppInfo(app, item)
-   parseStreamUrls(app, item)
-   parseImages(app, item)
    return app
-}
-
-func parseAppInfo(app *App, item *gpproto.Item) {
-	if item.AppInfo != nil {
-		app.AppInfo = &AppInfo{map[string]string{}}
-		for _, s := range item.AppInfo.Section {
-			if s.Label != nil && s.Container != nil && s.GetContainer().Description != nil {
-				app.AppInfo.AppInfoMap[s.GetLabel()] = s.GetContainer().GetDescription()
-			}
-		}
-	}
-}
-
-func parseStreamUrls(app *App, item *gpproto.Item) {
-	if item.Annotations != nil {
-		app.LiveStreamUrl = item.Annotations.GetLiveStreamUrl()
-		app.PromotionStreamUrl = item.Annotations.GetPromotionStreamUrl()
-	}
-}
-
-func parseImages(app *App, item *gpproto.Item) {
-	for _, image := range item.Image {
-		switch image.GetImageType() {
-		case ImageTypeCategoryIcon:
-			app.CategoryImage = image
-		case ImageTypeAppIcon:
-			app.IconImage = image
-		case ImageTypeYoutubeVideoThumbnail:
-			app.Video = image
-		case ImageTypePlayStorePageBackground:
-			app.CoverImage = image
-		case ImageTypeAppScreenshot:
-			app.Screenshots = append(app.Screenshots, image)
-		}
-	}
-
-	if len(app.Screenshots) == 0 {
-		if item.Annotations != nil && item.Annotations.SectionImage != nil {
-			for _, imageContainer := range item.Annotations.SectionImage.ImageContainer {
-				app.Screenshots = append(app.Screenshots, imageContainer.Image)
-			}
-		}
-	}
 }
 
 var Pixel3a = &DeviceInfo{
@@ -246,23 +199,6 @@ type DeviceInfoScreen struct {
    Density int32
    Width   int32
    Height  int32
-}
-
-func (i *DeviceInfo) GetDeviceConfigProto() *gpproto.DeviceConfigurationProto {
-   return &gpproto.DeviceConfigurationProto{
-      GlEsVersion:            &i.GLVersion,
-      GlExtension:            i.GLExtensions,
-      HasFiveWayNavigation:   ptrBool(false),
-      HasHardKeyboard:        ptrBool(false),
-      Keyboard:               &i.Keyboard,
-      Navigation:             &i.Navigation,
-      ScreenDensity:          &i.Screen.Density,
-      ScreenLayout:           &i.ScreenLayout,
-      SystemAvailableFeature: i.Features,
-      SystemSharedLibrary:    i.SharedLibraries,
-      TouchScreen:            &i.TouchScreen,
-      DeviceFeature:          i.GetDeviceFeatures(),
-   }
 }
 
 func (i *DeviceInfo) GetDeviceFeatures() (ret []*gpproto.DeviceFeature) {
@@ -328,38 +264,22 @@ func parseResponse(res string) map[string]string {
 	return ret
 }
 
-func (client *GooglePlayClient) _doAuthedReq(r *http.Request) (_ *gpproto.Payload, err error) {
+func (client *GooglePlayClient) doAuthedReq(r *http.Request) (*gpproto.Payload, error) {
    data := client.AuthData
    r.Header.Set("Authorization", "Bearer "+data.AuthToken)
    r.Header.Set("X-DFE-Device-Id", data.GsfID)
    b, status, err := doReq(r)
    if err != nil {
-      return
+      return nil, err
    }
    if status == 401 {
       return nil, GPTokenExpired
    }
    resp := &gpproto.ResponseWrapper{}
-   err = proto.Unmarshal(b, resp)
-   if err != nil {
-      return
-   }
-   return resp.Payload, nil
-}
-
-func (client *GooglePlayClient) doAuthedReq(r *http.Request) (*gpproto.Payload, error) {
-   res, err := client._doAuthedReq(r)
-   if err == GPTokenExpired {
-      tok, err := client.GenerateGPToken()
-      if err != nil {
-         return nil, err
-      }
-      client.AuthData.AuthToken = tok
-      return client._doAuthedReq(r)
-   } else if err != nil {
+   if err := proto.Unmarshal(b, resp); err != nil {
       return nil, err
    }
-   return res, nil
+   return resp.Payload, nil
 }
 
 const (
@@ -390,30 +310,6 @@ var (
    GPTokenExpired = errors.New("unauthorized, gp token expired")
    httpClient = &http.Client{}
 )
-
-func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (client *GooglePlayClient, err error) {
-   authData := &AuthData{
-   Email:    email,
-   AASToken: aasToken,
-   Locale:   "en_GB",
-   }
-   client = &GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
-   _, err = client.GenerateGsfID()
-   if err != nil {
-   return
-   }
-   deviceConfigRes, err := client.uploadDeviceConfig()
-   if err != nil {
-   return
-   }
-   authData.DeviceConfigToken = deviceConfigRes.GetUploadDeviceConfigToken()
-   token, err := client.GenerateGPToken()
-   if err != nil {
-   return
-   }
-   authData.AuthToken = token
-   return
-}
 
 type AuthData struct {
    AASToken                      string
