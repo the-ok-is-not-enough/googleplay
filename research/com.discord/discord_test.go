@@ -6,7 +6,7 @@ import (
 )
 
 func TestDiscord(t *testing.T) {
-   det, err := details()
+   det, err := details("com.discord")
    if err != nil {
       t.Fatal(err)
    }

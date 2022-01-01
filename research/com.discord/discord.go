@@ -32,7 +32,7 @@ func checkin() (uint64, error) {
    return mes.GetUint64(7), nil
 }
 
-func details() (uint64, error) {
+func details(app string) (uint64, error) {
    id, err := checkin()
    if err != nil {
       return 0, err
@@ -61,7 +61,7 @@ func details() (uint64, error) {
       "X-Dfe-Userlanguages":[]string{"en_GB"},
       "X-Limit-Ad-Tracking-Enabled":[]string{"false"},
    }
-   req.URL.RawQuery = "doc=com.discord"
+   req.URL.RawQuery = "doc=" + app
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return 0, err
