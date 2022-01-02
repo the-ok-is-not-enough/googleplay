@@ -11,35 +11,86 @@ import (
    "time"
 )
 
-const auth = "ya29.a0ARrdaM9WB7UHQMrsWAaBOm4-ndsaI6_qxJ0olxmNaWrCSlnr-1_uUg2HYeqXAZ8our4ZB_kFrS7zrkCahV6oE50V7kcqv6HXS0us1V16fRaEmAB__z3mGHRikES6g0yoi0fJZ1XbiPd7kAgWGQxkjZAICFj7dOJ4l-PSn2PbSbRN00EynjQ1FHqcViuRskgvKRwG2NZ7F9YC8LorYRSmdvogykHQSmWaLIj1DMMp-Ida6rsb4Ce2z1ob7Rgu8XZmwERWlTen7vKvCpqE9_2lQa216UJqslQT7ImGwVpEnEWcYOMKDYc"
+const auth = "ya29.a0ARrdaM_KG6LR-nzfsM8vHVC1Q3WEUrPD9fXkgfngrB5vVGaudcbqSn_wKTpJkCyJ5nrajNJBqDbRbcp8-zcGNeVD-YA89oyF_i93tLkFAnvS49ejme82cjU37lkjxhi4q8HYonp6PYm2hMZmSv4ohZHVczEXeQdNSWdZzorQaRiJt0SAiTJpwJrogWx036ts0mT8AF5OobK2gYUMaaZC8Wbdj5WT3irIyySL30qf9UmfO43S3TCpvyupjoNg7qETOohwZu2UD2vvPRhj3lB5pjWw0PZD3WdwWUhc_4PulcJ5BJqUXvs"
+
+var checkinBody = protobuf.Message{
+   protobuf.Tag{Number:4, String: "checkin"}:protobuf.Message{},
+   protobuf.Tag{Number:14, String: "version"}:uint64(3),
+}
+
+func checkinProto() (uint64, error) {
+   req0 := &http.Request{
+      Method:"POST",
+      URL:&url.URL{
+         Scheme:"https",
+         Host:"android.clients.google.com", Path:"/checkin",
+      },
+      Body: io.NopCloser(checkinBody.Encode()),
+      Header: http.Header{
+         "Content-Type": {"application/x-protobuffer"},
+      },
+   }
+   res, err := new(http.Transport).RoundTrip(req0)
+   if err != nil {
+      return 0, err
+   }
+   defer res.Body.Close()
+   mes, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return 0, err
+   }
+   return mes.GetUint64(7), nil
+}
+
+func checkin() (uint64, error) {
+   req0 := &http.Request{
+      Method:"POST",
+      URL:&url.URL{
+         Scheme:"https",
+         Host:"android.clients.google.com", Path:"/checkin",
+      },
+      Body:io.NopCloser(strings.NewReader("{\"checkin\":{},\"version\":3}\n")),
+   }
+   res, err := new(http.Transport).RoundTrip(req0)
+   if err != nil {
+      return 0, err
+   }
+   defer res.Body.Close()
+   var check struct {
+      Android_ID uint64
+   }
+   if err := json.NewDecoder(res.Body).Decode(&check); err != nil {
+      return 0, err
+   }
+   return check.Android_ID, nil
+}
+
+var body0 = protobuf.Message{
+   protobuf.Tag{Number:1, String:"touchScreen"}:uint64(0),
+   protobuf.Tag{Number:2, String:"keyboard"}:uint64(0),
+   protobuf.Tag{Number:3, String:"navigation"}:uint64(0),
+   protobuf.Tag{Number:4, String:"screenLayout"}:uint64(0),
+   protobuf.Tag{Number:5, String:"hasHardKeyboard"}:uint64(0),
+   protobuf.Tag{Number:6, String:"hasFiveWayNavigation"}:uint64(0),
+   protobuf.Tag{Number:7, String:"screenDensity"}:uint64(0),
+   protobuf.Tag{Number:8, String:"glEsVersion"}:uint64(0x3_0000),
+   protobuf.Tag{Number:11}:[]string{"x86"},
+   protobuf.Tag{Number:12, String:"screenWidth"}:uint64(1),
+   protobuf.Tag{Number:26}:[]protobuf.Message{
+      protobuf.Message{
+         protobuf.Tag{Number:1}:"android.hardware.touchscreen",
+      },
+      protobuf.Message{
+         protobuf.Tag{Number:1}:"android.hardware.screen.portrait",
+      },
+      protobuf.Message{
+         protobuf.Tag{Number:1}:"android.hardware.wifi",
+      },
+   },
+}
 
 var body1 = protobuf.Message{
-   protobuf.Tag{Number:1, String:""}:protobuf.Message{
-      protobuf.Tag{Number:1, String:""}:uint64(3),
-      protobuf.Tag{Number:2, String:""}:uint64(0),
-      protobuf.Tag{Number:3, String:""}:uint64(0),
-      protobuf.Tag{Number:4, String:""}:uint64(0),
-      protobuf.Tag{Number:5, String:""}:uint64(0),
-      protobuf.Tag{Number:6, String:""}:uint64(0),
-      protobuf.Tag{Number:7, String:""}:uint64(0),
-      protobuf.Tag{Number:8, String:""}:uint64(196609),
-      protobuf.Tag{Number:9, String:""}:[]string{
-         "com.samsung.device", "global-miui11-empty.jar"
-      },
-      protobuf.Tag{Number:10, String:""}:[]string{
-         "android.hardware.bluetooth",
-         "android.hardware.bluetooth_le", "android.hardware.camera",
-         "android.hardware.camera.autofocus", "android.hardware.location",
-         "android.hardware.location.gps", "android.hardware.microphone",
-         "android.hardware.screen.landscape", "android.hardware.screen.portrait",
-         "android.hardware.sensor.accelerometer", "android.hardware.telephony",
-         "android.hardware.touchscreen", "android.hardware.usb.host",
-         "android.hardware.wifi", "com.samsung.android.api.version.2601",
-         "com.samsung.feature.samsung_experience_mobile",
-      },
-      protobuf.Tag{Number:11, String:""}:[]string{"x86", "armeabi-v7a"},
-      protobuf.Tag{Number:15, String:""}:"GL_OES_compressed_ETC1_RGB8_texture",
-   },
+   protobuf.Tag{Number:1, String:""}: body0,
 }
 
 func upload(id string) error {
@@ -67,36 +118,12 @@ func upload(id string) error {
    return nil
 }
 
-func checkin() (int64, error) {
-   req0 := &http.Request{
-      Method:"POST",
-      URL:&url.URL{
-         Scheme:"https",
-         Host:"android.clients.google.com", Path:"/checkin",
-      },
-      Header:http.Header{"Host":[]string{"android.clients.google.com"}},
-      Body:io.NopCloser(strings.NewReader("{\"checkin\":{},\"version\":3}\n")),
-   }
-   res, err := new(http.Transport).RoundTrip(req0)
-   if err != nil {
-      return 0, err
-   }
-   defer res.Body.Close()
-   var check struct {
-      Android_ID int64
-   }
-   if err := json.NewDecoder(res.Body).Decode(&check); err != nil {
-      return 0, err
-   }
-   return check.Android_ID, nil
-}
-
 func details(app string) (uint64, error) {
    id, err := checkin()
    if err != nil {
       return 0, err
    }
-   sID := strconv.FormatInt(id, 16)
+   sID := strconv.FormatUint(id, 16)
    if err := upload(sID); err != nil {
       return 0, err
    }

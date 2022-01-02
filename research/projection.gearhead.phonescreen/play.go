@@ -7,32 +7,9 @@ import (
    "net/http"
    "net/url"
    "strconv"
-   "strings"
-   "time"
 )
 
-const auth = "ya29.A0ARrdaM8_M3iTgk8wQIA_h-ATs6C9Tmgq8J-GaT9TY6ZgyFwRiB4R6tmtV5iKBvd6K41jsrD-v_jwBvex2GoSByixifIe5UQ4C3ev1B7JT-xcjBJTy9G6IwULJv4rfV64h-hwbcVbQsdR0JKgg4kVtUy3zZkO4nMxf8z5bHDdYwH4iYyX3cp8WZ-uvbjPMsjNlapomWSA4dA0xxb-HK1WKebeuDdjjrPQ8FuoRd2aOu7QTyd1H_BYoiNA6qOz_7yj0ETtp2hkVowEoGRJjlAsHMs5X3mfyn-7unjUC84WkfOOJkUkdkw"
-
-var body0 = strings.NewReader("\n\xf1\x04\b\x03\x18\x00(\x000\x008\x00J\x12com.samsung.deviceJ\x17global-miui11-empty.jarz#GL_OES_compressed_ETC1_RGB8_texture\x10\x00 \x00@\x81\x80\fR\x1aandroid.hardware.bluetoothR\x1dandroid.hardware.bluetooth_leR\x17android.hardware.cameraR!android.hardware.camera.autofocusR\x19android.hardware.locationR\x1dandroid.hardware.location.gpsR\x1bandroid.hardware.microphoneR!android.hardware.screen.landscapeR android.hardware.screen.portraitR%android.hardware.sensor.accelerometerR\x1aandroid.hardware.telephonyR\x1candroid.hardware.touchscreenR\x19android.hardware.usb.hostR\x15android.hardware.wifiR$com.samsung.android.api.version.2601R-com.samsung.feature.samsung_experience_mobileZ\x03x86Z\varmeabi-v7a")
-
-func upload(id string) error {
-   var req0 = &http.Request{Method:"POST", URL:&url.URL{Scheme:"https",
-   Opaque:"", User:(*url.Userinfo)(nil), Host:"android.clients.google.com",
-   Path:"/fdfe/uploadDeviceConfig", RawPath:"", ForceQuery:false, RawQuery:"",
-   Fragment:"", RawFragment:""},
-   Header:http.Header{"Authorization":[]string{"Bearer " + auth},
-   "Host":[]string{"android.clients.google.com"},
-   "User-Agent":[]string{"Android-Finsky (sdk=99,versionCode=99999999)"},
-   "X-Dfe-Device-Id":[]string{id},
-   }, Body:io.NopCloser(body0)}
-   res, err := new(http.Transport).RoundTrip(req0)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   time.Sleep(16 * time.Second)
-   return nil
-}
+const auth = "ya29.a0ARrdaM_KG6LR-nzfsM8vHVC1Q3WEUrPD9fXkgfngrB5vVGaudcbqSn_wKTpJkCyJ5nrajNJBqDbRbcp8-zcGNeVD-YA89oyF_i93tLkFAnvS49ejme82cjU37lkjxhi4q8HYonp6PYm2hMZmSv4ohZHVczEXeQdNSWdZzorQaRiJt0SAiTJpwJrogWx036ts0mT8AF5OobK2gYUMaaZC8Wbdj5WT3irIyySL30qf9UmfO43S3TCpvyupjoNg7qETOohwZu2UD2vvPRhj3lB5pjWw0PZD3WdwWUhc_4PulcJ5BJqUXvs"
 
 var body1 = protobuf.Message{
    protobuf.Tag{Number:4}:protobuf.Message{
@@ -41,26 +18,29 @@ var body1 = protobuf.Message{
       },
    },
    protobuf.Tag{Number:14}:uint64(3),
-   protobuf.Tag{Number:18}:protobuf.Message{
-      protobuf.Tag{Number:1, String:"touchScreen"}:uint64(0),
-      protobuf.Tag{Number:2, String:"keyboard"}:uint64(0),
-      protobuf.Tag{Number:3, String:"navigation"}:uint64(0),
-      protobuf.Tag{Number:4, String:"screenLayout"}:uint64(0),
-      protobuf.Tag{Number:5, String:"hasHardKeyboard"}:uint64(0),
-      protobuf.Tag{Number:6, String:"hasFiveWayNavigation"}:uint64(0),
-      protobuf.Tag{Number:7, String:"screenDensity"}:uint64(0),
-      protobuf.Tag{Number:8, String:"glEsVersion"}:uint64(0x3_0000),
-      protobuf.Tag{Number:12, String:"screenWidth"}:uint64(1),
-      protobuf.Tag{Number:26}:[]protobuf.Message{
-         protobuf.Message{
-            protobuf.Tag{Number:1}:"android.hardware.touchscreen",
-         },
-         protobuf.Message{
-            protobuf.Tag{Number:1}:"android.hardware.screen.portrait",
-         },
-         protobuf.Message{
-            protobuf.Tag{Number:1}:"android.hardware.wifi",
-         },
+   protobuf.Tag{Number:18}: body0,
+}
+
+var body0 = protobuf.Message{
+   protobuf.Tag{Number:1, String:"touchScreen"}:uint64(0),
+   protobuf.Tag{Number:2, String:"keyboard"}:uint64(0),
+   protobuf.Tag{Number:3, String:"navigation"}:uint64(0),
+   protobuf.Tag{Number:4, String:"screenLayout"}:uint64(0),
+   protobuf.Tag{Number:5, String:"hasHardKeyboard"}:uint64(0),
+   protobuf.Tag{Number:6, String:"hasFiveWayNavigation"}:uint64(0),
+   protobuf.Tag{Number:7, String:"screenDensity"}:uint64(0),
+   protobuf.Tag{Number:8, String:"glEsVersion"}:uint64(0x3_0000),
+   protobuf.Tag{Number:11}:[]string{"x86"},
+   protobuf.Tag{Number:12, String:"screenWidth"}:uint64(1),
+   protobuf.Tag{Number:26}:[]protobuf.Message{
+      protobuf.Message{
+         protobuf.Tag{Number:1}:"android.hardware.touchscreen",
+      },
+      protobuf.Message{
+         protobuf.Tag{Number:1}:"android.hardware.screen.portrait",
+      },
+      protobuf.Message{
+         protobuf.Tag{Number:1}:"android.hardware.wifi",
       },
    },
 }
@@ -72,8 +52,8 @@ func checkin() (uint64, error) {
          Host:"android.clients.google.com",
          Path:"/checkin", 
       },
-      Header:http.Header{
-         "Content-Type":[]string{"application/x-protobuffer"},
+      Header: http.Header{
+         "Content-Type": {"application/x-protobuffer"},
       },
       Body: io.NopCloser(body1.Encode()),
    }

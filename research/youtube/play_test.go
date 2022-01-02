@@ -5,7 +5,11 @@ import (
    "testing"
 )
 
+//pass
 const app = "com.google.android.youtube"
+
+//fail
+//const app = "com.google.android.projection.gearhead.phonescreen"
 
 func TestDiscord(t *testing.T) {
    det, err := details(app)
