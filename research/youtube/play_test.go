@@ -5,7 +5,7 @@ import (
    "testing"
 )
 
-const app = "com.google.android.projection.gearhead.phonescreen"
+const app = "com.google.android.youtube"
 
 func TestDiscord(t *testing.T) {
    det, err := details(app)
