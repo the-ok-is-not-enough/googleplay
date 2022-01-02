@@ -64,6 +64,18 @@ var DefaultConfig = Config{
    TouchScreen: 3,
 }
 
+// com.google.android.youtube
+var youtube = Config{
+   GLESversion: 0x2_0000,
+   NativePlatform: []string{
+      "x86",
+   },
+   SystemAvailableFeature: []string{
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
+   },
+}
+
 var purchaseRequired = response{3, "purchase required"}
 
 func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
