@@ -5,8 +5,10 @@ import (
    "testing"
 )
 
+const app = "com.discord"
+
 func TestDiscord(t *testing.T) {
-   det, err := details("com.discord")
+   det, err := details(app)
    if err != nil {
       t.Fatal(err)
    }

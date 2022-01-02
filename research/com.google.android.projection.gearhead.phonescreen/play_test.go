@@ -5,8 +5,10 @@ import (
    "testing"
 )
 
+const app = "com.google.android.projection.gearhead.phonescreen"
+
 func TestDiscord(t *testing.T) {
-   det, err := details()
+   det, err := details(app)
    if err != nil {
       t.Fatal(err)
    }
