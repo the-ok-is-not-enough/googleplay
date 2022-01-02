@@ -9,16 +9,71 @@ import (
    "strconv"
 )
 
-const auth = "ya29.a0ARrdaM_KG6LR-nzfsM8vHVC1Q3WEUrPD9fXkgfngrB5vVGaudcbqSn_wKTpJkCyJ5nrajNJBqDbRbcp8-zcGNeVD-YA89oyF_i93tLkFAnvS49ejme82cjU37lkjxhi4q8HYonp6PYm2hMZmSv4ohZHVczEXeQdNSWdZzorQaRiJt0SAiTJpwJrogWx036ts0mT8AF5OobK2gYUMaaZC8Wbdj5WT3irIyySL30qf9UmfO43S3TCpvyupjoNg7qETOohwZu2UD2vvPRhj3lB5pjWw0PZD3WdwWUhc_4PulcJ5BJqUXvs"
-
-var body1 = protobuf.Message{
-   protobuf.Tag{Number:4}:protobuf.Message{
-      protobuf.Tag{Number:1}:protobuf.Message{
-         protobuf.Tag{Number:10}:uint64(29),
+func details(app string) (uint64, error) {
+   id, err := checkinProto()
+   if err != nil {
+      return 0, err
+   }
+   sID := strconv.FormatUint(id, 16)
+   fmt.Println(sID)
+   var req5 = &http.Request{
+      Header:http.Header{
+         "Authorization":[]string{"Bearer " + auth},
+         "X-Dfe-Device-Id":[]string{sID},
       },
-   },
-   protobuf.Tag{Number:14}:uint64(3),
-   protobuf.Tag{Number:18}: body0,
+      Method:"GET",
+      URL:&url.URL{
+         Host:"android.clients.google.com",
+         Path:"/fdfe/details",
+         RawQuery:"doc=" + app,
+         Scheme:"https",
+      },
+   }
+   res, err := new(http.Transport).RoundTrip(req5)
+   if err != nil {
+      return 0, err
+   }
+   if res.StatusCode != http.StatusOK {
+      return 0, response{res}
+   }
+   mes, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return 0, err
+   }
+   return mes.GetUint64(1,2,4,13,1,3), nil
+}
+
+type response struct {
+   *http.Response
+}
+
+func (r response) Error() string {
+   return r.Status
+}
+
+func checkinProto() (uint64, error) {
+   var req0 = &http.Request{
+      Body: io.NopCloser(checkinBody.Encode()),
+      Header: http.Header{
+         "Content-Type": {"application/x-protobuffer"},
+      },
+      Method:"POST",
+      URL:&url.URL{
+         Host:"android.clients.google.com",
+         Path:"/checkin", 
+         Scheme:"https",
+      },
+   }
+   res, err := new(http.Transport).RoundTrip(req0)
+   if err != nil {
+      return 0, err
+   }
+   defer res.Body.Close()
+   mes, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return 0, err
+   }
+   return mes.GetUint64(7), nil
 }
 
 var body0 = protobuf.Message{
@@ -45,53 +100,14 @@ var body0 = protobuf.Message{
    },
 }
 
-func checkin() (uint64, error) {
-   var req0 = &http.Request{
-      Method:"POST",
-      URL:&url.URL{Scheme:"https",
-         Host:"android.clients.google.com",
-         Path:"/checkin", 
-      },
-      Header: http.Header{
-         "Content-Type": {"application/x-protobuffer"},
-      },
-      Body: io.NopCloser(body1.Encode()),
-   }
-   res, err := new(http.Transport).RoundTrip(req0)
-   if err != nil {
-      return 0, err
-   }
-   defer res.Body.Close()
-   mes, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return 0, err
-   }
-   return mes.GetUint64(7), nil
-}
+////////////////////////////////////////////////////////////////////////////////
 
-func details(app string) (uint64, error) {
-   id, err := checkin()
-   if err != nil {
-      return 0, err
-   }
-   sID := strconv.FormatUint(id, 16)
-   fmt.Println(sID)
-   var req5 = &http.Request{Method:"GET", URL:&url.URL{Scheme:"https",
-      Host:"android.clients.google.com",
-      Path:"/fdfe/details", RawQuery:"doc=" + app,
+var checkinBody = protobuf.Message{
+   protobuf.Tag{Number:4}:protobuf.Message{
+      protobuf.Tag{Number:1}:protobuf.Message{
+         protobuf.Tag{Number:10}:uint64(29),
       },
-      Header:http.Header{
-         "Authorization":[]string{"Bearer " + auth},
-         "X-Dfe-Device-Id":[]string{sID},
-      },
-   }
-   res, err := new(http.Transport).RoundTrip(req5)
-   if err != nil {
-      return 0, err
-   }
-   mes, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return 0, err
-   }
-   return mes.GetUint64(1,2,4,13,1,3), nil
+   },
+   protobuf.Tag{Number:14}:uint64(3),
+   protobuf.Tag{Number:18}: body0,
 }
