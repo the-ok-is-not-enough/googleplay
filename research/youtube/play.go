@@ -14,7 +14,7 @@ import (
    "time"
 )
 
-const auth = "ya29.a0ARrdaM_u42HehDpxYQih_9NlnYwP7Zl6xK6MYVwXzThh91zi4FRmSjx-6KBdmmQPnSVipoUE5Rl8-jEJCfCujaIVAyhPkA8ZrAebGD-uV7OQRdNyH3GTS8ZlnUx0T_Q8xMHTmTGXUrjz5Hzhdbq327RkyI_EJr5_QwYsC8TXOt1Yggh_VEvXFV95lu8PjQtQIEkktNQtY7yCDX5CDaVz_C1SKNn7QrW0deI5p4eZ6Rr8qj4W6_pUg3bUcPkfoTwcrKYf_ICaamOz7hlR5g7gRVYGUZvPsUFJU-1imB1VNaYBInjV9gg"
+const auth = "ya29.a0ARrdaM8eYkSiwt61iquDUJHjzARxAjBFIxWYoKa1C_M_Y2aLAZLz2-5ppwo08s4W3r9LME8Qqb6Cx0U55P8uNtgO_XWozJd6__uTznnI9Tt2ULcv9IqP1-MK-E8cNlR2tDYk7PCf_o3Wru-RtbbUQE1jqorMf24HivgTRr-14Dtn4oXjBMD_xL136zqh1fxyQpcBZ-jdEDvJuqUHDTZrEFoh4VT72RRShLD696PAUqQ8R30Sat6mKOPW6dRiXL6oj1yxze1nZK-K188ZTjxWqxK-XM7yYzj5cAgDu_pVRuqCUy4fUKQ"
 
 var body0 = strings.NewReader("\n\xf1\x04\b\x03\x18\x00(\x000\x008\x00J\x12com.samsung.deviceJ\x17global-miui11-empty.jarz#GL_OES_compressed_ETC1_RGB8_texture\x10\x00 \x00@\x81\x80\fR\x1aandroid.hardware.bluetoothR\x1dandroid.hardware.bluetooth_leR\x17android.hardware.cameraR!android.hardware.camera.autofocusR\x19android.hardware.locationR\x1dandroid.hardware.location.gpsR\x1bandroid.hardware.microphoneR!android.hardware.screen.landscapeR android.hardware.screen.portraitR%android.hardware.sensor.accelerometerR\x1aandroid.hardware.telephonyR\x1candroid.hardware.touchscreenR\x19android.hardware.usb.hostR\x15android.hardware.wifiR$com.samsung.android.api.version.2601R-com.samsung.feature.samsung_experience_mobileZ\x03x86Z\varmeabi-v7a")
 
