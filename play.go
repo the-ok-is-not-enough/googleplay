@@ -100,10 +100,13 @@ func (i Size) String() string {
 }
 
 type response struct {
-   code uint64
-   status string
+   *http.Response
 }
 
 func (r response) Error() string {
-   return strconv.FormatUint(r.code, 10) + " " + r.status
+   return strconv.Itoa(r.StatusCode) + " " + r.Status
+}
+
+var purchaseRequired = response{
+   &http.Response{StatusCode: 3, Status: "purchase required"},
 }

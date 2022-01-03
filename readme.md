@@ -11,6 +11,8 @@
 
 Download APK from Google Play or send API requests
 
+[1]://f002.backblazeb2.com/file/ql8mlh/Spooked+%28The+Office%29.mp4
+
 ## How to install?
 
 Download Go from here:
@@ -30,7 +32,9 @@ go build
 
 ## Tool examples
 
-Create a file containing Token (`aas_et`) for future requests:
+If you are outside the United States, you might need to create an
+[App Password][2]. Create a file containing Token (`aas_et`) for future
+requests:
 
 ~~~
 googleplay -e EMAIL -p PASSWORD
@@ -62,8 +66,8 @@ Download APK. If APK is split, all pieces will be downloaded:
 googleplay -a com.google.android.youtube -v 1524493760
 ~~~
 
+[2]://support.google.com/accounts/answer/185833
+
 ## Repo
 
 https://github.com/89z/googleplay
-
-[1]://f002.backblazeb2.com/file/ql8mlh/Spooked+%28The+Office%29.mp4

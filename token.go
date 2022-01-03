@@ -126,6 +126,9 @@ func (t Token) Auth() (*Auth, error) {
       return nil, err
    }
    defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return nil, response{res}
+   }
    buf := bufio.NewScanner(res.Body)
    for buf.Scan() {
       kv := strings.SplitN(buf.Text(), "=", 2)

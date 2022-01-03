@@ -64,20 +64,6 @@ var DefaultConfig = Config{
    TouchScreen: 3,
 }
 
-// com.google.android.youtube
-var youtube = Config{
-   GLESversion: 0x2_0000,
-   NativePlatform: []string{
-      "x86",
-   },
-   SystemAvailableFeature: []string{
-      "android.hardware.touchscreen",
-      "android.hardware.wifi",
-   },
-}
-
-var purchaseRequired = response{3, "purchase required"}
-
 func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
@@ -103,7 +89,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       return nil, err
    }
    deliveryResponse := responseWrapper.Get(1, 21)
-   if deliveryResponse.GetUint64(1) == purchaseRequired.code {
+   if deliveryResponse.GetUint64(1) == uint64(purchaseRequired.StatusCode) {
       return nil, purchaseRequired
    }
    appDeliveryData := deliveryResponse.Get(2)
