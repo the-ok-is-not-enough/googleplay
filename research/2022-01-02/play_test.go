@@ -5,24 +5,16 @@ import (
    "testing"
 )
 
-type config struct {
-   app string
-   upload bool
-}
-
-var cons = []config{
-   {"com.google.android.projection.gearhead.phonescreen", false},
-   {"com.google.android.youtube", true},
+var apps = []string{
+   "com.google.android.projection.gearhead.phonescreen",
+   "com.google.android.youtube",
 }
 
 func TestPlay(t *testing.T) {
-   for _, con := range cons {
-      det, err := details(con.app, con.upload)
+   for _, app := range apps {
+      det, err := details(app)
       if err != nil {
          t.Fatal(err)
-      }
-      if det == 0 {
-         t.Fatal(det)
       }
       fmt.Println(det)
    }
