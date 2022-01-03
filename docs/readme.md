@@ -29,6 +29,14 @@ https://play.google.com/store/apps/details?id=com.iqiyi.i18n
 
 ## How to install split APK?
 
+Bash:
+
+~~~
+adb install-multiple *.apk
+~~~
+
+PowerShell:
+
 ~~~
 adb install-multiple (Get-ChildItem *.apk)
 ~~~
