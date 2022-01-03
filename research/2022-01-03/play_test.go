@@ -3,6 +3,7 @@ package play
 import (
    "fmt"
    "testing"
+   "time"
 )
 
 var apps = []string{
@@ -17,5 +18,6 @@ func TestPlay(t *testing.T) {
          t.Fatal(err)
       }
       fmt.Println(det)
+      time.Sleep(time.Second)
    }
 }

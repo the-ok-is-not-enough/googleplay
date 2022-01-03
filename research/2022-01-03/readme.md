@@ -1,4 +1,4 @@
-# January 2 2022
+# January 3 2022
 
 Field 26 is not given a name in the APKs, but it is given the name
 `deviceFeature` here:

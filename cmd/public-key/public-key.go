@@ -8,7 +8,7 @@ import (
 
 func main() {
    src := protobuf.Message{
-      {3, ""}: "", {4, ""}: "",
+      {3, "digest"}: "", {4, "checkin"}: protobuf.Message{},
    }
    res, err := http.Post(
       "http://android.clients.google.com/checkin",
