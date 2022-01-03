@@ -7,16 +7,23 @@ import (
    "net/http"
    "net/url"
    "strconv"
+   "time"
 )
 
-func details(app string) (uint64, error) {
+func details(app string, upload bool) (uint64, error) {
    id, err := checkinProto()
    if err != nil {
       return 0, err
    }
    sID := strconv.FormatUint(id, 16)
    fmt.Println(sID)
-   var req5 = &http.Request{
+   if upload {
+      err := uploadConfig(sID)
+      if err != nil {
+         return 0, err
+      }
+   }
+   req5 := &http.Request{
       Header:http.Header{
          "Authorization":[]string{"Bearer " + auth},
          "X-Dfe-Device-Id":[]string{sID},
@@ -52,7 +59,7 @@ func (r response) Error() string {
 }
 
 func checkinProto() (uint64, error) {
-   var req0 = &http.Request{
+   req0 := &http.Request{
       Body: io.NopCloser(checkinBody.Encode()),
       Header: http.Header{
          "Content-Type": {"application/x-protobuffer"},
@@ -60,7 +67,7 @@ func checkinProto() (uint64, error) {
       Method:"POST",
       URL:&url.URL{
          Host:"android.clients.google.com",
-         Path:"/checkin", 
+         Path:"/checkin",
          Scheme:"https",
       },
    }
@@ -74,6 +81,35 @@ func checkinProto() (uint64, error) {
       return 0, err
    }
    return mes.GetUint64(7), nil
+}
+
+var body1 = protobuf.Message{
+   protobuf.Tag{Number:1, String:""}: body0,
+}
+
+func uploadConfig(id string) error {
+   var req0 = &http.Request{
+      Method:"POST",
+      URL:&url.URL{
+         Scheme:"https",
+         Host:"android.clients.google.com",
+         Path:"/fdfe/uploadDeviceConfig",
+      },
+      Header:http.Header{
+         "Authorization":[]string{"Bearer " + auth},
+         "Host":[]string{"android.clients.google.com"},
+         "User-Agent":[]string{"Android-Finsky (sdk=99,versionCode=99999999)"},
+         "X-Dfe-Device-Id":[]string{id},
+      },
+      Body:io.NopCloser(body1.Encode()),
+   }
+   res, err := new(http.Transport).RoundTrip(req0)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   time.Sleep(16 * time.Second)
+   return nil
 }
 
 var body0 = protobuf.Message{
@@ -100,14 +136,12 @@ var body0 = protobuf.Message{
    },
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 var checkinBody = protobuf.Message{
-   protobuf.Tag{Number:4}:protobuf.Message{
+   protobuf.Tag{Number:4, String: "checkin"}:protobuf.Message{
       protobuf.Tag{Number:1}:protobuf.Message{
          protobuf.Tag{Number:10}:uint64(29),
       },
    },
-   protobuf.Tag{Number:14}:uint64(3),
+   protobuf.Tag{Number:14, String: "version"}:uint64(3),
    protobuf.Tag{Number:18}: body0,
 }
