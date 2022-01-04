@@ -66,8 +66,7 @@ func newDetails(dev *device, app string) (*details, error) {
       return nil, err
    }
    var det details
-   docV2 := responseWrapper.
-      Get(1, "payload").
+   docV2 := responseWrapper.Get(1, "payload").
       Get(2, "detailsResponse").
       Get(4, "docV2")
    det.versionCode = docV2.Get(13, "details").
@@ -106,8 +105,7 @@ func checkin(con config) (*device, error) {
       },
    }
    for _, feature := range con.deviceFeature {
-      checkinRequest.
-      Get(18, "deviceConfiguration").
+      checkinRequest.Get(18, "deviceConfiguration").
       Add(26, "deviceFeature", protobuf.Message{
          {1, "name"}: feature,
       })
@@ -129,12 +127,12 @@ func checkin(con config) (*device, error) {
    if err != nil {
       return nil, err
    }
-   mes, err := protobuf.Unmarshal(buf)
+   checkinResponse, err := protobuf.Unmarshal(buf)
    if err != nil {
       return nil, err
    }
    var dev device
-   dev.androidID = mes.GetUint64(7, "androidId")
+   dev.androidID = checkinResponse.GetUint64(7, "androidId")
    return &dev, nil
 }
 

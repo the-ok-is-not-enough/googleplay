@@ -1,11 +1,42 @@
 package googleplay
 
 import (
+   "encoding/json"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
    "strconv"
+   "strings"
 )
+
+type Device struct {
+   Android_ID int64
+}
+
+func NewDevice() (*Device, error) {
+   req, err := http.NewRequest(
+      "POST", origin + "/checkin",
+      strings.NewReader(`{"checkin":{},"version":3}`),
+   )
+   if err != nil {
+      return nil, err
+   }
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   dev := new(Device)
+   if err := json.NewDecoder(res.Body).Decode(dev); err != nil {
+      return nil, err
+   }
+   return dev, nil
+}
+
+func (d Device) String() string {
+   return strconv.FormatInt(d.Android_ID, 16)
+}
 
 var DefaultConfig = Config{
    // com.axis.drawingdesk.v3
@@ -214,19 +245,4 @@ type Config struct {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
-}
-
-type Offer struct {
-   Micros uint64
-   CurrencyCode string
-}
-
-func (o Offer) String() string {
-   val := float64(o.Micros) / 1_000_000
-   return strconv.FormatFloat(val, 'f', 2, 64) + " " + o.CurrencyCode
-}
-
-type SplitDeliveryData struct {
-   ID string
-   DownloadURL string
 }
