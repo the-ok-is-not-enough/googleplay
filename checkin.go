@@ -100,6 +100,40 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    return &del, nil
 }
 
+func (a Auth) Details(dev *Device, app string) (*Details, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   var det Details
+   docV2 := responseWrapper.Get(1, 2, 4)
+   det.CurrencyCode = docV2.GetString(8, 2)
+   det.Micros = docV2.GetUint64(8, 1)
+   det.NumDownloads = docV2.GetUint64(13, 1, 70)
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
+   det.Size = docV2.GetUint64(13, 1, 34, 2)
+   det.Title = docV2.GetString(5)
+   det.VersionCode = docV2.GetUint64(13, 1, 3)
+   det.VersionString = docV2.GetString(13, 1, 4)
+   return &det, nil
+}
+
 // This seems to return `StatusOK`, even with invalid requests, and the response
 // body only contains a token, that doesnt seem to indicate success or failure.
 // Only way I know to check, it to try the `deviceID` with a `details` request
@@ -169,6 +203,16 @@ type Delivery struct {
    SplitDeliveryData []SplitDeliveryData
 }
 
+type Details struct {
+   CurrencyCode string
+   Micros uint64
+   NumDownloads uint64
+   Size uint64
+   Title string
+   VersionCode uint64
+   VersionString string
+}
+
 type Device struct {
    Android_ID int64
 }
@@ -196,64 +240,4 @@ func NewDevice() (*Device, error) {
 
 func (d Device) String() string {
    return strconv.FormatInt(d.Android_ID, 16)
-}
-
-func (a Auth) Details(dev *Device, app string) (*Details, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
-   if err != nil {
-      return nil, err
-   }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "X-DFE-Device-ID": {dev.String()},
-   }
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   var det Details
-   docV2 := responseWrapper.Get(1, 2, 4)
-   det.CurrencyCode = docV2.GetString(8, 2)
-   det.Micros = docV2.GetUint64(8, 1)
-   det.NumDownloads = docV2.GetUint64(13, 1, 70)
-   // The shorter path 13,1,9 returns wrong size for some packages:
-   // com.riotgames.league.wildriftvn
-   det.Size = docV2.GetUint64(13, 1, 34, 2)
-   det.Title = docV2.GetString(5)
-   det.VersionCode = docV2.GetUint64(13, 1, 3)
-   det.VersionString = docV2.GetString(13, 1, 4)
-   return &det, nil
-}
-
-type Details struct {
-   CurrencyCode string
-   Micros uint64
-   NumDownloads uint64
-   Size uint64
-   Title string
-   VersionCode uint64
-   VersionString string
-}
-
-func (d Details) String() string {
-   return ""
-   /*
-   func (n NumDownloads) String() string {
-      return format.Number.LabelUint(n.Value)
-   }
-   func (o Offer) String() string {
-      val := float64(o.Micros) / 1_000_000
-      return strconv.FormatFloat(val, 'f', 2, 64) + " " + o.CurrencyCode
-   }
-   func (s Size) String() string {
-      return format.Size.LabelUint(s.Value)
-   }
-   */
 }

@@ -2,11 +2,14 @@ package googleplay
 
 import (
    "bytes"
+   "fmt"
+   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "io"
    "net/http"
    "net/url"
    "strconv"
+   "strings"
 )
 
 const (
@@ -121,6 +124,53 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    return &del, nil
 }
 
+func (a Auth) Details(dev *Device, app string) (*Details, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   req.Header = http.Header{
+      "Authorization": []string{"Bearer " + a.Auth},
+      "X-Dfe-Device-ID": []string{dev.String()},
+   }
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   if res.StatusCode != http.StatusOK {
+      return nil, response{res}
+   }
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   responseWrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
+      return nil, err
+   }
+   var det Details
+   docV2 := responseWrapper.Get(1, "payload").
+      Get(2, "detailsResponse").
+      Get(4, "docV2")
+   det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
+   det.Micros = docV2.Get(8, "offer").GetUint(1, "micros")
+   det.NumDownloads = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetUint(70, "numDownloads")
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
+   det.Size = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      Get(34, "installDetails").
+      GetUint(2, "size")
+   det.Title = docV2.GetString(5, "title")
+   det.VersionCode = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetUint(3, "versionCode")
+   det.VersionString = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetString(4, "versionString")
+   return &det, nil
+}
+
 type Config struct {
    DeviceFeature []string
    GLESversion uint64
@@ -140,6 +190,32 @@ type Config struct {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
+}
+
+type Details struct {
+   Title string
+   VersionString string
+   VersionCode uint64
+   NumDownloads uint64
+   Size uint64
+   Micros uint64
+   CurrencyCode string
+}
+
+func (d Details) String() string {
+   str := new(strings.Builder)
+   fmt.Fprintln(str, "Title:", d.Title)
+   fmt.Fprintln(str, "VersionString:", d.VersionString)
+   fmt.Fprintln(str, "VersionCode:", d.VersionCode)
+   fmt.Fprint(str, "NumDownloads: ")
+   format.Number.LabelUint64(str, d.NumDownloads)
+   fmt.Fprintln(str)
+   fmt.Fprint(str, "Size: ")
+   format.Size.LabelUint64(str, d.Size)
+   fmt.Fprintln(str)
+   fmt.Fprintf(str, "Offer: %.2f ", float64(d.Micros)/1_000_000)
+   fmt.Fprintln(str, d.CurrencyCode)
+   return str.String()
 }
 
 type Device struct {
@@ -216,61 +292,4 @@ type response struct {
 
 func (r response) Error() string {
    return r.Status
-}
-
-func (a Auth) Details(dev *Device, app string) (*Details, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
-   req.Header = http.Header{
-      "Authorization": []string{"Bearer " + a.Auth},
-      "X-Dfe-Device-ID": []string{dev.String()},
-   }
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   if res.StatusCode != http.StatusOK {
-      return nil, response{res}
-   }
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   responseWrapper, err := protobuf.Unmarshal(buf)
-   if err != nil {
-      return nil, err
-   }
-   var det Details
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(2, "detailsResponse").
-      Get(4, "docV2")
-   det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
-   det.Micros = docV2.Get(8, "offer").GetUint(1, "micros")
-   det.NumDownloads = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetUint(70, "numDownloads")
-   // The shorter path 13,1,9 returns wrong size for some packages:
-   // com.riotgames.league.wildriftvn
-   det.Size = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      Get(34, "installDetails").
-      GetUint(2, "size")
-   det.Title = docV2.GetString(5, "title")
-   det.VersionCode = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetUint(3, "versionCode")
-   det.VersionString = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(4, "versionString")
-   return &det, nil
-}
-
-type Details struct {
-   CurrencyCode string
-   Micros uint64
-   NumDownloads uint64
-   Size uint64
-   Title string
-   VersionCode uint64
-   VersionString string
 }
