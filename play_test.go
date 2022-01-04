@@ -15,18 +15,17 @@ type app struct {
 }
 
 var apps = []app{
+   // {down: "31.446 M", id: "com.xiaomi.smarthome"},
+   // {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
+   // {down: "282.669 K", id: "com.smarty.voomvoom"},
    {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
-   {down: "3.932 B", id: "com.instagram.android"},
-   {down: "2.423 B", id: "com.sec.android.app.launcher"},
-   {down: "975.149 M", id: "com.miui.weather2"},
-   {down: "689.574 M", id: "com.pinterest"},
    {down: "282.147 M", id: "org.videolan.vlc"},
-   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
-   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
-   {down: "31.446 M", id: "com.xiaomi.smarthome"},
+   {down: "3.932 B", id: "com.instagram.android"},
    {down: "30.702 M", id: "com.vimeo.android.videoapp"},
-   {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
-   {down: "282.669 K", id: "com.smarty.voomvoom"},
+   {down: "689.574 M", id: "com.pinterest"},
+   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
+   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
+   {down: "975.149 M", id: "com.miui.weather2"},
 }
 
 func TestDetails(t *testing.T) {
@@ -56,6 +55,35 @@ func TestDetails(t *testing.T) {
       }
       time.Sleep(time.Second)
    }
+}
+
+func TestDevice(t *testing.T) {
+   dev, err := Checkin(DefaultConfig)
+   if err != nil {
+      t.Fatal(err)
+   }
+   tok := new(Token)
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   src, err := os.Open(cache + "/googleplay/token.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer src.Close()
+   if err := tok.Decode(src); err != nil {
+      t.Fatal(err)
+   }
+   dst, err := os.Create(cache + "/googleplay/device.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer dst.Close()
+   if err := dev.Encode(dst); err != nil {
+      t.Fatal(err)
+   }
+   time.Sleep(Sleep)
 }
 
 func TestDelivery(t *testing.T) {
@@ -98,42 +126,6 @@ func getAuth() (*Auth, string, error) {
       return nil, "", err
    }
    return auth, cache, nil
-}
-
-func TestDevice(t *testing.T) {
-   dev, err := NewDevice()
-   if err != nil {
-      t.Fatal(err)
-   }
-   tok := new(Token)
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      t.Fatal(err)
-   }
-   src, err := os.Open(cache + "/googleplay/token.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer src.Close()
-   if err := tok.Decode(src); err != nil {
-      t.Fatal(err)
-   }
-   auth, err := tok.Auth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := auth.Upload(dev, DefaultConfig); err != nil {
-      t.Fatal(err)
-   }
-   dst, err := os.Create(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer dst.Close()
-   if err := dev.Encode(dst); err != nil {
-      t.Fatal(err)
-   }
-   time.Sleep(Sleep)
 }
 
 func TestTokenEncode(t *testing.T) {

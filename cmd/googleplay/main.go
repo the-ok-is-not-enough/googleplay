@@ -25,7 +25,7 @@ func main() {
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
-      googleplay.LogLevel = 1
+      googleplay.Log.Level = 1
    }
    switch {
    case email != "":

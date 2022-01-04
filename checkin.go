@@ -11,9 +11,11 @@ import (
    "os"
    "strconv"
    "strings"
+   "time"
 )
 
 const (
+   Sleep = 4 * time.Second
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
    origin = "https://android.clients.google.com"
 )

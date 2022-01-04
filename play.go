@@ -14,10 +14,7 @@ import (
    "net/url"
    "strconv"
    "strings"
-   "time"
 )
-
-const Sleep = 16 * time.Second
 
 const androidKey =
    "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +

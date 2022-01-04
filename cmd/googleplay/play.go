@@ -95,15 +95,12 @@ func details(app string) (*gp.Details, error) {
 }
 
 func device() (string, error) {
-   auth, cache, err := getAuth()
+   cache, err := os.UserCacheDir()
    if err != nil {
       return "", err
    }
-   dev, err := gp.Checkin()
+   dev, err := gp.Checkin(gp.DefaultConfig)
    if err != nil {
-      return "", err
-   }
-   if err := auth.Upload(dev, gp.DefaultConfig); err != nil {
       return "", err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
