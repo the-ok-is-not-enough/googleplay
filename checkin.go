@@ -51,14 +51,8 @@ var DefaultConfig = Config{
       "android.hardware.usb.host",
       // com.google.android.youtube
       "android.hardware.wifi",
-      // com.sec.android.app.launcher
-      "com.samsung.android.api.version.2601",
-      // com.sec.android.app.launcher
-      "com.samsung.feature.samsung_experience_mobile",
    },
    SystemSharedLibrary: []string{
-      // com.sec.android.app.launcher
-      "com.samsung.device",
       // com.miui.weather2
       "global-miui11-empty.jar",
    },
