@@ -9,35 +9,6 @@ import (
    "strings"
 )
 
-type Device struct {
-   Android_ID int64
-}
-
-func NewDevice() (*Device, error) {
-   req, err := http.NewRequest(
-      "POST", origin + "/checkin",
-      strings.NewReader(`{"checkin":{},"version":3}`),
-   )
-   if err != nil {
-      return nil, err
-   }
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   dev := new(Device)
-   if err := json.NewDecoder(res.Body).Decode(dev); err != nil {
-      return nil, err
-   }
-   return dev, nil
-}
-
-func (d Device) String() string {
-   return strconv.FormatInt(d.Android_ID, 16)
-}
-
 var DefaultConfig = Config{
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
@@ -52,7 +23,7 @@ var DefaultConfig = Config{
       "armeabi-v7a",
    },
    SystemAvailableFeature: []string{
-      // com.smarty.voomvoom
+      // com.instagram.android
       "android.hardware.bluetooth",
       // com.xiaomi.smarthome
       "android.hardware.bluetooth_le",
@@ -169,15 +140,6 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    return &det, nil
 }
 
-type Details struct {
-   NumDownloads NumDownloads
-   Offer Offer
-   Size Size
-   Title string
-   VersionCode uint64
-   VersionString string
-}
-
 // This seems to return `StatusOK`, even with invalid requests, and the response
 // body only contains a token, that doesnt seem to indicate success or failure.
 // Only way I know to check, it to try the `deviceID` with a `details` request
@@ -245,4 +207,42 @@ type Config struct {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
+}
+
+type Details struct {
+   NumDownloads NumDownloads
+   Offer Offer
+   Size Size
+   Title string
+   VersionCode uint64
+   VersionString string
+}
+
+type Device struct {
+   Android_ID int64
+}
+
+func NewDevice() (*Device, error) {
+   req, err := http.NewRequest(
+      "POST", origin + "/checkin",
+      strings.NewReader(`{"checkin":{},"version":3}`),
+   )
+   if err != nil {
+      return nil, err
+   }
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   dev := new(Device)
+   if err := json.NewDecoder(res.Body).Decode(dev); err != nil {
+      return nil, err
+   }
+   return dev, nil
+}
+
+func (d Device) String() string {
+   return strconv.FormatInt(d.Android_ID, 16)
 }

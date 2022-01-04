@@ -1,4 +1,4 @@
-package play
+package googleplay
 
 import (
    "bytes"
@@ -9,39 +9,54 @@ import (
    "strconv"
 )
 
-var defaultConfig = config{
-   deviceFeature: []string{
+var DefaultConfig = Config{
+   DeviceFeature: []string{
+      // com.instagram.android
+      "android.hardware.bluetooth",
+      // com.pinterest
+      "android.hardware.camera",
+      // com.pinterest
+      "android.hardware.location",
+      // com.google.android.youtube
       "android.hardware.touchscreen",
+      // com.pinterest
       "android.hardware.screen.portrait",
+      // com.google.android.youtube
       "android.hardware.wifi",
    },
-   glEsVersion: 0x3_0000,
-   nativePlatform: []string{
+   // com.axis.drawingdesk.v3
+   GLESversion: 0x0003_0001,
+   GLextension: []string{
+      // com.instagram.android
+      "GL_OES_compressed_ETC1_RGB8_texture",
+   },
+   NativePlatform: []string{
       "x86",
    },
-   screenWidth: 1,
+   ScreenWidth: 1,
 }
 
-type config struct {
-   deviceFeature []string
-   glEsVersion uint64
-   hasFiveWayNavigation uint64
-   hasHardKeyboard uint64
-   keyboard uint64
-   nativePlatform []string
-   navigation uint64
-   screenDensity uint64
-   screenLayout uint64
-   screenWidth uint64
-   touchScreen uint64
+type Config struct {
+   DeviceFeature []string
+   GLESversion uint64
+   GLextension []string
+   HasFiveWayNavigation uint64
+   HasHardKeyboard uint64
+   Keyboard uint64
+   NativePlatform []string
+   Navigation uint64
+   ScreenDensity uint64
+   ScreenLayout uint64
+   ScreenWidth uint64
+   TouchScreen uint64
 }
 
-type details struct {
-   versionCode uint64
-   versionString string
+type Details struct {
+   VersionCode uint64
+   VersionString string
 }
 
-func newDetails(dev *device, app string) (*details, error) {
+func NewDetails(dev *Device, app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
    )
@@ -65,25 +80,25 @@ func newDetails(dev *device, app string) (*details, error) {
    if err != nil {
       return nil, err
    }
-   var det details
+   var det Details
    docV2 := responseWrapper.Get(1, "payload").
       Get(2, "detailsResponse").
       Get(4, "docV2")
-   det.versionCode = docV2.Get(13, "details").
+   det.VersionCode = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetUint64(3, "versionCode")
-   det.versionString = docV2.Get(13, "details").
+   det.VersionString = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(4, "versionString")
    return &det, nil
 }
 
-type device struct {
-   androidID uint64
+type Device struct {
+   AndroidID uint64
 }
 
 // A Sleep is needed after this.
-func checkin(con config) (*device, error) {
+func Checkin(con Config) (*Device, error) {
    checkinRequest := protobuf.Message{
       {4, "checkin"}: protobuf.Message{
          {1, "build"}: protobuf.Message{
@@ -92,19 +107,20 @@ func checkin(con config) (*device, error) {
       },
       {14, "version"}: uint64(3),
       {18, "deviceConfiguration"}: protobuf.Message{
-         {1, "touchScreen"}: con.touchScreen,
-         {2, "keyboard"}: con.keyboard,
-         {3, "navigation"}: con.navigation,
-         {4, "screenLayout"}: con.screenLayout,
-         {5, "hasHardKeyboard"}: con.hasHardKeyboard,
-         {6, "hasFiveWayNavigation"}: con.hasFiveWayNavigation,
-         {7, "screenDensity"}: con.screenDensity,
-         {8, "glEsVersion"}: con.glEsVersion,
-         {11, "nativePlatform"}: con.nativePlatform,
-         {12, "screenWidth"}: con.screenWidth,
+         {1, "touchScreen"}: con.TouchScreen,
+         {2, "keyboard"}: con.Keyboard,
+         {3, "navigation"}: con.Navigation,
+         {4, "screenLayout"}: con.ScreenLayout,
+         {5, "hasHardKeyboard"}: con.HasHardKeyboard,
+         {6, "hasFiveWayNavigation"}: con.HasFiveWayNavigation,
+         {7, "screenDensity"}: con.ScreenDensity,
+         {8, "glEsVersion"}: con.GLESversion,
+         {11, "nativePlatform"}: con.NativePlatform,
+         {12, "screenWidth"}: con.ScreenWidth,
+         {15, "glExtension"}: con.GLextension,
       },
    }
-   for _, feature := range con.deviceFeature {
+   for _, feature := range con.DeviceFeature {
       checkinRequest.Get(18, "deviceConfiguration").
       Add(26, "deviceFeature", protobuf.Message{
          {1, "name"}: feature,
@@ -131,13 +147,13 @@ func checkin(con config) (*device, error) {
    if err != nil {
       return nil, err
    }
-   var dev device
-   dev.androidID = checkinResponse.GetUint64(7, "androidId")
+   var dev Device
+   dev.AndroidID = checkinResponse.GetUint64(7, "androidId")
    return &dev, nil
 }
 
-func (d device) String() string {
-   return strconv.FormatUint(d.androidID, 16)
+func (d Device) String() string {
+   return strconv.FormatUint(d.AndroidID, 16)
 }
 
 type response struct {
