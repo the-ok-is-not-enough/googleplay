@@ -99,7 +99,7 @@ func device() (string, error) {
    if err != nil {
       return "", err
    }
-   dev, err := gp.NewDevice()
+   dev, err := gp.Checkin()
    if err != nil {
       return "", err
    }

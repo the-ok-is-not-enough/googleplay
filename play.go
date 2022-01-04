@@ -7,7 +7,6 @@ import (
    "crypto/sha1"
    "encoding/base64"
    "encoding/json"
-   "github.com/89z/format"
    "github.com/89z/format/crypto"
    "io"
    "math/big"
@@ -18,22 +17,12 @@ import (
    "time"
 )
 
-const (
-   Sleep = 16 * time.Second
-   agent = "Android-Finsky (sdk=99,versionCode=99999999)"
-   origin = "https://android.clients.google.com"
-)
+const Sleep = 16 * time.Second
 
 const androidKey =
    "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-
-var LogLevel format.LogLevel
-
-var purchaseRequired = response{
-   &http.Response{StatusCode: 3, Status: "purchase required"},
-}
 
 func signature(email, password string) (string, error) {
    data, err := base64.StdEncoding.DecodeString(androidKey)
@@ -73,10 +62,6 @@ func signature(email, password string) (string, error) {
    return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
 }
 
-type Auth struct {
-   Auth string
-}
-
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
    query := "doc=" + url.QueryEscape(app)
@@ -92,7 +77,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   LogLevel.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -110,11 +95,6 @@ func (d Device) Encode(dst io.Writer) error {
    enc := json.NewEncoder(dst)
    enc.SetIndent("", " ")
    return enc.Encode(d)
-}
-
-type SplitDeliveryData struct {
-   ID string
-   DownloadURL string
 }
 
 type Token struct {
@@ -143,7 +123,7 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
+   Log.Dump(req)
    res, err := hello.Transport().RoundTrip(req)
    if err != nil {
       return nil, err
@@ -174,7 +154,7 @@ func (t Token) Auth() (*Auth, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -219,12 +199,4 @@ type notFound struct {
 
 func (n notFound) Error() string {
    return strconv.Quote(n.input) + " not found"
-}
-
-type response struct {
-   *http.Response
-}
-
-func (r response) Error() string {
-   return strconv.Itoa(r.StatusCode) + " " + r.Status
 }
