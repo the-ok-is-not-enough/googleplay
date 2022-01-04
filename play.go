@@ -24,7 +24,58 @@ const (
    origin = "https://android.clients.google.com"
 )
 
+const androidKey =
+   "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
+   "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
+   "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
+
 var LogLevel format.LogLevel
+
+var purchaseRequired = response{
+   &http.Response{StatusCode: 3, Status: "purchase required"},
+}
+
+func signature(email, password string) (string, error) {
+   data, err := base64.StdEncoding.DecodeString(androidKey)
+   if err != nil {
+      return "", err
+   }
+   var key rsa.PublicKey
+   buf := crypto.NewBuffer(data)
+   // modulus_length | modulus | exponent_length | exponent
+   _, mod, ok := buf.ReadUint32LengthPrefixed()
+   if ok {
+      key.N = new(big.Int).SetBytes(mod)
+   }
+   _, exp, ok := buf.ReadUint32LengthPrefixed()
+   if ok {
+      exp := new(big.Int).SetBytes(exp).Int64()
+      key.E = int(exp)
+   }
+   var (
+      msg bytes.Buffer
+      nop nopSource
+   )
+   msg.WriteString(email)
+   msg.WriteByte(0)
+   msg.WriteString(password)
+   login, err := rsa.EncryptOAEP(
+      sha1.New(), nop, &key, msg.Bytes(), nil,
+   )
+   if err != nil {
+      return "", err
+   }
+   hash := sha1.Sum(data)
+   msg.Reset()
+   msg.WriteByte(0)
+   msg.Write(hash[:4])
+   msg.Write(login)
+   return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
+}
+
+type Auth struct {
+   Auth string
+}
 
 // Purchase app. Only needs to be done once per Google account.
 func (a Auth) Purchase(dev *Device, app string) error {
@@ -69,26 +120,6 @@ func (n NumDownloads) String() string {
    return format.Number.LabelUint(n.Value)
 }
 
-type Size struct {
-   Value uint64
-}
-
-func (i Size) String() string {
-   return format.Size.LabelUint(i.Value)
-}
-
-type response struct {
-   *http.Response
-}
-
-func (r response) Error() string {
-   return strconv.Itoa(r.StatusCode) + " " + r.Status
-}
-
-var purchaseRequired = response{
-   &http.Response{StatusCode: 3, Status: "purchase required"},
-}
-
 type Offer struct {
    Micros uint64
    CurrencyCode string
@@ -99,56 +130,17 @@ func (o Offer) String() string {
    return strconv.FormatFloat(val, 'f', 2, 64) + " " + o.CurrencyCode
 }
 
+type Size struct {
+   Value uint64
+}
+
+func (s Size) String() string {
+   return format.Size.LabelUint(s.Value)
+}
+
 type SplitDeliveryData struct {
    ID string
    DownloadURL string
-}
-
-const androidKey =
-   "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
-   "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
-   "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-
-func signature(email, password string) (string, error) {
-   data, err := base64.StdEncoding.DecodeString(androidKey)
-   if err != nil {
-      return "", err
-   }
-   var key rsa.PublicKey
-   buf := crypto.NewBuffer(data)
-   // modulus_length | modulus | exponent_length | exponent
-   _, mod, ok := buf.ReadUint32LengthPrefixed()
-   if ok {
-      key.N = new(big.Int).SetBytes(mod)
-   }
-   _, exp, ok := buf.ReadUint32LengthPrefixed()
-   if ok {
-      exp := new(big.Int).SetBytes(exp).Int64()
-      key.E = int(exp)
-   }
-   var (
-      msg bytes.Buffer
-      nop nopSource
-   )
-   msg.WriteString(email)
-   msg.WriteByte(0)
-   msg.WriteString(password)
-   login, err := rsa.EncryptOAEP(
-      sha1.New(), nop, &key, msg.Bytes(), nil,
-   )
-   if err != nil {
-      return "", err
-   }
-   hash := sha1.Sum(data)
-   msg.Reset()
-   msg.WriteByte(0)
-   msg.Write(hash[:4])
-   msg.Write(login)
-   return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
-}
-
-type Auth struct {
-   Auth string
 }
 
 type Token struct {
@@ -253,4 +245,12 @@ type notFound struct {
 
 func (n notFound) Error() string {
    return strconv.Quote(n.input) + " not found"
+}
+
+type response struct {
+   *http.Response
+}
+
+func (r response) Error() string {
+   return strconv.Itoa(r.StatusCode) + " " + r.Status
 }

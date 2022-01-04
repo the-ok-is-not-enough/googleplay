@@ -9,6 +9,11 @@ import (
    "strconv"
 )
 
+const (
+   agent = "Android-Finsky (sdk=99,versionCode=99999999)"
+   origin = "https://android.clients.google.com"
+)
+
 var DefaultConfig = Config{
    DeviceFeature: []string{
       // com.instagram.android
@@ -59,6 +64,10 @@ var DefaultConfig = Config{
    },
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,
+}
+
+var purchaseRequired = response{
+   &http.Response{StatusCode: 3, Status: "purchase required"},
 }
 
 type Config struct {
@@ -117,8 +126,7 @@ func Checkin(con Config) (*Device, error) {
       })
    }
    req, err := http.NewRequest(
-      "POST", "https://android.clients.google.com/checkin",
-      bytes.NewReader(checkinRequest.Marshal()),
+      "POST", origin + "/checkin", bytes.NewReader(checkinRequest.Marshal()),
    )
    req.Header.Set("Content-Type", "application/x-protobuffer")
    res, err := new(http.Transport).RoundTrip(req)
@@ -159,9 +167,7 @@ type Auth struct {
 }
 
 func (a Auth) Details(dev *Device, app string) (*Details, error) {
-   req, err := http.NewRequest(
-      "GET", "https://android.clients.google.com/fdfe/details", nil,
-   )
+   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    req.Header = http.Header{
       "Authorization": []string{"Bearer " + a.Auth},
       "X-Dfe-Device-ID": []string{dev.String()},
@@ -195,7 +201,16 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    return &det, nil
 }
 
-// FIXME
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
+}
+
+type SplitDeliveryData struct {
+   ID string
+   DownloadURL string
+}
+
 func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
@@ -210,27 +225,34 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       "doc": {app},
       "vc": {strconv.FormatInt(ver, 10)},
    }.Encode()
-   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   responseWrapper, err := protobuf.Decode(res.Body)
+   buf, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err
    }
-   deliveryResponse := responseWrapper.Get(1, 21)
-   if deliveryResponse.GetUint64(1) == uint64(purchaseRequired.StatusCode) {
+   responseWrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
+      return nil, err
+   }
+   status := responseWrapper.Get(1, "payload").
+      Get(21, "deliveryResponse").
+      GetUint64(1, "status")
+   if int(status) == purchaseRequired.StatusCode {
       return nil, purchaseRequired
    }
-   appDeliveryData := deliveryResponse.Get(2)
    var del Delivery
-   del.DownloadURL = appDeliveryData.GetString(3)
-   for _, split := range appDeliveryData.GetMessages(15) {
+   deliveryData := responseWrapper.Get(1, "payload").
+      Get(21, "deliveryResponse").
+      Get(2, "appDeliveryData")
+   del.DownloadURL = deliveryData.GetString(3, "downloadUrl")
+   for _, split := range deliveryData.GetMessages(15, "splitDeliveryData") {
       var dSplit SplitDeliveryData
-      dSplit.ID = split.GetString(1)
-      dSplit.DownloadURL = split.GetString(5)
+      dSplit.ID = split.GetString(1, "id")
+      dSplit.DownloadURL = split.GetString(5, "downloadUrl")
       del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
    }
    return &del, nil
