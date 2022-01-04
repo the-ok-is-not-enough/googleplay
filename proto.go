@@ -124,8 +124,8 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   docV2 := responseWrapper.Get(1, 2, 4)
    var det Details
+   docV2 := responseWrapper.Get(1, 2, 4)
    det.NumDownloads.Value = docV2.GetUint64(13, 1, 70)
    det.Offer.CurrencyCode = docV2.GetString(8, 2)
    det.Offer.Micros = docV2.GetUint64(8, 1)

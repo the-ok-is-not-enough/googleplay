@@ -2,7 +2,6 @@ package play
 
 import (
    "bytes"
-   "fmt"
    "github.com/89z/format/protobuf"
    "io"
    "net/http"
@@ -10,12 +9,17 @@ import (
    "strconv"
 )
 
-type response struct {
-   *http.Response
-}
-
-func (r response) Error() string {
-   return r.Status
+var defaultConfig = config{
+   deviceFeature: []string{
+      "android.hardware.touchscreen",
+      "android.hardware.screen.portrait",
+      "android.hardware.wifi",
+   },
+   glEsVersion: 0x3_0000,
+   nativePlatform: []string{
+      "x86",
+   },
+   screenWidth: 1,
 }
 
 type config struct {
@@ -32,121 +36,116 @@ type config struct {
    touchScreen uint64
 }
 
-var defaultConfig = config{
-   deviceFeature: []string{
-      "android.hardware.touchscreen",
-      "android.hardware.screen.portrait",
-      "android.hardware.wifi",
-   }
-   glEsVersion: 0x3_0000,
-   nativePlatform: []string{
-      "x86",
-   },
-   screenWidth: 1,
+type details struct {
+   versionCode uint64
+   versionString string
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-// A Sleep might be needed after this.
-func checkinProto() (uint64, error) {
-   androidCheckinRequest := protobuf.Message{
-      {4, "checkin"}:protobuf.Message{
-         {1, "build"}:protobuf.Message{
-            {10, "sdkVersion"}:uint64(29),
-         },
-      },
-      {14, "version"}:uint64(3),
-      {18, "deviceConfiguration"}: protobuf.Message{
-         {1, "touchScreen"}:uint64(0),
-         {2, "keyboard"}:uint64(0),
-         {3, "navigation"}:uint64(0),
-         {4, "screenLayout"}:uint64(0),
-         {5, "hasHardKeyboard"}:uint64(0),
-         {6, "hasFiveWayNavigation"}:uint64(0),
-         {7, "screenDensity"}:uint64(0),
-         {8, "glEsVersion"}:uint64(0x3_0000),
-         {11, "nativePlatform"}:[]string{"x86"},
-         {12, "screenWidth"}:uint64(1),
-         {26, "deviceFeature"}:[]protobuf.Message{
-            protobuf.Message{
-               {1, "name"}:"android.hardware.touchscreen",
-            },
-            protobuf.Message{
-               {1, "name"}:"android.hardware.screen.portrait",
-            },
-            protobuf.Message{
-               {1, "name"}:"android.hardware.wifi",
-            },
-         },
-      },
+func newDetails(dev *device, app string) (*details, error) {
+   req, err := http.NewRequest(
+      "GET", "https://android.clients.google.com/fdfe/details", nil,
+   )
+   req.Header = http.Header{
+      "Authorization": []string{"Bearer " + auth},
+      "X-Dfe-Device-ID": []string{dev.String()},
    }
-   req0 := &http.Request{
-      Body: io.NopCloser(bytes.NewReader(androidCheckinRequest.Marshal())),
-      Header: http.Header{
-         "Content-Type": {"application/x-protobuffer"},
-      },
-      Method:"POST",
-      URL:&url.URL{
-         Host:"android.clients.google.com",
-         Path:"/checkin",
-         Scheme:"https",
-      },
-   }
-   res, err := new(http.Transport).RoundTrip(req0)
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
-      return 0, err
+      return nil, err
+   }
+   if res.StatusCode != http.StatusOK {
+      return nil, response{res}
+   }
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   responseWrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
+      return nil, err
+   }
+   var det details
+   docV2 := responseWrapper.
+      Get(1, "payload").
+      Get(2, "detailsResponse").
+      Get(4, "docV2")
+   det.versionCode = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetUint64(3, "versionCode")
+   det.versionString = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetString(4, "versionString")
+   return &det, nil
+}
+
+type device struct {
+   androidID uint64
+}
+
+// A Sleep is needed after this.
+func checkin(con config) (*device, error) {
+   checkinRequest := protobuf.Message{
+      {4, "checkin"}: protobuf.Message{
+         {1, "build"}: protobuf.Message{
+            {10, "sdkVersion"}: uint64(29),
+         },
+      },
+      {14, "version"}: uint64(3),
+      {18, "deviceConfiguration"}: protobuf.Message{
+         {1, "touchScreen"}: con.touchScreen,
+         {2, "keyboard"}: con.keyboard,
+         {3, "navigation"}: con.navigation,
+         {4, "screenLayout"}: con.screenLayout,
+         {5, "hasHardKeyboard"}: con.hasHardKeyboard,
+         {6, "hasFiveWayNavigation"}: con.hasFiveWayNavigation,
+         {7, "screenDensity"}: con.screenDensity,
+         {8, "glEsVersion"}: con.glEsVersion,
+         {11, "nativePlatform"}: con.nativePlatform,
+         {12, "screenWidth"}: con.screenWidth,
+      },
+   }
+   for _, feature := range con.deviceFeature {
+      checkinRequest.
+      Get(18, "deviceConfiguration").
+      Add(26, "deviceFeature", protobuf.Message{
+         {1, "name"}: feature,
+      })
+   }
+   req, err := http.NewRequest(
+      "POST", "https://android.clients.google.com/checkin",
+      bytes.NewReader(checkinRequest.Marshal()),
+   )
+   req.Header.Set("Content-Type", "application/x-protobuffer")
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
    }
    defer res.Body.Close()
    if res.StatusCode != http.StatusOK {
-      return 0, response{res}
+      return nil, response{res}
    }
    buf, err := io.ReadAll(res.Body)
    if err != nil {
-      return 0, err
+      return nil, err
    }
    mes, err := protobuf.Unmarshal(buf)
    if err != nil {
-      return 0, err
+      return nil, err
    }
-   return mes.GetUint64(7, "androidId"), nil
+   var dev device
+   dev.androidID = mes.GetUint64(7, "androidId")
+   return &dev, nil
 }
 
-func details(id uint64, app string) (uint64, error) {
-   sID := strconv.FormatUint(id, 16)
-   fmt.Println(sID)
-   req5 := &http.Request{
-      Header:http.Header{
-         "Authorization":[]string{"Bearer " + auth},
-         "X-Dfe-Device-Id":[]string{sID},
-      },
-      Method:"GET",
-      URL:&url.URL{
-         Host:"android.clients.google.com",
-         Path:"/fdfe/details",
-         RawQuery:"doc=" + app,
-         Scheme:"https",
-      },
-   }
-   res, err := new(http.Transport).RoundTrip(req5)
-   if err != nil {
-      return 0, err
-   }
-   if res.StatusCode != http.StatusOK {
-      return 0, response{res}
-   }
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return 0, err
-   }
-   mes, err := protobuf.Unmarshal(buf)
-   if err != nil {
-      return 0, err
-   }
-   code := mes.Get(1, "payload").
-      Get(2, "detailsResponse").
-      Get(4, "docV2").
-      Get(13, "details").
-      Get(1, "appDetails").
-      GetUint64(3, "versionCode")
-   return code, nil
+func (d device) String() string {
+   return strconv.FormatUint(d.androidID, 16)
+}
+
+type response struct {
+   *http.Response
+}
+
+func (r response) Error() string {
+   return r.Status
 }

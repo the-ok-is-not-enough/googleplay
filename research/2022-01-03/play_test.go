@@ -12,17 +12,18 @@ var apps = []string{
 }
 
 func TestPlay(t *testing.T) {
-   id, err := checkinProto()
+   dev, err := checkin(defaultConfig)
    if err != nil {
       t.Fatal(err)
    }
+   fmt.Println(dev)
    time.Sleep(4 * time.Second)
    for _, app := range apps {
-      det, err := details(id, app)
+      det, err := newDetails(dev, app)
       if err != nil {
          t.Fatal(err)
       }
-      fmt.Println(det)
+      fmt.Printf("%+v\n", det)
       time.Sleep(time.Second)
    }
 }
