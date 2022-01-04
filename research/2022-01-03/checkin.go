@@ -153,6 +153,14 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    det.VersionString = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(4, "versionString")
+   det.Title = docV2.GetString(5, "title")
+   // FIXME
+   det.Offer.Micros = docV2.GetUint64(8, 1)
+   det.Offer.CurrencyCode = docV2.GetString(8, 2)
+   det.NumDownloads.Value = docV2.GetUint64(13, 1, 70)
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
+   det.Size.Value = docV2.GetUint64(13, 1, 34, 2)
    return &det, nil
 }
 
@@ -177,7 +185,24 @@ type Delivery struct {
    SplitDeliveryData []SplitDeliveryData
 }
 
+type NumDownloads struct {
+   Value uint64
+}
+
+type Offer struct {
+   Micros uint64
+   CurrencyCode string
+}
+
+type Size struct {
+   Value uint64
+}
+
 type Details struct {
+   NumDownloads NumDownloads
+   Offer Offer
+   Size Size
+   Title string
    VersionCode uint64
    VersionString string
 }
