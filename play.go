@@ -112,32 +112,6 @@ func (d Device) Encode(dst io.Writer) error {
    return enc.Encode(d)
 }
 
-type NumDownloads struct {
-   Value uint64
-}
-
-func (n NumDownloads) String() string {
-   return format.Number.LabelUint(n.Value)
-}
-
-type Offer struct {
-   Micros uint64
-   CurrencyCode string
-}
-
-func (o Offer) String() string {
-   val := float64(o.Micros) / 1_000_000
-   return strconv.FormatFloat(val, 'f', 2, 64) + " " + o.CurrencyCode
-}
-
-type Size struct {
-   Value uint64
-}
-
-func (s Size) String() string {
-   return format.Size.LabelUint(s.Value)
-}
-
 type SplitDeliveryData struct {
    ID string
    DownloadURL string

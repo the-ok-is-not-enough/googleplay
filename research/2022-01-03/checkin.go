@@ -103,7 +103,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    }
    status := responseWrapper.Get(1, "payload").
       Get(21, "deliveryResponse").
-      GetUint64(1, "status")
+      GetUint(1, "status")
    if int(status) == purchaseRequired.StatusCode {
       return nil, purchaseRequired
    }
@@ -119,49 +119,6 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
    }
    return &del, nil
-}
-
-func (a Auth) Details(dev *Device, app string) (*Details, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
-   req.Header = http.Header{
-      "Authorization": []string{"Bearer " + a.Auth},
-      "X-Dfe-Device-ID": []string{dev.String()},
-   }
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   if res.StatusCode != http.StatusOK {
-      return nil, response{res}
-   }
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   responseWrapper, err := protobuf.Unmarshal(buf)
-   if err != nil {
-      return nil, err
-   }
-   var det Details
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(2, "detailsResponse").
-      Get(4, "docV2")
-   det.VersionCode = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetUint64(3, "versionCode")
-   det.VersionString = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(4, "versionString")
-   det.Title = docV2.GetString(5, "title")
-   // FIXME
-   det.Offer.Micros = docV2.GetUint64(8, 1)
-   det.Offer.CurrencyCode = docV2.GetString(8, 2)
-   det.NumDownloads.Value = docV2.GetUint64(13, 1, 70)
-   // The shorter path 13,1,9 returns wrong size for some packages:
-   // com.riotgames.league.wildriftvn
-   det.Size.Value = docV2.GetUint64(13, 1, 34, 2)
-   return &det, nil
 }
 
 type Config struct {
@@ -183,28 +140,6 @@ type Config struct {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
-}
-
-type NumDownloads struct {
-   Value uint64
-}
-
-type Offer struct {
-   Micros uint64
-   CurrencyCode string
-}
-
-type Size struct {
-   Value uint64
-}
-
-type Details struct {
-   NumDownloads NumDownloads
-   Offer Offer
-   Size Size
-   Title string
-   VersionCode uint64
-   VersionString string
 }
 
 type Device struct {
@@ -262,7 +197,7 @@ func Checkin(con Config) (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetUint64(7, "androidId")
+   dev.AndroidID = checkinResponse.GetUint(7, "androidId")
    return &dev, nil
 }
 
@@ -281,4 +216,61 @@ type response struct {
 
 func (r response) Error() string {
    return r.Status
+}
+
+func (a Auth) Details(dev *Device, app string) (*Details, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   req.Header = http.Header{
+      "Authorization": []string{"Bearer " + a.Auth},
+      "X-Dfe-Device-ID": []string{dev.String()},
+   }
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   if res.StatusCode != http.StatusOK {
+      return nil, response{res}
+   }
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   responseWrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
+      return nil, err
+   }
+   var det Details
+   docV2 := responseWrapper.Get(1, "payload").
+      Get(2, "detailsResponse").
+      Get(4, "docV2")
+   det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
+   det.Micros = docV2.Get(8, "offer").GetUint(1, "micros")
+   det.NumDownloads = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetUint(70, "numDownloads")
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
+   det.Size = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      Get(34, "installDetails").
+      GetUint(2, "size")
+   det.Title = docV2.GetString(5, "title")
+   det.VersionCode = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetUint(3, "versionCode")
+   det.VersionString = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetString(4, "versionString")
+   return &det, nil
+}
+
+type Details struct {
+   CurrencyCode string
+   Micros uint64
+   NumDownloads uint64
+   Size uint64
+   Title string
+   VersionCode uint64
+   VersionString string
 }
