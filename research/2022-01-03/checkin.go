@@ -70,6 +70,92 @@ var purchaseRequired = response{
    &http.Response{StatusCode: 3, Status: "purchase required"},
 }
 
+type Auth struct {
+   Auth string
+}
+
+func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = http.Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "User-Agent": {agent},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+   req.URL.RawQuery = url.Values{
+      "doc": {app},
+      "vc": {strconv.FormatInt(ver, 10)},
+   }.Encode()
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   responseWrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
+      return nil, err
+   }
+   status := responseWrapper.Get(1, "payload").
+      Get(21, "deliveryResponse").
+      GetUint64(1, "status")
+   if int(status) == purchaseRequired.StatusCode {
+      return nil, purchaseRequired
+   }
+   var del Delivery
+   deliveryData := responseWrapper.Get(1, "payload").
+      Get(21, "deliveryResponse").
+      Get(2, "appDeliveryData")
+   del.DownloadURL = deliveryData.GetString(3, "downloadUrl")
+   for _, split := range deliveryData.GetMessages(15, "splitDeliveryData") {
+      var dSplit SplitDeliveryData
+      dSplit.ID = split.GetString(1, "id")
+      dSplit.DownloadURL = split.GetString(5, "downloadUrl")
+      del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
+   }
+   return &del, nil
+}
+
+func (a Auth) Details(dev *Device, app string) (*Details, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   req.Header = http.Header{
+      "Authorization": []string{"Bearer " + a.Auth},
+      "X-Dfe-Device-ID": []string{dev.String()},
+   }
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   if res.StatusCode != http.StatusOK {
+      return nil, response{res}
+   }
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   responseWrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
+      return nil, err
+   }
+   var det Details
+   docV2 := responseWrapper.Get(1, "payload").
+      Get(2, "detailsResponse").
+      Get(4, "docV2")
+   det.VersionCode = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetUint64(3, "versionCode")
+   det.VersionString = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetString(4, "versionString")
+   return &det, nil
+}
+
 type Config struct {
    DeviceFeature []string
    GLESversion uint64
@@ -84,6 +170,11 @@ type Config struct {
    ScreenWidth uint64
    SystemSharedLibrary []string
    TouchScreen uint64
+}
+
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
 }
 
 type Details struct {
@@ -154,106 +245,15 @@ func (d Device) String() string {
    return strconv.FormatUint(d.AndroidID, 16)
 }
 
+type SplitDeliveryData struct {
+   ID string
+   DownloadURL string
+}
+
 type response struct {
    *http.Response
 }
 
 func (r response) Error() string {
    return r.Status
-}
-
-type Auth struct {
-   Auth string
-}
-
-func (a Auth) Details(dev *Device, app string) (*Details, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
-   req.Header = http.Header{
-      "Authorization": []string{"Bearer " + a.Auth},
-      "X-Dfe-Device-ID": []string{dev.String()},
-   }
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   if res.StatusCode != http.StatusOK {
-      return nil, response{res}
-   }
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   responseWrapper, err := protobuf.Unmarshal(buf)
-   if err != nil {
-      return nil, err
-   }
-   var det Details
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(2, "detailsResponse").
-      Get(4, "docV2")
-   det.VersionCode = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetUint64(3, "versionCode")
-   det.VersionString = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(4, "versionString")
-   return &det, nil
-}
-
-type Delivery struct {
-   DownloadURL string
-   SplitDeliveryData []SplitDeliveryData
-}
-
-type SplitDeliveryData struct {
-   ID string
-   DownloadURL string
-}
-
-func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
-   if err != nil {
-      return nil, err
-   }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "User-Agent": {agent},
-      "X-DFE-Device-ID": {dev.String()},
-   }
-   req.URL.RawQuery = url.Values{
-      "doc": {app},
-      "vc": {strconv.FormatInt(ver, 10)},
-   }.Encode()
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   responseWrapper, err := protobuf.Unmarshal(buf)
-   if err != nil {
-      return nil, err
-   }
-   status := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      GetUint64(1, "status")
-   if int(status) == purchaseRequired.StatusCode {
-      return nil, purchaseRequired
-   }
-   var del Delivery
-   deliveryData := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      Get(2, "appDeliveryData")
-   del.DownloadURL = deliveryData.GetString(3, "downloadUrl")
-   for _, split := range deliveryData.GetMessages(15, "splitDeliveryData") {
-      var dSplit SplitDeliveryData
-      dSplit.ID = split.GetString(1, "id")
-      dSplit.DownloadURL = split.GetString(5, "downloadUrl")
-      del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
-   }
-   return &del, nil
 }

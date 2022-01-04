@@ -15,7 +15,21 @@ var apps = []string{
    "com.valvesoftware.android.steam.community",
 }
 
-func TestPlay(t *testing.T) {
+func TestDelivery(t *testing.T) {
+   dev, err := Checkin(DefaultConfig)
+   if err != nil {
+      t.Fatal(err)
+   }
+   fmt.Println(dev)
+   time.Sleep(4 * time.Second)
+   del, err := Auth{auth}.Delivery(dev, "com.pinterest", 9428030)
+   if err != nil {
+      t.Fatal(err)
+   }
+   fmt.Printf("%+v\n", del)
+}
+
+func TestDetails(t *testing.T) {
    dev, err := Checkin(DefaultConfig)
    if err != nil {
       t.Fatal(err)
