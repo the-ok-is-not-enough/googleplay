@@ -50,8 +50,12 @@ Get app details:
 
 ~~~
 PS C:\> googleplay -a com.google.android.youtube
-&{InstallationSize:38.717 MB NumDownloads:10.812 B Offer:0.00 USD Title:YouTube
-VersionCode:1524493760 VersionString:16.46.37}
+Title: YouTube
+VersionString: 16.49.37
+VersionCode: 1524886976
+NumDownloads: 11.025 B
+Size: 38.905 MB
+Offer: 0.00 USD
 ~~~
 
 Purchase app. Only needs to be done once per Google account:
@@ -63,7 +67,7 @@ googleplay -a com.google.android.youtube -purchase
 Download APK. If APK is split, all pieces will be downloaded:
 
 ~~~
-googleplay -a com.google.android.youtube -v 1524493760
+googleplay -a com.google.android.youtube -v 1524886976
 ~~~
 
 [2]://support.google.com/accounts/answer/185833
