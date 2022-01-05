@@ -1,16 +1,10 @@
 package googleplay
 
 import (
-   "bytes"
-   "crypto/rsa"
-   "crypto/sha1"
-   "encoding/base64"
    "encoding/json"
    "fmt"
    "github.com/89z/format"
-   "github.com/89z/format/crypto"
    "io"
-   "math/big"
    "net/http"
    "net/url"
    "os"
@@ -86,44 +80,6 @@ var Log = format.Log{Writer: os.Stdout}
 
 var purchaseRequired = response{
    &http.Response{StatusCode: 3, Status: "purchase required"},
-}
-
-func signature(email, password string) (string, error) {
-   data, err := base64.StdEncoding.DecodeString(androidKey)
-   if err != nil {
-      return "", err
-   }
-   var key rsa.PublicKey
-   buf := crypto.NewBuffer(data)
-   // modulus_length | modulus | exponent_length | exponent
-   _, mod, ok := buf.ReadUint32LengthPrefixed()
-   if ok {
-      key.N = new(big.Int).SetBytes(mod)
-   }
-   _, exp, ok := buf.ReadUint32LengthPrefixed()
-   if ok {
-      exp := new(big.Int).SetBytes(exp).Int64()
-      key.E = int(exp)
-   }
-   var (
-      msg bytes.Buffer
-      nop nopSource
-   )
-   msg.WriteString(email)
-   msg.WriteByte(0)
-   msg.WriteString(password)
-   login, err := rsa.EncryptOAEP(
-      sha1.New(), nop, &key, msg.Bytes(), nil,
-   )
-   if err != nil {
-      return "", err
-   }
-   hash := sha1.Sum(data)
-   msg.Reset()
-   msg.WriteByte(0)
-   msg.Write(hash[:4])
-   msg.Write(login)
-   return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
 }
 
 type Auth struct {
