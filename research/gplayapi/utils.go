@@ -80,23 +80,8 @@ func (client *GooglePlayClient) _doAuthedReq(r *http.Request) (_ *gpproto.Payloa
 }
 
 func (client *GooglePlayClient) doAuthedReq(r *http.Request) (res *gpproto.Payload, err error) {
-	res, err = client._doAuthedReq(r)
-	if err == GPTokenExpired {
-		err = client.RegenerateGPToken()
-		if err != nil {
-			return
-		}
-		if client.SessionFile != "" {
-			client.SaveSession(client.SessionFile)
-		}
-		res, err = client._doAuthedReq(r)
-	}
-	return
-}
-
-func (client *GooglePlayClient) RegenerateGPToken() (err error) {
-	client.AuthData.AuthToken, err = client.GenerateGPToken()
-	return
+   res, err = client._doAuthedReq(r)
+   return
 }
 
 //goland:noinspection GoUnusedConst
@@ -137,7 +122,6 @@ var (
 func NewClient(email, aasToken string) (*GooglePlayClient, error) {
 	return NewClientWithDeviceInfo(email, aasToken, Pixel3a)
 }
-
 
 func (client *GooglePlayClient) SaveSession(file string) error {
 	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
