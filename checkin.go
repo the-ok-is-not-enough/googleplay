@@ -132,9 +132,15 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
 
 func (a Auth) Details(dev *Device, app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   if err != nil {
+      return nil, err
+   }
    req.Header = http.Header{
-      "Authorization": []string{"Bearer " + a.Auth},
-      "X-Dfe-Device-ID": []string{dev.String()},
+      "Authorization": {"Bearer " + a.Auth},
+      // This is needed for some apps, for example:
+      // com.xiaomi.smarthome
+      "User-Agent": {agent},
+      "X-Dfe-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    Log.Dump(req)
@@ -269,6 +275,9 @@ func Checkin(con Config) (*Device, error) {
    req, err := http.NewRequest(
       "POST", origin + "/checkin", bytes.NewReader(checkinRequest.Marshal()),
    )
+   if err != nil {
+      return nil, err
+   }
    req.Header.Set("Content-Type", "application/x-protobuffer")
    Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)

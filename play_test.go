@@ -15,17 +15,17 @@ type app struct {
 }
 
 var apps = []app{
-   // {down: "31.446 M", id: "com.xiaomi.smarthome"},
-   // {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
-   // {down: "282.669 K", id: "com.smarty.voomvoom"},
    {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
-   {down: "282.147 M", id: "org.videolan.vlc"},
    {down: "3.932 B", id: "com.instagram.android"},
-   {down: "30.702 M", id: "com.vimeo.android.videoapp"},
-   {down: "689.574 M", id: "com.pinterest"},
-   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
-   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
    {down: "975.149 M", id: "com.miui.weather2"},
+   {down: "689.574 M", id: "com.pinterest"},
+   {down: "282.147 M", id: "org.videolan.vlc"},
+   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
+   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
+   {down: "31.446 M", id: "com.xiaomi.smarthome"},
+   {down: "30.702 M", id: "com.vimeo.android.videoapp"},
+   {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
+   {down: "282.669 K", id: "com.smarty.voomvoom"},
 }
 
 func TestDetails(t *testing.T) {

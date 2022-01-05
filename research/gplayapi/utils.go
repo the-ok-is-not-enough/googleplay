@@ -9,7 +9,6 @@ import (
    "io"
    "net/http"
    "os"
-   "strings"
 )
 
 func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (client *GooglePlayClient, err error) {
@@ -51,17 +50,6 @@ func ptrInt32(i int32) *int32 {
 	return &i
 }
 
-func parseResponse(res string) map[string]string {
-	ret := map[string]string{}
-	for _, ln := range strings.Split(res, "\n") {
-		keyVal := strings.SplitN(ln, "=", 2)
-		if len(keyVal) >= 2 {
-			ret[keyVal[0]] = keyVal[1]
-		}
-	}
-	return ret
-}
-
 func (client *GooglePlayClient) _doAuthedReq(r *http.Request) (_ *gpproto.Payload, err error) {
 	client.setDefaultHeaders(r)
 	b, status, err := doReq(r)
@@ -69,7 +57,7 @@ func (client *GooglePlayClient) _doAuthedReq(r *http.Request) (_ *gpproto.Payloa
 		return
 	}
 	if status == 401 {
-		return nil, GPTokenExpired
+		return nil, ErrTokenExpired
 	}
 	resp := &gpproto.ResponseWrapper{}
 	err = proto.Unmarshal(b, resp)
@@ -114,9 +102,8 @@ type GooglePlayClient struct {
 }
 
 var (
-	GPTokenExpired = errors.New("unauthorized, gp token expired")
-
-	httpClient = &http.Client{}
+   ErrTokenExpired = errors.New("unauthorized, gp token expired")
+   httpClient = &http.Client{}
 )
 
 func NewClient(email, aasToken string) (*GooglePlayClient, error) {
