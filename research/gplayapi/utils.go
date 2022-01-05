@@ -14,23 +14,16 @@ import (
 
 func NewClientWithDeviceInfo(email, aasToken string, deviceInfo *DeviceInfo) (client *GooglePlayClient, err error) {
    authData := &AuthData{
-   Email:    email,
-   AASToken: aasToken,
-   Locale:   "en_GB",
+      Email:    email,
+      AASToken: aasToken,
+      Locale:   "en_GB",
    }
    client = &GooglePlayClient{AuthData: authData, DeviceInfo: deviceInfo}
    _, err = client.GenerateGsfID()
    if err != nil {
    return
    }
-   /*
-   token, err := client.GenerateGPToken()
-   if err != nil {
-   return
-   }
-   */
    authData.AuthToken = token
-   //_, err = client.toc()
    return
 }
 
