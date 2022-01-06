@@ -24,8 +24,11 @@ var apps = []app{
    {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
    {down: "31.446 M", id: "com.xiaomi.smarthome"},
    {down: "30.702 M", id: "com.vimeo.android.videoapp"},
+   {down: "13.832 M", id: "com.tgc.sky.android"},
    {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
    {down: "282.669 K", id: "com.smarty.voomvoom"},
+   {down: "83.801 K", id: "com.exnoa.misttraingirls"},
+   {down: "58.860 K", id: "se.pax.calima"},
 }
 
 func TestDetails(t *testing.T) {

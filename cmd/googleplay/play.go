@@ -2,6 +2,7 @@ package main
 
 import (
    "fmt"
+   "github.com/89z/format"
    "net/http"
    "os"
    "path/filepath"
@@ -9,6 +10,25 @@ import (
    "time"
    gp "github.com/89z/googleplay"
 )
+
+func download(src, dst string) error {
+   fmt.Println("GET", src)
+   res, err := http.Get(src)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   file, err := os.Create(dst)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   pro := format.NewProgress(res, os.Stdout)
+   if _, err := file.ReadFrom(pro); err != nil {
+      return err
+   }
+   return nil
+}
 
 func filename(output, app, id string, ver int64) string {
    var buf []byte
@@ -55,24 +75,6 @@ func delivery(output, app string, ver int64) error {
       if err != nil {
          return err
       }
-   }
-   return nil
-}
-
-func download(src, dst string) error {
-   fmt.Println("GET", src)
-   res, err := http.Get(src)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   file, err := os.Create(dst)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   if _, err := file.ReadFrom(res.Body); err != nil {
-      return err
    }
    return nil
 }

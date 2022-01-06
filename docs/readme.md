@@ -2,9 +2,7 @@
 
 ## How to determine required features?
 
-~~~
-aapt dump badging file.apk
-~~~
+Check the `cmd/badging` folder.
 
 ## How to get Android public key?
 

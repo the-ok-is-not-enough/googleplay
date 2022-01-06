@@ -3,7 +3,7 @@ package main
 import (
    "flag"
    "fmt"
-   "github.com/89z/googleplay"
+   "github.com/89z/format"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
-      googleplay.Log.Level = 1
+      format.Log.Level = 1
    }
    switch {
    case email != "":

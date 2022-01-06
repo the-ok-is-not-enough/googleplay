@@ -1,11 +1,9 @@
 package googleplay
 
 import (
-   "bytes"
    "fmt"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
-   "io"
    "net/http"
    "net/url"
    "strconv"
@@ -26,6 +24,8 @@ var DefaultConfig = Config{
       "android.hardware.location",
       // com.smarty.voomvoom
       "android.hardware.location.gps",
+      // se.pax.calima
+      "android.hardware.location.network",
       // com.vimeo.android.videoapp
       "android.hardware.microphone",
       // org.videolan.vlc
@@ -38,8 +38,16 @@ var DefaultConfig = Config{
       "android.hardware.telephony",
       // com.google.android.youtube
       "android.hardware.touchscreen",
+      // com.tgc.sky.android
+      "android.hardware.touchscreen.multitouch",
+      // com.tgc.sky.android
+      "android.hardware.touchscreen.multitouch.distinct",
       // com.xiaomi.smarthome
       "android.hardware.usb.host",
+      // com.tgc.sky.android
+      "android.hardware.vulkan.level",
+      // com.tgc.sky.android
+      "android.hardware.vulkan.version",
       // com.google.android.youtube
       "android.hardware.wifi",
    },
@@ -54,6 +62,8 @@ var DefaultConfig = Config{
       "x86",
       // com.axis.drawingdesk.v3
       "armeabi-v7a",
+      // com.exnoa.misttraingirls
+      "arm64-v8a",
    },
    SystemSharedLibrary: []string{
       // com.miui.weather2
@@ -77,17 +87,13 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       "doc": {app},
       "vc": {strconv.FormatInt(ver, 10)},
    }.Encode()
-   Log.Dump(req)
+   format.Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   responseWrapper, err := protobuf.Unmarshal(buf)
+   responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }
@@ -124,19 +130,12 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       "X-Dfe-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   Log.Dump(req)
+   format.Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
-   if res.StatusCode != http.StatusOK {
-      return nil, response{res}
-   }
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   responseWrapper, err := protobuf.Unmarshal(buf)
+   responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }
@@ -248,26 +247,19 @@ func Checkin(con Config) (*Device, error) {
       })
    }
    req, err := http.NewRequest(
-      "POST", origin + "/checkin", bytes.NewReader(checkinRequest.Marshal()),
+      "POST", origin + "/checkin", checkinRequest.Encode(),
    )
    if err != nil {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-protobuffer")
-   Log.Dump(req)
+   format.Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, response{res}
-   }
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   checkinResponse, err := protobuf.Unmarshal(buf)
+   checkinResponse, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }

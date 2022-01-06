@@ -6,7 +6,6 @@ import (
    "io"
    "net/http"
    "net/url"
-   "os"
    "strconv"
    "strings"
    "time"
@@ -17,8 +16,6 @@ const (
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
    origin = "https://android.clients.google.com"
 )
-
-var Log = format.Log{Writer: os.Stdout}
 
 var purchaseRequired = response{
    &http.Response{StatusCode: 3, Status: "purchase required"},
@@ -43,7 +40,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   Log.Dump(req)
+   format.Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err

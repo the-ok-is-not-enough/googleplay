@@ -7,6 +7,7 @@ import (
    "crypto/sha1"
    "encoding/base64"
    "encoding/json"
+   "github.com/89z/format"
    "github.com/89z/format/crypto"
    "io"
    "math/big"
@@ -84,8 +85,8 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   Log.Dump(req)
-   res, err := hello.Transport().RoundTrip(req)
+   format.Log.Dump(req)
+   res, err := crypto.Transport(hello).RoundTrip(req)
    if err != nil {
       return nil, err
    }
@@ -115,7 +116,7 @@ func (t Token) Auth() (*Auth, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   Log.Dump(req)
+   format.Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
