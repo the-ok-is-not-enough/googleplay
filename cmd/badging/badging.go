@@ -26,10 +26,9 @@ func main() {
       buf := bufio.NewScanner(pipe)
       for buf.Scan() {
          text := buf.Text()
-         switch {
-         case verbose,
-         strings.HasPrefix(text, "  uses-feature:"),
-         strings.HasPrefix(text, "native-code:"):
+         if verbose ||
+         strings.HasPrefix(text, "  uses-feature:") ||
+         strings.HasPrefix(text, "native-code:") {
             fmt.Println(text)
          }
       }

@@ -12,44 +12,35 @@ import (
 
 var DefaultConfig = Config{
    DeviceFeature: []string{
-      // com.instagram.android
-      "android.hardware.bluetooth",
-      // com.xiaomi.smarthome
-      "android.hardware.bluetooth_le",
-      // com.pinterest
-      "android.hardware.camera",
-      // com.xiaomi.smarthome
-      "android.hardware.camera.autofocus",
-      // com.pinterest
-      "android.hardware.location",
-      // com.smarty.voomvoom
-      "android.hardware.location.gps",
-      // se.pax.calima
-      "android.hardware.location.network",
-      // com.vimeo.android.videoapp
-      "android.hardware.microphone",
-      // org.videolan.vlc
-      "android.hardware.screen.landscape",
-      // com.pinterest
-      "android.hardware.screen.portrait",
-      // com.smarty.voomvoom
-      "android.hardware.sensor.accelerometer",
-      // org.thoughtcrime.securesms
-      "android.hardware.telephony",
       // com.google.android.youtube
       "android.hardware.touchscreen",
+      "android.hardware.wifi",
+      // com.instagram.android
+      "android.hardware.bluetooth",
+      // com.pinterest
+      "android.hardware.camera",
+      "android.hardware.location",
+      "android.hardware.screen.portrait",
+      // com.smarty.voomvoom
+      "android.hardware.location.gps",
+      "android.hardware.sensor.accelerometer",
       // com.tgc.sky.android
       "android.hardware.touchscreen.multitouch",
-      // com.tgc.sky.android
       "android.hardware.touchscreen.multitouch.distinct",
-      // com.xiaomi.smarthome
-      "android.hardware.usb.host",
-      // com.tgc.sky.android
       "android.hardware.vulkan.level",
-      // com.tgc.sky.android
       "android.hardware.vulkan.version",
-      // com.google.android.youtube
-      "android.hardware.wifi",
+      // org.videolan.vlc
+      "android.hardware.screen.landscape",
+      // com.vimeo.android.videoapp
+      "android.hardware.microphone",
+      // com.xiaomi.smarthome
+      "android.hardware.bluetooth_le",
+      "android.hardware.camera.autofocus",
+      "android.hardware.usb.host",
+      // org.thoughtcrime.securesms
+      "android.hardware.telephony",
+      // se.pax.calima
+      "android.hardware.location.network",
    },
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
@@ -99,7 +90,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    }
    status := responseWrapper.Get(1, "payload").
       Get(21, "deliveryResponse").
-      GetUint(1, "status")
+      GetUint64(1, "status")
    if int(status) == purchaseRequired.StatusCode {
       return nil, purchaseRequired
    }
@@ -144,23 +135,23 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       Get(2, "detailsResponse").
       Get(4, "docV2")
    det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
-   det.Micros = docV2.Get(8, "offer").GetUint(1, "micros")
+   det.Micros = docV2.Get(8, "offer").GetUint64(1, "micros")
    det.NumDownloads = docV2.Get(13, "details").
       Get(1, "appDetails").
-      GetUint(70, "numDownloads")
+      GetUint64(70, "numDownloads")
    // The shorter path 13,1,9 returns wrong size for some packages:
    // com.riotgames.league.wildriftvn
    det.Size = docV2.Get(13, "details").
       Get(1, "appDetails").
       Get(34, "installDetails").
-      GetUint(2, "size")
+      GetUint64(2, "size")
    det.Title = docV2.GetString(5, "title")
    det.UploadDate = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(16, "uploadDate")
    det.VersionCode = docV2.Get(13, "details").
       Get(1, "appDetails").
-      GetUint(3, "versionCode")
+      GetUint64(3, "versionCode")
    det.VersionString = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(4, "versionString")
@@ -207,10 +198,10 @@ func (d Details) String() string {
    fmt.Fprintln(str, "VersionString:", d.VersionString)
    fmt.Fprintln(str, "VersionCode:", d.VersionCode)
    fmt.Fprint(str, "NumDownloads: ")
-   format.Number.LabelUint64(str, d.NumDownloads)
+   format.Number.Uint64(str, d.NumDownloads)
    fmt.Fprintln(str)
    fmt.Fprint(str, "Size: ")
-   format.Size.LabelUint64(str, d.Size)
+   format.Size.Uint64(str, d.Size)
    fmt.Fprintln(str)
    fmt.Fprintf(str, "Offer: %.2f ", float64(d.Micros)/1_000_000)
    fmt.Fprint(str, d.CurrencyCode)
@@ -264,6 +255,6 @@ func Checkin(con Config) (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetUint(7, "androidId")
+   dev.AndroidID = checkinResponse.GetUint64(7, "androidId")
    return &dev, nil
 }

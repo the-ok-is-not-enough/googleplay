@@ -7,6 +7,27 @@ import (
    "time"
 )
 
+func TestToken(t *testing.T) {
+   tok, err := NewToken(email, password)
+   if err != nil {
+      t.Fatal(err)
+   }
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   cache += "/googleplay"
+   os.Mkdir(cache, os.ModeDir)
+   file, err := os.Create(cache + "/token.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer file.Close()
+   if err := tok.Encode(file); err != nil {
+      t.Fatal(err)
+   }
+}
+
 const email = "srpen6@gmail.com"
 
 type app struct {
@@ -131,23 +152,3 @@ func getAuth() (*Auth, string, error) {
    return auth, cache, nil
 }
 
-func TestTokenEncode(t *testing.T) {
-   tok, err := NewToken(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      t.Fatal(err)
-   }
-   cache += "/googleplay"
-   os.Mkdir(cache, os.ModeDir)
-   file, err := os.Create(cache + "/token.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer file.Close()
-   if err := tok.Encode(file); err != nil {
-      t.Fatal(err)
-   }
-}
