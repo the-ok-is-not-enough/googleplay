@@ -9,10 +9,10 @@ import (
    "encoding/json"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
-   "io"
    "math/big"
    "net/http"
    "net/url"
+   "os"
    "strings"
 )
 
@@ -63,6 +63,30 @@ type Token struct {
    Token string
 }
 
+func OpenToken(name string) (*Token, error) {
+   file, err := os.Open(name)
+   if err != nil {
+      return nil, err
+   }
+   defer file.Close()
+   tok := new(Token)
+   if err := json.NewDecoder(file).Decode(tok); err != nil {
+      return nil, err
+   }
+   return tok, nil
+}
+
+func (t Token) Create(name string) error {
+   file, err := os.Create(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   enc := json.NewEncoder(file)
+   enc.SetIndent("", " ")
+   return enc.Encode(t)
+}
+
 // Request refresh token.
 func NewToken(email, password string) (*Token, error) {
    hello, err := crypto.ParseJA3(crypto.AndroidAPI26)
@@ -103,15 +127,6 @@ func NewToken(email, password string) (*Token, error) {
    return nil, notFound{"Token"}
 }
 
-func ReadToken(src io.Reader) (*Token, error) {
-   tok := new(Token)
-   err := json.NewDecoder(src).Decode(tok)
-   if err != nil {
-      return nil, err
-   }
-   return tok, nil
-}
-
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
    val := url.Values{
@@ -144,10 +159,4 @@ func (t Token) Auth() (*Auth, error) {
       }
    }
    return nil, notFound{"Auth"}
-}
-
-func (t Token) Write(dst io.Writer) error {
-   enc := json.NewEncoder(dst)
-   enc.SetIndent("", " ")
-   return enc.Encode(t)
 }

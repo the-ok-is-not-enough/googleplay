@@ -52,12 +52,7 @@ func delivery(output, app string, ver int64) error {
    if err != nil {
       return err
    }
-   src, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   defer src.Close()
-   dev, err := gp.ReadDevice(src)
+   dev, err := gp.OpenDevice(cache + "/googleplay/device.json")
    if err != nil {
       return err
    }
@@ -84,12 +79,7 @@ func details(app string) (*gp.Details, error) {
    if err != nil {
       return nil, err
    }
-   src, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      return nil, err
-   }
-   defer src.Close()
-   dev, err := gp.ReadDevice(src)
+   dev, err := gp.OpenDevice(cache + "/googleplay/device.json")
    if err != nil {
       return nil, err
    }
@@ -97,23 +87,18 @@ func details(app string) (*gp.Details, error) {
 }
 
 func device() (string, error) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return "", err
-   }
-   cache = filepath.Join(cache, "/googleplay/device.json")
-   file, err := os.Create(cache)
-   if err != nil {
-      return "", err
-   }
-   defer file.Close()
    dev, err := gp.NewDevice(gp.DefaultConfig)
    if err != nil {
       return "", err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   if err := dev.Write(file); err != nil {
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      return "", err
+   }
+   cache = filepath.Join(cache, "/googleplay/device.json")
+   if err := dev.Create(cache); err != nil {
       return "", err
    }
    return cache, nil
@@ -124,12 +109,7 @@ func getAuth() (*gp.Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   src, err := os.Open(cache + "/googleplay/token.json")
-   if err != nil {
-      return nil, "", err
-   }
-   defer src.Close()
-   tok, err := gp.ReadToken(src)
+   tok, err := gp.OpenToken(cache + "/googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
@@ -145,12 +125,7 @@ func purchase(app string) error {
    if err != nil {
       return err
    }
-   src, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   defer src.Close()
-   dev, err := gp.ReadDevice(src)
+   dev, err := gp.OpenDevice(cache + "/googleplay/device.json")
    if err != nil {
       return err
    }
@@ -158,6 +133,10 @@ func purchase(app string) error {
 }
 
 func token(email, password string) (string, error) {
+   tok, err := gp.NewToken(email, password)
+   if err != nil {
+      return "", err
+   }
    cache, err := os.UserCacheDir()
    if err != nil {
       return "", err
@@ -165,16 +144,7 @@ func token(email, password string) (string, error) {
    cache = filepath.Join(cache, "googleplay")
    os.Mkdir(cache, os.ModePerm)
    cache = filepath.Join(cache, "token.json")
-   file, err := os.Create(cache)
-   if err != nil {
-      return "", err
-   }
-   defer file.Close()
-   tok, err := gp.NewToken(email, password)
-   if err != nil {
-      return "", err
-   }
-   if err := tok.Write(file); err != nil {
+   if err := tok.Create(cache); err != nil {
       return "", err
    }
    return cache, nil

@@ -3,9 +3,9 @@ package googleplay
 import (
    "encoding/json"
    "github.com/89z/format"
-   "io"
    "net/http"
    "net/url"
+   "os"
    "strconv"
    "strings"
    "time"
@@ -57,23 +57,32 @@ type Device struct {
    AndroidID uint64
 }
 
-func ReadDevice(src io.Reader) (*Device, error) {
-   dev := new(Device)
-   err := json.NewDecoder(src).Decode(dev)
+func OpenDevice(name string) (*Device, error) {
+   file, err := os.Open(name)
    if err != nil {
+      return nil, err
+   }
+   defer file.Close()
+   dev := new(Device)
+   if err := json.NewDecoder(file).Decode(dev); err != nil {
       return nil, err
    }
    return dev, nil
 }
 
-func (d Device) String() string {
-   return strconv.FormatUint(d.AndroidID, 16)
-}
-
-func (d Device) Write(dst io.Writer) error {
-   enc := json.NewEncoder(dst)
+func (d Device) Create(name string) error {
+   file, err := os.Create(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   enc := json.NewEncoder(file)
    enc.SetIndent("", " ")
    return enc.Encode(d)
+}
+
+func (d Device) String() string {
+   return strconv.FormatUint(d.AndroidID, 16)
 }
 
 type SplitDeliveryData struct {

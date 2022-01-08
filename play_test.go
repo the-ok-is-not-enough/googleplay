@@ -8,22 +8,17 @@ import (
 )
 
 func TestToken(t *testing.T) {
+   tok, err := NewToken(email, password)
+   if err != nil {
+      t.Fatal(err)
+   }
    cache, err := os.UserCacheDir()
    if err != nil {
       t.Fatal(err)
    }
    cache += "/googleplay"
    os.Mkdir(cache, os.ModeDir)
-   file, err := os.Create(cache + "/token.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer file.Close()
-   tok, err := NewToken(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := tok.Write(file); err != nil {
+   if err := tok.Create(cache + "/token/json"); err != nil {
       t.Fatal(err)
    }
 }
@@ -57,12 +52,7 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   file, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer file.Close()
-   dev, err := ReadDevice(file)
+   dev, err := OpenDevice(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
@@ -82,25 +72,15 @@ func TestDetails(t *testing.T) {
 }
 
 func TestDevice(t *testing.T) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      t.Fatal(err)
-   }
-   src, err := os.Open(cache + "/googleplay/token.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer src.Close()
-   dst, err := os.Create(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer dst.Close()
    dev, err := NewDevice(DefaultConfig)
    if err != nil {
       t.Fatal(err)
    }
-   if err := dev.Write(dst); err != nil {
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := dev.Create(cache + "/googleplay/device.json"); err != nil {
       t.Fatal(err)
    }
    time.Sleep(Sleep)
@@ -111,12 +91,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   file, err := os.Open(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   defer file.Close()
-   dev, err := ReadDevice(file)
+   dev, err := OpenDevice(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
@@ -132,12 +107,7 @@ func getAuth() (*Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   file, err := os.Open(cache + "/googleplay/token.json")
-   if err != nil {
-      return nil, "", err
-   }
-   defer file.Close()
-   tok, err := ReadToken(file)
+   tok, err := OpenToken(cache + "/googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
