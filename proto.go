@@ -209,7 +209,7 @@ func (d Details) String() string {
 }
 
 // A Sleep is needed after this.
-func Checkin(con Config) (*Device, error) {
+func NewDevice(con Config) (*Device, error) {
    checkinRequest := protobuf.Message{
       {4, "checkin"}: protobuf.Message{
          {1, "build"}: protobuf.Message{

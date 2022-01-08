@@ -8,10 +8,6 @@ import (
 )
 
 func TestToken(t *testing.T) {
-   tok, err := NewToken(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
    cache, err := os.UserCacheDir()
    if err != nil {
       t.Fatal(err)
@@ -23,7 +19,11 @@ func TestToken(t *testing.T) {
       t.Fatal(err)
    }
    defer file.Close()
-   if err := tok.Encode(file); err != nil {
+   tok, err := NewToken(email, password)
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := tok.Write(file); err != nil {
       t.Fatal(err)
    }
 }
@@ -57,13 +57,13 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   dev := new(Device)
    file, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
    defer file.Close()
-   if err := dev.Decode(file); err != nil {
+   dev, err := ReadDevice(file)
+   if err != nil {
       t.Fatal(err)
    }
    for _, app := range apps {
@@ -82,11 +82,6 @@ func TestDetails(t *testing.T) {
 }
 
 func TestDevice(t *testing.T) {
-   dev, err := Checkin(DefaultConfig)
-   if err != nil {
-      t.Fatal(err)
-   }
-   tok := new(Token)
    cache, err := os.UserCacheDir()
    if err != nil {
       t.Fatal(err)
@@ -96,15 +91,16 @@ func TestDevice(t *testing.T) {
       t.Fatal(err)
    }
    defer src.Close()
-   if err := tok.Decode(src); err != nil {
-      t.Fatal(err)
-   }
    dst, err := os.Create(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
    defer dst.Close()
-   if err := dev.Encode(dst); err != nil {
+   dev, err := NewDevice(DefaultConfig)
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := dev.Write(dst); err != nil {
       t.Fatal(err)
    }
    time.Sleep(Sleep)
@@ -115,13 +111,13 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   dev := new(Device)
    file, err := os.Open(cache + "/googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
    defer file.Close()
-   if err := dev.Decode(file); err != nil {
+   dev, err := ReadDevice(file)
+   if err != nil {
       t.Fatal(err)
    }
    del, err := auth.Delivery(dev, apps[0].id, apps[0].ver)
@@ -136,13 +132,13 @@ func getAuth() (*Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   tok := new(Token)
    file, err := os.Open(cache + "/googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
    defer file.Close()
-   if err := tok.Decode(file); err != nil {
+   tok, err := ReadToken(file)
+   if err != nil {
       return nil, "", err
    }
    auth, err := tok.Auth()
@@ -151,4 +147,3 @@ func getAuth() (*Auth, string, error) {
    }
    return auth, cache, nil
 }
-

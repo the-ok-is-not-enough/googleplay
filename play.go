@@ -57,20 +57,23 @@ type Device struct {
    AndroidID uint64
 }
 
-// Read Device from file.
-func (d *Device) Decode(src io.Reader) error {
-   return json.NewDecoder(src).Decode(d)
-}
-
-// Write Device to file.
-func (d Device) Encode(dst io.Writer) error {
-   enc := json.NewEncoder(dst)
-   enc.SetIndent("", " ")
-   return enc.Encode(d)
+func ReadDevice(src io.Reader) (*Device, error) {
+   dev := new(Device)
+   err := json.NewDecoder(src).Decode(dev)
+   if err != nil {
+      return nil, err
+   }
+   return dev, nil
 }
 
 func (d Device) String() string {
    return strconv.FormatUint(d.AndroidID, 16)
+}
+
+func (d Device) Write(dst io.Writer) error {
+   enc := json.NewEncoder(dst)
+   enc.SetIndent("", " ")
+   return enc.Encode(d)
 }
 
 type SplitDeliveryData struct {
@@ -97,5 +100,6 @@ type response struct {
 }
 
 func (r response) Error() string {
-   return strconv.Itoa(r.StatusCode) + " " + r.Status
+   // Status includes both
+   return r.Status
 }
