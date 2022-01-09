@@ -4,7 +4,7 @@
 
 Check the `cmd/badging` folder.
 
-## How to get Android public key?
+## How to get Google public key?
 
 Check the `cmd/public-key` folder.
 

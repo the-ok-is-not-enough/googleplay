@@ -21,7 +21,7 @@ const googlePublicKey =
    "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
 
-func signature(email, password string) (string, error) {
+func cryptPass(email, password string) (string, error) {
    data, err := base64.StdEncoding.DecodeString(googlePublicKey)
    if err != nil {
       return "", err
@@ -39,24 +39,24 @@ func signature(email, password string) (string, error) {
       key.E = int(exp)
    }
    var (
-      msg bytes.Buffer
+      mes bytes.Buffer
       nop nopSource
    )
-   msg.WriteString(email)
-   msg.WriteByte(0)
-   msg.WriteString(password)
+   mes.WriteString(email)
+   mes.WriteByte(0)
+   mes.WriteString(password)
    login, err := rsa.EncryptOAEP(
-      sha1.New(), nop, &key, msg.Bytes(), nil,
+      sha1.New(), nop, &key, mes.Bytes(), nil,
    )
    if err != nil {
       return "", err
    }
    hash := sha1.Sum(data)
-   msg.Reset()
-   msg.WriteByte(0)
-   msg.Write(hash[:4])
-   msg.Write(login)
-   return base64.URLEncoding.EncodeToString(msg.Bytes()), nil
+   mes.Reset()
+   mes.WriteByte(0)
+   mes.Write(hash[:4])
+   mes.Write(login)
+   return base64.URLEncoding.EncodeToString(mes.Bytes()), nil
 }
 
 type Token struct {
@@ -93,13 +93,13 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   sig, err := signature(email, password)
+   cryptedPass, err := cryptPass(email, password)
    if err != nil {
       return nil, err
    }
    val := url.Values{
       "Email": {email},
-      "EncryptedPasswd": {sig},
+      "EncryptedPasswd": {cryptedPass},
       "sdk_version": {"20"}, // Newer versions fail.
    }.Encode()
    req, err := http.NewRequest(

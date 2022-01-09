@@ -1,4 +1,4 @@
-# How to get Android public key?
+# How to get Google public key?
 
 Run the program here, then check the messages under key 5 until you find a key
 matching:
