@@ -22,18 +22,18 @@ const googlePublicKey =
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
 
 func cryptPass(email, password string) (string, error) {
-   data, err := base64.StdEncoding.DecodeString(googlePublicKey)
+   buf, err := base64.StdEncoding.DecodeString(googlePublicKey)
    if err != nil {
       return "", err
    }
    var key rsa.PublicKey
-   buf := crypto.NewBuffer(data)
+   read := crypto.NewReader(buf)
    // modulus_length | modulus | exponent_length | exponent
-   _, mod, ok := buf.ReadUint32LengthPrefixed()
+   _, mod, ok := read.ReadUint32LengthPrefixed()
    if ok {
       key.N = new(big.Int).SetBytes(mod)
    }
-   _, exp, ok := buf.ReadUint32LengthPrefixed()
+   _, exp, ok := read.ReadUint32LengthPrefixed()
    if ok {
       exp := new(big.Int).SetBytes(exp).Int64()
       key.E = int(exp)
@@ -51,7 +51,7 @@ func cryptPass(email, password string) (string, error) {
    if err != nil {
       return "", err
    }
-   hash := sha1.Sum(data)
+   hash := sha1.Sum(buf)
    mes.Reset()
    mes.WriteByte(0)
    mes.Write(hash[:4])
