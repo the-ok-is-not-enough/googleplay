@@ -22,12 +22,12 @@ const googlePublicKey =
    "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
 
 func cryptPass(email, password string) (string, error) {
-   buf, err := base64.StdEncoding.DecodeString(googlePublicKey)
+   pubKey, err := base64.StdEncoding.DecodeString(googlePublicKey)
    if err != nil {
       return "", err
    }
    var key rsa.PublicKey
-   read := crypto.NewReader(buf)
+   read := crypto.NewReader(pubKey)
    // modulus_length | modulus | exponent_length | exponent
    _, mod, ok := read.ReadUint32LengthPrefixed()
    if ok {
@@ -39,24 +39,24 @@ func cryptPass(email, password string) (string, error) {
       key.E = int(exp)
    }
    var (
-      mes bytes.Buffer
+      buf bytes.Buffer
       nop nopSource
    )
-   mes.WriteString(email)
-   mes.WriteByte(0)
-   mes.WriteString(password)
+   buf.WriteString(email)
+   buf.WriteByte(0)
+   buf.WriteString(password)
    login, err := rsa.EncryptOAEP(
-      sha1.New(), nop, &key, mes.Bytes(), nil,
+      sha1.New(), nop, &key, buf.Bytes(), nil,
    )
    if err != nil {
       return "", err
    }
-   hash := sha1.Sum(buf)
-   mes.Reset()
-   mes.WriteByte(0)
-   mes.Write(hash[:4])
-   mes.Write(login)
-   return base64.URLEncoding.EncodeToString(mes.Bytes()), nil
+   hash := sha1.Sum(pubKey)
+   buf.Reset()
+   buf.WriteByte(0)
+   buf.Write(hash[:4])
+   buf.Write(login)
+   return base64.URLEncoding.EncodeToString(buf.Bytes()), nil
 }
 
 type Token struct {
