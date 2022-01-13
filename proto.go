@@ -12,6 +12,8 @@ import (
 
 var DefaultConfig = Config{
    DeviceFeature: []string{
+      // com.google.android.apps.walletnfcrel
+      "android.software.device_admin",
       // com.google.android.youtube
       "android.hardware.touchscreen",
       "android.hardware.wifi",
