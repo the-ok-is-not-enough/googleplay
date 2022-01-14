@@ -1,0 +1,28 @@
+Julien, Jan 7, 2022, 11:21 GMT+1
+
+Hi,
+
+We don't reproduce on our Windows testing machines (response times are si=
+milar to your Android Studio benchmark) and we had no issues with Google =
+Chrome either.
+
+The logs suggest that a display error occurred, which seems related to yo=
+ur display driver.
+
+Could you make sure that your NVIDIA display drivers are up-to-date (your=
+ current drivers date back from 2019-07-23 whereas the latest version has=
+ been released on 2021.12.20)?
+
+If this does not help, try to upgrade VirtualBox:
+
+1. Uninstall VirtualBox
+1. Download and install VirtualBox 6.1.30 for windows host from https://w=
+ww.virtualbox.org/wiki/Downloads
+1. Reboot your PC
+1. Open Genymotion, delete your device and re-create it
+
+Thank you.
+Best regards,
+
+Julien
+Genymotion Support Team
