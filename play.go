@@ -90,12 +90,6 @@ type SplitDeliveryData struct {
    DownloadURL string
 }
 
-type nopSource struct{}
-
-func (nopSource) Read(buf []byte) (int, error) {
-   return len(buf), nil
-}
-
 type notFound struct {
    input string
 }

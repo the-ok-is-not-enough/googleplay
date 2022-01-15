@@ -10,10 +10,6 @@ aapt dump badging file.apk
 
 or check the `cmd/badging` folder.
 
-## How to get Google public key?
-
-Check the `cmd/public-key` folder.
-
 ## How to get Protocol Buffer fields?
 
 Check Google Play Store (`com.android.vending`) with JADX, with the last

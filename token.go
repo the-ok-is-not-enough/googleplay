@@ -2,63 +2,15 @@ package googleplay
 
 import (
    "bufio"
-   "bytes"
-   "crypto/rsa"
-   "crypto/sha1"
-   "encoding/base64"
    "encoding/json"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
-   "math/big"
    "net/http"
    "net/url"
    "os"
    "path/filepath"
    "strings"
 )
-
-const googlePublicKey =
-   "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp" +
-   "5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLN" +
-   "WgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-
-func cryptPass(email, password string) (string, error) {
-   pubKey, err := base64.StdEncoding.DecodeString(googlePublicKey)
-   if err != nil {
-      return "", err
-   }
-   var key rsa.PublicKey
-   read := crypto.NewReader(pubKey)
-   // modulus_length | modulus | exponent_length | exponent
-   _, mod, ok := read.ReadUint32LengthPrefixed()
-   if ok {
-      key.N = new(big.Int).SetBytes(mod)
-   }
-   _, exp, ok := read.ReadUint32LengthPrefixed()
-   if ok {
-      exp := new(big.Int).SetBytes(exp).Int64()
-      key.E = int(exp)
-   }
-   var (
-      buf bytes.Buffer
-      nop nopSource
-   )
-   buf.WriteString(email)
-   buf.WriteByte(0)
-   buf.WriteString(password)
-   login, err := rsa.EncryptOAEP(
-      sha1.New(), nop, &key, buf.Bytes(), nil,
-   )
-   if err != nil {
-      return "", err
-   }
-   hash := sha1.Sum(pubKey)
-   buf.Reset()
-   buf.WriteByte(0)
-   buf.Write(hash[:4])
-   buf.Write(login)
-   return base64.URLEncoding.EncodeToString(buf.Bytes()), nil
-}
 
 type Token struct {
    Token string
@@ -94,13 +46,9 @@ func (t Token) Create(name string) error {
 
 // Request refresh token.
 func NewToken(email, password string) (*Token, error) {
-   cryptedPass, err := cryptPass(email, password)
-   if err != nil {
-      return nil, err
-   }
    val := url.Values{
       "Email": {email},
-      "EncryptedPasswd": {cryptedPass},
+      "Passwd": {password},
       // Instead of the following two, you can instead use this:
       // sdk_version=20
       // but I couldnt get newer versions to work, so I think this is the
