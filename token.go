@@ -13,6 +13,7 @@ import (
    "net/http"
    "net/url"
    "os"
+   "path/filepath"
    "strings"
 )
 
@@ -77,6 +78,10 @@ func OpenToken(name string) (*Token, error) {
 }
 
 func (t Token) Create(name string) error {
+   err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
+   if err != nil {
+      return err
+   }
    file, err := os.Create(name)
    if err != nil {
       return err
@@ -89,10 +94,6 @@ func (t Token) Create(name string) error {
 
 // Request refresh token.
 func NewToken(email, password string) (*Token, error) {
-   hello, err := crypto.ParseJA3(crypto.AndroidAPI26)
-   if err != nil {
-      return nil, err
-   }
    cryptedPass, err := cryptPass(email, password)
    if err != nil {
       return nil, err
@@ -100,7 +101,12 @@ func NewToken(email, password string) (*Token, error) {
    val := url.Values{
       "Email": {email},
       "EncryptedPasswd": {cryptedPass},
-      "sdk_version": {"20"}, // Newer versions fail.
+      // Instead of the following two, you can instead use this:
+      // sdk_version=20
+      // but I couldnt get newer versions to work, so I think this is the
+      // better option.
+      "client_sig": {""},
+      "droidguard_results": {""},
    }.Encode()
    req, err := http.NewRequest(
       "POST", origin + "/auth", strings.NewReader(val),
@@ -109,6 +115,10 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   hello, err := crypto.ParseJA3(crypto.AndroidAPI26)
+   if err != nil {
+      return nil, err
+   }
    format.Log.Dump(req)
    res, err := crypto.Transport(hello).RoundTrip(req)
    if err != nil {

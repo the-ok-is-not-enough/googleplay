@@ -2,7 +2,13 @@
 
 ## How to determine required features?
 
-Check the `cmd/badging` folder.
+Use a command like this:
+
+~~~
+aapt dump badging file.apk
+~~~
+
+or check the `cmd/badging` folder.
 
 ## How to get Google public key?
 

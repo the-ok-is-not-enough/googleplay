@@ -34,9 +34,7 @@ func TestToken(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   cache += "/googleplay"
-   os.Mkdir(cache, os.ModeDir)
-   if err := tok.Create(cache + "/token/json"); err != nil {
+   if err := tok.Create(cache + "/googleplay/token.json"); err != nil {
       t.Fatal(err)
    }
 }
