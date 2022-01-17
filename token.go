@@ -12,8 +12,6 @@ import (
    "strings"
 )
 
-const origin = "https://android.clients.google.com"
-
 type Token struct {
    Token string
 }
