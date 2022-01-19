@@ -9,6 +9,84 @@ import (
    "strconv"
 )
 
+var DefaultConfig = Config{
+   DeviceFeature: []string{
+      // com.google.android.apps.walletnfcrel
+      "android.software.device_admin",
+      // com.google.android.youtube
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
+      // com.instagram.android
+      "android.hardware.bluetooth",
+      // com.pinterest
+      "android.hardware.camera",
+      "android.hardware.location",
+      "android.hardware.screen.portrait",
+      // com.smarty.voomvoom
+      "android.hardware.location.gps",
+      "android.hardware.sensor.accelerometer",
+      // com.tgc.sky.android
+      "android.hardware.touchscreen.multitouch",
+      "android.hardware.touchscreen.multitouch.distinct",
+      "android.hardware.vulkan.level",
+      "android.hardware.vulkan.version",
+      // org.videolan.vlc
+      "android.hardware.screen.landscape",
+      // com.vimeo.android.videoapp
+      "android.hardware.microphone",
+      // com.xiaomi.smarthome
+      "android.hardware.bluetooth_le",
+      "android.hardware.camera.autofocus",
+      "android.hardware.usb.host",
+      // org.thoughtcrime.securesms
+      "android.hardware.telephony",
+      // se.pax.calima
+      "android.hardware.location.network",
+   },
+   // com.axis.drawingdesk.v3
+   GLESversion: 0x0003_0001,
+   GLextension: []string{
+      // com.instagram.android
+      "GL_OES_compressed_ETC1_RGB8_texture",
+   },
+   NativePlatform: []string{
+      // com.vimeo.android.videoapp
+      "x86",
+      // com.axis.drawingdesk.v3
+      "armeabi-v7a",
+      // com.exnoa.misttraingirls
+      "arm64-v8a",
+   },
+   SystemSharedLibrary: []string{
+      // com.miui.weather2
+      "global-miui11-empty.jar",
+   },
+   // com.valvesoftware.android.steam.community
+   TouchScreen: 3,
+}
+
+type Config struct {
+   DeviceFeature []string
+   GLESversion uint64
+   GLextension []string
+   // this can be 0, but it must be included:
+   HasFiveWayNavigation uint64
+   // this can be 0, but it must be included:
+   HasHardKeyboard uint64
+   // this can be 0, but it must be included:
+   Keyboard uint64
+   NativePlatform []string
+   // this can be 0, but it must be included:
+   Navigation uint64
+   // this can be 0, but it must be included:
+   ScreenDensity uint64
+   // this can be 0, but it must be included:
+   ScreenLayout uint64
+   SystemSharedLibrary []string
+   // this can be 0, but it must be included:
+   TouchScreen uint64
+}
+
 type Device struct {
    AndroidID uint64
 }
@@ -91,4 +169,3 @@ func (d Device) Create(name string) error {
 func (d Device) String() string {
    return strconv.FormatUint(d.AndroidID, 16)
 }
-
