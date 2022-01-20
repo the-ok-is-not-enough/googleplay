@@ -64,7 +64,9 @@ Purchase app. Only needs to be done once per Google account:
 googleplay -a com.google.android.youtube -purchase
 ~~~
 
-Download APK. If APK is split, all pieces will be downloaded:
+Download APK. You need to specify any valid version code. The latest code is
+provided by the previous details command. If APK is split, all pieces will be
+downloaded:
 
 ~~~
 googleplay -a com.google.android.youtube -v 1524886976

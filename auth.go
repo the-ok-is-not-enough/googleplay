@@ -22,8 +22,11 @@ func itemNotOwned(responseWrapper protobuf.Message) error {
    status := responseWrapper.Get(1, "payload").
       Get(21, "deliveryResponse").
       GetUint64(1, "status")
-   if status == 3 {
+   switch status {
+   case 3:
       return errorString("Item not owned.")
+   case 5:
+      return errorString("Version not found.")
    }
    return nil
 }
