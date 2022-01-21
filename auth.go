@@ -23,15 +23,6 @@ func deliveryResponse(responseWrapper protobuf.Message) error {
    return nil
 }
 
-func detailsResponse(responseWrapper protobuf.Message) error {
-   message := responseWrapper.Get(2, "commands").
-      GetString(2, "displayErrorMessage")
-   if message != "" {
-      return errorString(message)
-   }
-   return nil
-}
-
 type Auth struct {
    Auth string
 }
@@ -95,11 +86,11 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
+   if res.StatusCode != http.StatusOK {
+      return nil, errorString(res.Status)
+   }
    responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
-      return nil, err
-   }
-   if err := detailsResponse(responseWrapper); err != nil {
       return nil, err
    }
    var det Details
