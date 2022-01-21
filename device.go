@@ -2,7 +2,6 @@ package googleplay
 
 import (
    "encoding/json"
-   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
    "os"
@@ -127,7 +126,7 @@ func NewDevice(con Config) (*Device, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-protobuffer")
-   format.Log.Dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err

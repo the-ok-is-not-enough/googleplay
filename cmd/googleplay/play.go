@@ -23,7 +23,7 @@ func download(src, dst string) error {
       return err
    }
    defer file.Close()
-   pro := format.NewProgress(res, os.Stdout)
+   pro := format.NewProgress(res)
    if _, err := file.ReadFrom(pro); err != nil {
       return err
    }

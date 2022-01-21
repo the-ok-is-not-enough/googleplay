@@ -3,7 +3,6 @@ package googleplay
 import (
    "bufio"
    "encoding/json"
-   "fmt"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
    "net/http"
@@ -20,6 +19,8 @@ const (
    agent = "Android-Finsky (sdk=99,versionCode=99999999)"
    origin = "https://android.clients.google.com"
 )
+
+var LogLevel format.LogLevel
 
 type Delivery struct {
    DownloadURL string
@@ -38,20 +39,23 @@ type Details struct {
 }
 
 func (d Details) String() string {
-   str := new(strings.Builder)
-   fmt.Fprintln(str, "Title:", d.Title)
-   fmt.Fprintln(str, "UploadDate:", d.UploadDate)
-   fmt.Fprintln(str, "VersionString:", d.VersionString)
-   fmt.Fprintln(str, "VersionCode:", d.VersionCode)
-   fmt.Fprint(str, "NumDownloads: ")
-   format.Number.Uint64(str, d.NumDownloads)
-   fmt.Fprintln(str)
-   fmt.Fprint(str, "Size: ")
-   format.Size.Uint64(str, d.Size)
-   fmt.Fprintln(str)
-   fmt.Fprintf(str, "Offer: %.2f ", float64(d.Micros)/1_000_000)
-   fmt.Fprint(str, d.CurrencyCode)
-   return str.String()
+   buf := []byte("Title: ")
+   buf = append(buf, d.Title...)
+   buf = append(buf, "\nUploadDate: "...)
+   buf = append(buf, d.UploadDate...)
+   buf = append(buf, "\nVersionString: "...)
+   buf = append(buf, d.VersionString...)
+   buf = append(buf, "\nVersionCode: "...)
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = append(buf, "\nNumDownloads: "...)
+   buf = append(buf, format.Number.GetUint64(d.NumDownloads)...)
+   buf = append(buf, "\nSize: "...)
+   buf = append(buf, format.Size.GetUint64(d.Size)...)
+   buf = append(buf, "\nOffer: "...)
+   buf = strconv.AppendFloat(buf, float64(d.Micros)/1e6, 'f', 2, 64)
+   buf = append(buf, ' ')
+   buf = append(buf, d.CurrencyCode...)
+   return string(buf)
 }
 
 type SplitDeliveryData struct {
@@ -86,7 +90,7 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   format.Log.Dump(req)
+   LogLevel.Dump(req)
    res, err := crypto.Transport(hello).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -130,7 +134,7 @@ func (t Token) Auth() (*Auth, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   format.Log.Dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err

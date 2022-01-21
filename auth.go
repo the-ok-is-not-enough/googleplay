@@ -1,7 +1,6 @@
 package googleplay
 
 import (
-   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
@@ -9,24 +8,26 @@ import (
    "strings"
 )
 
-func itemNotFound(responseWrapper protobuf.Message) error {
-   message := responseWrapper.Get(2, "commands").
-      GetString(2, "displayErrorMessage")
-   if message != "" {
-      return errorString(message)
-   }
-   return nil
-}
-
-func itemNotOwned(responseWrapper protobuf.Message) error {
+func deliveryResponse(responseWrapper protobuf.Message) error {
    status := responseWrapper.Get(1, "payload").
       Get(21, "deliveryResponse").
       GetUint64(1, "status")
    switch status {
+   case 2:
+      return errorString("Regional lockout")
    case 3:
-      return errorString("Item not owned.")
+      return errorString("Item not owned")
    case 5:
-      return errorString("Version not found.")
+      return errorString("Version not found")
+   }
+   return nil
+}
+
+func detailsResponse(responseWrapper protobuf.Message) error {
+   message := responseWrapper.Get(2, "commands").
+      GetString(2, "displayErrorMessage")
+   if message != "" {
+      return errorString(message)
    }
    return nil
 }
@@ -49,7 +50,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       "doc": {app},
       "vc": {strconv.FormatInt(ver, 10)},
    }.Encode()
-   format.Log.Dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -59,7 +60,7 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   if err := itemNotOwned(responseWrapper); err != nil {
+   if err := deliveryResponse(responseWrapper); err != nil {
       return nil, err
    }
    var del Delivery
@@ -89,7 +90,7 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       "X-Dfe-Device-ID": {dev.String()},
    }
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   format.Log.Dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -98,7 +99,7 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   if err := itemNotFound(responseWrapper); err != nil {
+   if err := detailsResponse(responseWrapper); err != nil {
       return nil, err
    }
    var det Details
@@ -144,7 +145,7 @@ func (a Auth) Purchase(dev *Device, app string) error {
       "User-Agent": {agent},
       "X-DFE-Device-ID": {dev.String()},
    }
-   format.Log.Dump(req)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err

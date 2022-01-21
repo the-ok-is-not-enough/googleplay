@@ -19,7 +19,8 @@ working version (2016):
 versionCode='80441400' versionName='6.1.14'
 ~~~
 
-https://github.com/whyorean/GPlayApi/blob/master/src/main/proto/GooglePlay.proto
+- https://apkmirror.com/apk/google-inc/google-play-store
+- https://github.com/whyorean/GPlayApi/blob/master/src/main/proto/GooglePlay.proto
 
 ## How to get TV apps?
 

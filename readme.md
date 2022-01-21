@@ -51,10 +51,11 @@ Get app details:
 ~~~
 PS C:\> googleplay -a com.google.android.youtube
 Title: YouTube
-VersionString: 16.49.37
-VersionCode: 1524886976
-NumDownloads: 11.025 B
-Size: 38.905 MB
+UploadDate: Jan 11, 2022
+VersionString: 17.02.34
+VersionCode: 1527109056
+NumDownloads: 11.124 B
+Size: 39.773 MB
 Offer: 0.00 USD
 ~~~
 
@@ -69,7 +70,7 @@ provided by the previous details command. If APK is split, all pieces will be
 downloaded:
 
 ~~~
-googleplay -a com.google.android.youtube -v 1524886976
+googleplay -a com.google.android.youtube -v 1527109056
 ~~~
 
 [2]://support.google.com/accounts/answer/185833
