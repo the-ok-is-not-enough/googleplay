@@ -44,6 +44,43 @@ PowerShell:
 adb install-multiple (Get-ChildItem *.apk)
 ~~~
 
+## Regional lockout
+
+Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
+to UK. If you try it from US, details will work, but delivery will fail:
+
+~~~
+PS C:\> googleplay -a air.ITVMobilePlayer
+Title: ITV Hub: Your TV Player - Watch Live & On Demand
+UploadDate: Dec 9, 2021
+VersionString: 9.19.0
+VersionCode: 901900000
+NumDownloads: 17.429 M
+Size: 35.625 MB
+Offer: 0.00 USD
+
+PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
+panic: Regional lockout
+~~~
+
+You can change the country [1], and then you get expected result:
+
+~~~
+PS D:\Desktop> googleplay.exe -a air.ITVMobilePlayer
+Title: ITV Hub: Your TV Player - Watch Live & On Demand
+UploadDate: Dec 9, 2021
+VersionString: 9.19.0
+VersionCode: 901900000
+NumDownloads: 17.429 M
+Size: 35.625 MB
+Offer: 0.00 GBP
+
+PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
+GET https://play.googleapis.com/download/by-token/download?token=AOTCm0TiBZQdp...
+~~~
+
+1. https://support.google.com/googleplay/answer/7431675
+
 ## Will you add features?
 
 I created this tool for a very limited use (getting latest version string for
