@@ -16,9 +16,9 @@ func deliveryResponse(responseWrapper protobuf.Message) error {
    case 2:
       return errorString("Regional lockout")
    case 3:
-      return errorString("Item not owned")
+      return errorString("Purchase required")
    case 5:
-      return errorString("Version not found")
+      return errorString("Invalid version")
    }
    return nil
 }
