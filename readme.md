@@ -33,7 +33,7 @@ go build
 ## Tool examples
 
 If you are outside the United States, you might need to create an
-[App Password][2]. Create a file containing Token (`aas_et`) for future
+[App Password][2]. Create a file containing token (`aas_et`) for future
 requests:
 
 ~~~
