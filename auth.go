@@ -11,7 +11,7 @@ import (
 func deliveryResponse(responseWrapper protobuf.Message) error {
    status := responseWrapper.Get(1, "payload").
       Get(21, "deliveryResponse").
-      GetUint64(1, "status")
+      GetVarint(1, "status")
    switch status {
    case 2:
       return errorString("Regional lockout")
@@ -98,23 +98,23 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
       Get(2, "detailsResponse").
       Get(4, "docV2")
    det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
-   det.Micros = docV2.Get(8, "offer").GetUint64(1, "micros")
+   det.Micros = docV2.Get(8, "offer").GetVarint(1, "micros")
    det.NumDownloads = docV2.Get(13, "details").
       Get(1, "appDetails").
-      GetUint64(70, "numDownloads")
+      GetVarint(70, "numDownloads")
    // The shorter path 13,1,9 returns wrong size for some packages:
    // com.riotgames.league.wildriftvn
    det.Size = docV2.Get(13, "details").
       Get(1, "appDetails").
       Get(34, "installDetails").
-      GetUint64(2, "size")
+      GetVarint(2, "size")
    det.Title = docV2.GetString(5, "title")
    det.UploadDate = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(16, "uploadDate")
    det.VersionCode = docV2.Get(13, "details").
       Get(1, "appDetails").
-      GetUint64(3, "versionCode")
+      GetVarint(3, "versionCode")
    det.VersionString = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(4, "versionString")

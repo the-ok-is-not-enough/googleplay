@@ -1,6 +1,7 @@
 package googleplay
 
 import (
+   "bytes"
    "encoding/json"
    "github.com/89z/format/protobuf"
    "net/http"
@@ -120,7 +121,7 @@ func NewDevice(con Config) (*Device, error) {
       })
    }
    req, err := http.NewRequest(
-      "POST", origin + "/checkin", checkinRequest.Encode(),
+      "POST", origin + "/checkin", bytes.NewReader(checkinRequest.Marshal()),
    )
    if err != nil {
       return nil, err
@@ -137,7 +138,7 @@ func NewDevice(con Config) (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetUint64(7, "androidId")
+   dev.AndroidID = checkinResponse.GetFixed64(7, "androidId")
    return &dev, nil
 }
 
