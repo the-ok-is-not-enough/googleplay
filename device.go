@@ -93,7 +93,7 @@ type Device struct {
 
 // A Sleep is needed after this.
 func NewDevice(con Config) (*Device, error) {
-   checkinRequest := protobuf.Message{
+   checkin := protobuf.Message{
       {4, "checkin"}: protobuf.Message{
          {1, "build"}: protobuf.Message{
             {10, "sdkVersion"}: uint64(29),
@@ -115,13 +115,13 @@ func NewDevice(con Config) (*Device, error) {
       },
    }
    for _, feature := range con.DeviceFeature {
-      checkinRequest.Get(18, "deviceConfiguration").
-      Add(26, "deviceFeature", protobuf.Message{
+      mes := protobuf.Message{
          {1, "name"}: feature,
-      })
+      }
+      checkin.Get(18, "deviceConfiguration").Add(26, "deviceFeature", mes)
    }
    req, err := http.NewRequest(
-      "POST", origin + "/checkin", bytes.NewReader(checkinRequest.Marshal()),
+      "POST", origin + "/checkin", bytes.NewReader(checkin.Marshal()),
    )
    if err != nil {
       return nil, err
