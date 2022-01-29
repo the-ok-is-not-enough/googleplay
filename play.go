@@ -72,7 +72,7 @@ func NewToken(email, password string) (*Token, error) {
    val := url.Values{
       "Email": {email},
       "Passwd": {password},
-      // Instead of the following two, you can instead use this:
+      // Instead of the following two, you can use this:
       // sdk_version=20
       // but I couldnt get newer versions to work, so I think this is the
       // better option.

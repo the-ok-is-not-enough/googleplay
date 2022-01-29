@@ -60,10 +60,10 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
       Get(2, "appDeliveryData")
    del.DownloadURL = deliveryData.GetString(3, "downloadUrl")
    for _, split := range deliveryData.GetMessages(15, "splitDeliveryData") {
-      var dSplit SplitDeliveryData
-      dSplit.ID = split.GetString(1, "id")
-      dSplit.DownloadURL = split.GetString(5, "downloadUrl")
-      del.SplitDeliveryData = append(del.SplitDeliveryData, dSplit)
+      var data SplitDeliveryData
+      data.ID = split.GetString(1, "id")
+      data.DownloadURL = split.GetString(5, "downloadUrl")
+      del.SplitDeliveryData = append(del.SplitDeliveryData, data)
    }
    return &del, nil
 }
