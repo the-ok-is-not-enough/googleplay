@@ -92,6 +92,7 @@ so people can easily make their own tools using the module.
 
 If you insist that some feature be implemented, I am willing to implement
 features for people who are willing to make a donation to me. If that is your
-situation, make sure to mention that in any communication.
+situation, make sure to mention that in any communication. Minimum donation is
+99 USD.
 
 1. https://godocs.io/github.com/89z/googleplay
