@@ -132,20 +132,18 @@ func purchase(app string) error {
    return auth.Purchase(dev, app)
 }
 
-func token(email, password string) (string, error) {
+func token(email, password string) error {
    tok, err := gp.NewToken(email, password)
    if err != nil {
-      return "", err
+      return err
    }
    cache, err := os.UserCacheDir()
    if err != nil {
-      return "", err
+      return err
    }
    cache = filepath.Join(cache, "googleplay")
    os.Mkdir(cache, os.ModePerm)
    cache = filepath.Join(cache, "token.json")
-   if err := tok.Create(cache); err != nil {
-      return "", err
-   }
-   return cache, nil
+   fmt.Println("Create", cache)
+   return tok.Create(cache)
 }

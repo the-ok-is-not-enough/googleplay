@@ -29,11 +29,10 @@ func main() {
    }
    switch {
    case email != "":
-      cache, err := token(email, password)
+      err := token(email, password)
       if err != nil {
          panic(err)
       }
-      fmt.Println("Create", cache)
    case dev:
       cache, err := device()
       if err != nil {
