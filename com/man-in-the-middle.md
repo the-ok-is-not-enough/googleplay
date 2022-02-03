@@ -34,4 +34,10 @@ Device, and browse to <http://mitm.it>. Click on the Android certificate. Under
 https://example.com
 ~~~
 
+Disable compression:
+
+~~~
+set anticomp true
+~~~
+
 1. https://mitmproxy.org/downloads
