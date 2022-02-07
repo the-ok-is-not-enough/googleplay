@@ -27,16 +27,32 @@ type Auth struct {
    Auth string
 }
 
-func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
+func (a Auth) AndroidPackage(dev *Device) Header {
+   return Header{
+      "Authorization": {"Bearer " + a.Auth},
+      "User-Agent": {"Android-Finsky (sdk=9,versionCode=80919999)"},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+}
+
+func (a Auth) AppBundle(dev *Device) Header {
+   return Header{
+      "Authorization": {"Bearer " + a.Auth},
+      // "/fdfe/details" only needs User-Agent for some apps, for example:
+      // com.xiaomi.smarthome
+      "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
+      "X-DFE-Device-ID": {dev.String()},
+   }
+}
+
+type Header http.Header
+
+func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "User-Agent": {agent},
-      "X-DFE-Device-ID": {dev.String()},
-   }
+   req.Header = http.Header(h)
    req.URL.RawQuery = url.Values{
       "doc": {app},
       "vc": {strconv.FormatInt(ver, 10)},
@@ -68,18 +84,17 @@ func (a Auth) Delivery(dev *Device, app string, ver int64) (*Delivery, error) {
    return &del, nil
 }
 
-func (a Auth) Details(dev *Device, app string) (*Details, error) {
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
+}
+
+func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      // This is needed for some apps, for example:
-      // com.xiaomi.smarthome
-      "User-Agent": {agent},
-      "X-Dfe-Device-ID": {dev.String()},
-   }
+   req.Header = http.Header(h)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -122,7 +137,7 @@ func (a Auth) Details(dev *Device, app string) (*Details, error) {
 }
 
 // Purchase app. Only needs to be done once per Google account.
-func (a Auth) Purchase(dev *Device, app string) error {
+func (h Header) Purchase(app string) error {
    query := "doc=" + url.QueryEscape(app)
    req, err := http.NewRequest(
       "POST", origin + "/fdfe/purchase", strings.NewReader(query),
@@ -130,12 +145,8 @@ func (a Auth) Purchase(dev *Device, app string) error {
    if err != nil {
       return err
    }
-   req.Header = http.Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "Content-Type": {"application/x-www-form-urlencoded"},
-      "User-Agent": {agent},
-      "X-DFE-Device-ID": {dev.String()},
-   }
+   h["Content-Type"] = []string{"application/x-www-form-urlencoded"}
+   req.Header = http.Header(h)
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
@@ -143,4 +154,3 @@ func (a Auth) Purchase(dev *Device, app string) error {
    }
    return res.Body.Close()
 }
-

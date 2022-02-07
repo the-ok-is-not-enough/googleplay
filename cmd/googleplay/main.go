@@ -4,24 +4,38 @@ import (
    "flag"
    "fmt"
    "github.com/89z/googleplay"
+   "strings"
 )
 
 func main() {
-   var (
-      app, email, output, password string
-      dev, purch, verbose bool
-      version int64
-   )
+   // a
+   var app string
    flag.StringVar(&app, "a", "", "app")
-   flag.BoolVar(&dev, "d", false, "create device")
+   // d
+   var device bool
+   flag.BoolVar(&device, "d", false, "create device")
+   // e
+   var email string
    flag.StringVar(&email, "e", "", "email")
-   flag.StringVar(&output, "o", "", "output folder, must already exist")
+   // p
+   var password string
    flag.StringVar(&password, "p", "", "password")
-   flag.BoolVar(
-      &purch, "purchase", false,
-      "Purchase app. Only needs to be done once per Google account.",
+   // purchase
+   var (
+      pur strings.Builder
+      purchase bool
    )
+   pur.WriteString("Purchase app.")
+   pur.WriteString(" Only needs to be done once per Google account.")
+   flag.BoolVar(&purchase, "purchase", false, pur.String())
+   // s
+   var single bool
+   flag.BoolVar(&single, "s", false, "single APK")
+   // v
+   var version int64
    flag.Int64Var(&version, "v", 0, "version")
+   // verbose
+   var verbose bool
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
@@ -29,29 +43,29 @@ func main() {
    }
    switch {
    case email != "":
-      err := token(email, password)
+      err := doToken(email, password)
       if err != nil {
          panic(err)
       }
-   case dev:
-      cache, err := device()
+   case device:
+      cache, err := doDevice()
       if err != nil {
          panic(err)
       }
       fmt.Println("Create", cache)
-   case app != "" && !purch && version == 0:
-      res, err := details(app)
+   case app != "" && !purchase && version == 0:
+      res, err := doDetails(app)
       if err != nil {
          panic(err)
       }
       fmt.Printf("%+v\n", res)
-   case app != "" && purch:
-      err := purchase(app)
+   case app != "" && purchase:
+      err := doPurchase(app)
       if err != nil {
          panic(err)
       }
    case app != "" && version != 0:
-      err := delivery(output, app, version)
+      err := doDelivery(app, version, single)
       if err != nil {
          panic(err)
       }

@@ -9,7 +9,6 @@ import (
 
 var apps = []app{
    {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
-   {down: "3.932 B", id: "com.instagram.android"},
    {down: "975.149 M", id: "com.miui.weather2"},
    {down: "689.574 M", id: "com.pinterest"},
    {down: "422.289 M", id: "com.google.android.apps.walletnfcrel"},
@@ -56,7 +55,7 @@ func TestDetails(t *testing.T) {
       t.Fatal(err)
    }
    for _, app := range apps {
-      det, err := auth.Details(dev, app.id)
+      det, err := auth.AppBundle(dev).Details(app.id)
       if err != nil {
          t.Fatal(err)
       }
@@ -94,7 +93,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   del, err := auth.Delivery(dev, apps[0].id, apps[0].ver)
+   del, err := auth.AppBundle(dev).Delivery(apps[0].id, apps[0].ver)
    if err != nil {
       t.Fatal(err)
    }
