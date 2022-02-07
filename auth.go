@@ -40,7 +40,7 @@ func (a Auth) AppBundle(dev *Device) Header {
       "Authorization": {"Bearer " + a.Auth},
       // "/fdfe/details" only needs User-Agent for some apps, for example:
       // com.xiaomi.smarthome
-      "User-Agent": {"Android-Finsky (sdk=99,versionCode=99999999)"},
+      "User-Agent": {"Android-Finsky (sdk=9,versionCode=99999999)"},
       "X-DFE-Device-ID": {dev.String()},
    }
 }
