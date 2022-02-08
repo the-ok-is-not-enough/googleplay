@@ -55,7 +55,7 @@ func TestDetails(t *testing.T) {
       t.Fatal(err)
    }
    for _, app := range apps {
-      det, err := auth.AppBundle(dev).Details(app.id)
+      det, err := auth.Header(dev, false).Details(app.id)
       if err != nil {
          t.Fatal(err)
       }
@@ -93,7 +93,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   del, err := auth.AppBundle(dev).Delivery(apps[0].id, apps[0].ver)
+   del, err := auth.Header(dev, false).Delivery(apps[0].id, apps[0].ver)
    if err != nil {
       t.Fatal(err)
    }

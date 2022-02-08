@@ -6,7 +6,6 @@ import (
    "github.com/89z/format/protobuf"
    "net/http"
    "os"
-   "strconv"
 )
 
 var DefaultConfig = Config{
@@ -158,8 +157,4 @@ func (d Device) Create(name string) error {
    enc := json.NewEncoder(file)
    enc.SetIndent("", " ")
    return enc.Encode(d)
-}
-
-func (d Device) String() string {
-   return strconv.FormatUint(d.AndroidID, 16)
 }

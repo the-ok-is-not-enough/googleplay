@@ -27,32 +27,34 @@ type Auth struct {
    Auth string
 }
 
-func (a Auth) AndroidPackage(dev *Device) Header {
-   return Header{
-      "Authorization": {"Bearer " + a.Auth},
-      "User-Agent": {"Android-Finsky (sdk=9,versionCode=80919999)"},
-      "X-DFE-Device-ID": {dev.String()},
+func (a Auth) Header(dev *Device, single bool) Header {
+   var val Header
+   val.Header = make(http.Header)
+   // Authorization
+   val.Set("Authorization", "Bearer " + a.Auth)
+   // User-Agent is only needed with "/fdfe/details" for some apps, example:
+   // com.xiaomi.smarthome
+   if single {
+      val.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=80919999)")
+   } else {
+      val.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=99999999)")
    }
+   // X-DFE-Device-ID
+   id := strconv.FormatUint(dev.AndroidID, 16)
+   val.Set("X-DFE-Device-ID", id)
+   return val
 }
 
-func (a Auth) AppBundle(dev *Device) Header {
-   return Header{
-      "Authorization": {"Bearer " + a.Auth},
-      // "/fdfe/details" only needs User-Agent for some apps, for example:
-      // com.xiaomi.smarthome
-      "User-Agent": {"Android-Finsky (sdk=9,versionCode=99999999)"},
-      "X-DFE-Device-ID": {dev.String()},
-   }
+type Header struct {
+   http.Header
 }
-
-type Header http.Header
 
 func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header(h)
+   req.Header = h.Header
    req.URL.RawQuery = url.Values{
       "doc": {app},
       "vc": {strconv.FormatInt(ver, 10)},
@@ -94,7 +96,7 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   req.Header = http.Header(h)
+   req.Header = h.Header
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -145,8 +147,8 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   h["Content-Type"] = []string{"application/x-www-form-urlencoded"}
-   req.Header = http.Header(h)
+   h.Set("Content-Type", "application/x-www-form-urlencoded")
+   req.Header = h.Header
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
