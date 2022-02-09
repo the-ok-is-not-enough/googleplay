@@ -41,35 +41,36 @@ func main() {
    if verbose {
       googleplay.LogLevel = 1
    }
-   switch {
-   case email != "":
+   if email != "" {
       err := doToken(email, password)
       if err != nil {
          panic(err)
       }
-   case device:
+   } else if device {
       cache, err := doDevice()
       if err != nil {
          panic(err)
       }
       fmt.Println("Create", cache)
-   case app != "" && !purchase && version == 0:
-      res, err := doDetails(app)
-      if err != nil {
-         panic(err)
+   } else if app != "" {
+      if purchase {
+         err := doPurchase(app)
+         if err != nil {
+            panic(err)
+         }
+      } else if version != 0 {
+         err := doDelivery(app, version, single)
+         if err != nil {
+            panic(err)
+         }
+      } else {
+         res, err := doDetails(app)
+         if err != nil {
+            panic(err)
+         }
+         fmt.Printf("%+v\n", res)
       }
-      fmt.Printf("%+v\n", res)
-   case app != "" && purchase:
-      err := doPurchase(app)
-      if err != nil {
-         panic(err)
-      }
-   case app != "" && version != 0:
-      err := doDelivery(app, version, single)
-      if err != nil {
-         panic(err)
-      }
-   default:
+   } else {
       fmt.Println("googleplay [flags]")
       flag.PrintDefaults()
    }
