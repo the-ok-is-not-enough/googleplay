@@ -14,6 +14,18 @@ const script =
    "https://raw.githubusercontent.com/httptoolkit/frida-android-unpinning/" +
    "main/frida-script.js"
 
+const version = "15.1.16"
+
+func newServer(version string) string {
+   var str strings.Builder
+   str.WriteString("https://github.com/frida/frida/releases/download/")
+   str.WriteString(version)
+   str.WriteString("/frida-server-")
+   str.WriteString(version)
+   str.WriteString("-android-x86.xz")
+   return str.String()
+}
+
 func main() {
    _, err := exec.LookPath("frida")
    if err != nil {
@@ -61,18 +73,6 @@ func main() {
    } else {
       fmt.Println("frida-script [package]")
    }
-}
-
-const version = "15.1.10"
-
-func newServer(version string) string {
-   var str strings.Builder
-   str.WriteString("https://github.com/frida/frida/releases/download/")
-   str.WriteString(version)
-   str.WriteString("/frida-server-")
-   str.WriteString(version)
-   str.WriteString("-android-x86.xz")
-   return str.String()
 }
 
 func downloadScript(dst string) error {
