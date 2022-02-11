@@ -58,7 +58,7 @@ func main() {
          if err != nil {
             panic(err)
          }
-      } else if version != 0 {
+      } else if version >= 1 {
          err := doDelivery(app, version, single)
          if err != nil {
             panic(err)

@@ -9,12 +9,15 @@ import (
 )
 
 func main() {
+   // f
+   var name string
+   flag.StringVar(&name, "f", "", "file")
+   // v
    var verbose bool
    flag.BoolVar(&verbose, "v", false, "verbose")
    flag.Parse()
-   if flag.NArg() == 1 {
-      apk := flag.Arg(0)
-      cmd := exec.Command("aapt", "dump", "badging", apk)
+   if name != "" {
+      cmd := exec.Command("aapt", "dump", "badging", name)
       pipe, err := cmd.StdoutPipe()
       if err != nil {
          panic(err)
@@ -33,7 +36,7 @@ func main() {
          }
       }
    } else {
-      fmt.Println("badging [APK]")
+      fmt.Println("badging [flags]")
       flag.PrintDefaults()
    }
 }

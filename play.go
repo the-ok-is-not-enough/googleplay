@@ -171,9 +171,9 @@ func (e errorString) Error() string {
 }
 
 type notFound struct {
-   input string
+   value string
 }
 
 func (n notFound) Error() string {
-   return strconv.Quote(n.input) + " not found"
+   return strconv.Quote(n.value) + " not found"
 }
