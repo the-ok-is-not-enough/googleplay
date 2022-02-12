@@ -36,7 +36,6 @@ func main() {
          }
       }
    } else {
-      fmt.Println("badging [flags]")
       flag.PrintDefaults()
    }
 }

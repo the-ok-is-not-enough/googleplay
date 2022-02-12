@@ -64,13 +64,13 @@ const script =
 const version = "15.1.16"
 
 func newServer(version string) string {
-   var str strings.Builder
-   str.WriteString("https://github.com/frida/frida/releases/download/")
-   str.WriteString(version)
-   str.WriteString("/frida-server-")
-   str.WriteString(version)
-   str.WriteString("-android-x86.xz")
-   return str.String()
+   var buf strings.Builder
+   buf.WriteString("https://github.com/frida/frida/releases/download/")
+   buf.WriteString(version)
+   buf.WriteString("/frida-server-")
+   buf.WriteString(version)
+   buf.WriteString("-android-x86.xz")
+   return buf.String()
 }
 
 func downloadScript(dst string) error {

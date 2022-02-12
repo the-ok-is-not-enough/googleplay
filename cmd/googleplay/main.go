@@ -22,12 +22,12 @@ func main() {
    flag.StringVar(&password, "p", "", "password")
    // purchase
    var (
-      pur strings.Builder
+      buf strings.Builder
       purchase bool
    )
-   pur.WriteString("Purchase app.")
-   pur.WriteString(" Only needs to be done once per Google account.")
-   flag.BoolVar(&purchase, "purchase", false, pur.String())
+   buf.WriteString("Purchase app.")
+   buf.WriteString(" Only needs to be done once per Google account.")
+   flag.BoolVar(&purchase, "purchase", false, buf.String())
    // s
    var single bool
    flag.BoolVar(&single, "s", false, "single APK")
@@ -71,7 +71,6 @@ func main() {
          fmt.Printf("%+v\n", res)
       }
    } else {
-      fmt.Println("googleplay [flags]")
       flag.PrintDefaults()
    }
 }
