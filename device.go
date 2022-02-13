@@ -51,6 +51,8 @@ var DefaultConfig = Config{
       "arm64-v8a",
    },
    SystemSharedLibrary: []string{
+      // com.bbca.bbcafullepisodes
+      "org.apache.http.legacy",
       // com.miui.weather2
       "global-miui11-empty.jar",
    },
