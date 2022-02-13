@@ -1,4 +1,4 @@
 *.apk
 *.exe
 *.xapk
-secret.go
+ignore.go
