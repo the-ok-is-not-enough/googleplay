@@ -31,11 +31,15 @@ func main() {
          text := buf.Text()
          if verbose ||
          strings.HasPrefix(text, "  uses-feature:") ||
-         strings.HasPrefix(text, "native-code:") {
+         strings.HasPrefix(text, "native-code:") ||
+         // Sometimes a library becomes required on newer versions, so this can
+         // give us a hint to what is causing the problem:
+         strings.HasPrefix(text, "uses-library-not-required:") ||
+         strings.HasPrefix(text, "uses-library:") {
             fmt.Println(text)
          }
       }
    } else {
-      flag.PrintDefaults()
+      flag.Usage()
    }
 }

@@ -1,9 +1,17 @@
 # Man In The Middle
 
-## Martian
+## Deep linking
 
-- https://github.com/google/martian#har-logging
-- https://github.com/google/martian#intercepting-https-requests-and-responses
+Click a link in Android Chrome. In some cases, the target needs to be a
+different origin from the source. A prompt should come up that says "Open
+with". Click the option for the app, then "JUST ONCE". The link should open in
+the app, and if you are monitoring, you should see the request.
+
+## Why does this exist?
+
+January 26 2022:
+
+https://github.com/ytdl-org/youtube-dl/issues/30561
 
 ## MITM Proxy
 
@@ -47,5 +55,5 @@ set anticomp true
 ~~~ps1
 $env:HTTPS_PROXY = 'http://127.0.0.1:8080'
 $env:REQUESTS_CA_BUNDLE = 'C:\Users\Steven\.mitmproxy\mitmproxy-ca.pem'
-$env:SSL_CERT_FILE
+$env:SSL_CERT_FILE = 'C:\Users\Steven\.mitmproxy\mitmproxy-ca.pem'
 ~~~

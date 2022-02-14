@@ -32,6 +32,7 @@ var DefaultConfig = Config{
       // com.vimeo.android.videoapp
       "android.hardware.microphone",
       // com.xiaomi.smarthome
+      "android.hardware.bluetooth",
       "android.hardware.bluetooth_le",
       "android.hardware.camera.autofocus",
       "android.hardware.usb.host",

@@ -75,6 +75,16 @@ googleplay -a com.google.android.youtube -v 1527109056
 
 [2]://support.google.com/accounts/answer/185833
 
-## Repo
+## API
+
+~~~mermaid
+flowchart TD
+   A[NewToken]
+   A --> B[Token.Auth]
+   B --> C[Auth.Header]
+   C --> D[Header.Details]
+   C --> E[Header.Purchase]
+   C --> F[Header.Delivery]
+~~~
 
 https://github.com/89z/googleplay

@@ -64,13 +64,13 @@ func main() {
             panic(err)
          }
       } else {
-         res, err := doDetails(app)
+         det, err := doDetails(app)
          if err != nil {
             panic(err)
          }
-         fmt.Printf("%+v\n", res)
+         fmt.Println(det)
       }
    } else {
-      flag.PrintDefaults()
+      flag.Usage()
    }
 }
