@@ -1,4 +1,4 @@
 *.apk
 *.exe
-*.xapk
 ignore.go
+ignore.json

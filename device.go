@@ -43,6 +43,10 @@ var DefaultConfig = Config{
    },
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
+   GLextension: []string{
+      // com.instagram.android
+      "GL_OES_compressed_ETC1_RGB8_texture",
+   },
    NativePlatform: []string{
       // com.vimeo.android.videoapp
       "x86",

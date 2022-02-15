@@ -9,6 +9,7 @@ import (
 
 var apps = []app{
    {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
+   {down: "3.932 B", id: "com.instagram.android"},
    {down: "975.149 M", id: "com.miui.weather2"},
    {down: "689.574 M", id: "com.pinterest"},
    {down: "422.289 M", id: "com.google.android.apps.walletnfcrel"},
