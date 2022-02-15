@@ -11,9 +11,9 @@ import (
 1 message payload
 3 message reviewResponse
 1 message getResponse
-1 message	
-0	
-8 string "I have a lot of experience of canceling travel in last 30min.
+1 message element
+0
+8 string comment
 */
 func main() {
    var req http.Request
