@@ -156,3 +156,33 @@ func (h Header) Purchase(app string) error {
    }
    return res.Body.Close()
 }
+
+func (h Header) Reviews(app string) ([]Review, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/rev", nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = h.Header
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   elements := responseWrapper.Get(1, "payload").
+      Get(3, "reviewResponse").
+      Get(1, "getResponse").
+      GetMessages(1, "element")
+   var revs []Review
+   for _, element := range elements {
+      var rev Review
+      rev.Author = element.Get(33, "author").GetString(5, "title")
+      rev.Comment = element.GetString(8, "comment")
+      revs = append(revs, rev)
+   }
+   return revs, nil
+}

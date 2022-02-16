@@ -52,6 +52,11 @@ func (d Details) String() string {
    return string(buf)
 }
 
+type Review struct {
+   Author string
+   Comment string
+}
+
 type SplitDeliveryData struct {
    ID string
    DownloadURL string

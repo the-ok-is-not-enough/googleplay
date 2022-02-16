@@ -7,6 +7,24 @@ import (
    "time"
 )
 
+func TestReview(t *testing.T) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   dev, err := OpenDevice(cache + "/googleplay/device.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   revs, err := auth.Header(dev, false).Reviews("com.comuto")
+   if err != nil {
+      t.Fatal(err)
+   }
+   for _, rev := range revs {
+      fmt.Printf("%+v\n", rev)
+   }
+}
+
 var apps = []app{
    {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
    {down: "3.932 B", id: "com.instagram.android"},
