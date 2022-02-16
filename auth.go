@@ -86,11 +86,6 @@ func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    return &del, nil
 }
 
-type Delivery struct {
-   DownloadURL string
-   SplitDeliveryData []SplitDeliveryData
-}
-
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
    if err != nil {
@@ -173,12 +168,12 @@ func (h Header) Reviews(app string) ([]Review, error) {
    if err != nil {
       return nil, err
    }
-   elements := responseWrapper.Get(1, "payload").
+   review := responseWrapper.Get(1, "payload").
       Get(3, "reviewResponse").
       Get(1, "getResponse").
-      GetMessages(1, "element")
+      GetMessages(1, "review")
    var revs []Review
-   for _, element := range elements {
+   for _, element := range review {
       var rev Review
       rev.Author = element.Get(33, "author").GetString(5, "title")
       rev.Comment = element.GetString(8, "comment")

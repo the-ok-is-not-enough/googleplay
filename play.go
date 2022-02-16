@@ -21,6 +21,11 @@ const (
 
 var LogLevel format.LogLevel
 
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
+}
+
 type Details struct {
    Title string
    UploadDate string
