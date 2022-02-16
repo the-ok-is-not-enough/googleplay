@@ -23,30 +23,49 @@ func deliveryResponse(responseWrapper protobuf.Message) error {
    return nil
 }
 
-type Auth struct {
-   Auth string
-}
-
-func (a Auth) Header(dev *Device, single bool) Header {
-   var val Header
-   val.Header = make(http.Header)
-   // Authorization
-   val.Set("Authorization", "Bearer " + a.Auth)
-   // User-Agent is only needed with "/fdfe/details" for some apps, example:
-   // com.xiaomi.smarthome
-   if single {
-      val.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=80919999)")
-   } else {
-      val.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=99999999)")
-   }
-   // X-DFE-Device-ID
-   id := strconv.FormatUint(dev.AndroidID, 16)
-   val.Set("X-DFE-Device-ID", id)
-   return val
-}
-
 type Header struct {
    http.Header
+}
+
+func (h Header) Category(cat string) ([]Document, error) {
+   // You can also use "/fdfe/browse" or "/fdfe/homeV2", but they do Prefetch,
+   // and seem to ignore the X-DFE-No-Prefetch:true header:
+   req, err := http.NewRequest("GET", origin + "/fdfe/getHomeStream", nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = h.Header
+   // You can change this to "4", but it will fail with newer versionCode:
+   req.URL.RawQuery = "c=3&cat=" + url.QueryEscape(cat)
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   child := responseWrapper.Get(1, "payload").
+      Get(1, "listResponse").
+      Get(2, "doc").
+      GetMessages(11, "child")
+   var docs []Document
+   for _, element := range child {
+      switch element.GetString(5, "title") {
+      case "Based on your recent activity", "Recommended for you":
+      default:
+         for _, element := range element.GetMessages(11, "child") {
+            var doc Document
+            doc.ID = element.GetString(1, "docID")
+            doc.Title = element.GetString(5, "title")
+            doc.Creator = element.GetString(6, "creator")
+            docs = append(docs, doc)
+         }
+      }
+   }
+   return docs, nil
 }
 
 func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
@@ -159,6 +178,7 @@ func (h Header) Reviews(app string) ([]Review, error) {
    }
    req.Header = h.Header
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -180,4 +200,25 @@ func (h Header) Reviews(app string) ([]Review, error) {
       revs = append(revs, rev)
    }
    return revs, nil
+}
+
+// iana.org/assignments/language-subtag-registry
+func (h Header) language(subtag string) {
+   h.Set("Accept-Language", subtag)
+}
+
+func (h Header) SingleAPK() {
+   h.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=80919999)")
+}
+
+func (a Auth) Header(dev *Device) Header {
+   var val Header
+   val.Header = make(http.Header)
+   val.Set("Authorization", "Bearer " + a.Auth)
+   // User-Agent is only needed with "/fdfe/details" for some apps, example:
+   // com.xiaomi.smarthome
+   val.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=99999999)")
+   id := strconv.FormatUint(dev.AndroidID, 16)
+   val.Set("X-DFE-Device-ID", id)
+   return val
 }

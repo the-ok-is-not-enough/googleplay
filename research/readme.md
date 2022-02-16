@@ -1,16 +1,6 @@
 # Research
 
-https://github.com/facundoolano/google-play-scraper/issues/495
-
-~~~
-1 message payload
-1 message listResponse
-2 message
-11 message
-0	
-11 message	
-0	
-1 string	"video.player.videoplayer"
-5 string	"Video Player All Format"
-6 string	"InShot Inc."
-~~~
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language
+- https://github.com/facundoolano/google-play-scraper/issues/495
+- https://iana.org/assignments/language-subtag-registry
+- https://play.google.com/store/apps/category/GAME?gl=kr

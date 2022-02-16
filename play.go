@@ -21,6 +21,10 @@ const (
 
 var LogLevel format.LogLevel
 
+type Auth struct {
+   Auth string
+}
+
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
@@ -55,6 +59,23 @@ func (d Details) String() string {
    buf = append(buf, ' ')
    buf = append(buf, d.CurrencyCode...)
    return string(buf)
+}
+
+type Document struct {
+   ID string
+   Title string
+   Creator string
+}
+
+func (d Document) String() string {
+   var buf strings.Builder
+   buf.WriteString("ID: ")
+   buf.WriteString(d.ID)
+   buf.WriteString("\nTitle: ")
+   buf.WriteString(d.Title)
+   buf.WriteString("\nCreator: ")
+   buf.WriteString(d.Creator)
+   return buf.String()
 }
 
 type Review struct {

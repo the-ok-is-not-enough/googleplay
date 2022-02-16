@@ -7,6 +7,26 @@ import (
    "time"
 )
 
+func TestCategory(t *testing.T) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   dev, err := OpenDevice(cache + "/googleplay/device.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   head := auth.Header(dev)
+   head.language("ko")
+   docs, err := head.Category("GAME")
+   if err != nil {
+      t.Fatal(err)
+   }
+   for _, doc := range docs {
+      fmt.Print(doc, "\n---\n")
+   }
+}
+
 func TestReview(t *testing.T) {
    auth, cache, err := getAuth()
    if err != nil {
@@ -16,7 +36,8 @@ func TestReview(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   revs, err := auth.Header(dev, false).Reviews("com.comuto")
+   LogLevel = 1
+   revs, err := auth.Header(dev).Reviews("com.comuto")
    if err != nil {
       t.Fatal(err)
    }
@@ -75,7 +96,7 @@ func TestDetails(t *testing.T) {
       t.Fatal(err)
    }
    for _, app := range apps {
-      det, err := auth.Header(dev, false).Details(app.id)
+      det, err := auth.Header(dev).Details(app.id)
       if err != nil {
          t.Fatal(err)
       }
@@ -113,7 +134,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   del, err := auth.Header(dev, false).Delivery(apps[0].id, apps[0].ver)
+   del, err := auth.Header(dev).Delivery(apps[0].id, apps[0].ver)
    if err != nil {
       t.Fatal(err)
    }
