@@ -51,7 +51,8 @@ type Header struct {
 
 func (h Header) Category(cat string) ([]Document, error) {
    // You can also use "/fdfe/browse" or "/fdfe/homeV2", but they do Prefetch,
-   // and seem to ignore the X-DFE-No-Prefetch:true header:
+   // and seem to ignore the X-DFE-No-Prefetch:true header. You can also use
+   // "/fdfe/list", but it requires subcategory.
    req, err := http.NewRequest("GET", origin + "/fdfe/getHomeStream", nil)
    if err != nil {
       return nil, err
