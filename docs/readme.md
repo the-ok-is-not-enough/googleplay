@@ -79,6 +79,20 @@ PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
 GET https://play.googleapis.com/download/by-token/download?token=AOTCm0TiBZQdp...
 ~~~
 
+It does look like you can get different results from the website:
+
+- https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=es
+- https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=es&gl=AR
+- https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=es&gl=ES
+
+However with the Google Play app, these all return the same result:
+
+~~~
+Accept-Language: es
+Accept-Language: es-AR
+Accept-Language: es-ES
+~~~
+
 1. https://support.google.com/googleplay/answer/7431675
 
 ## Will you add features?

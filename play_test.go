@@ -7,7 +7,7 @@ import (
    "time"
 )
 
-func TestCategory(t *testing.T) {
+func TestSuggest(t *testing.T) {
    auth, cache, err := getAuth()
    if err != nil {
       t.Fatal(err)
@@ -16,14 +16,12 @@ func TestCategory(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   head := auth.Header(dev)
-   head.language("ko")
-   docs, err := head.Category("GAME")
+   sugs, err := auth.Header(dev).Suggest("hello")
    if err != nil {
       t.Fatal(err)
    }
-   for _, doc := range docs {
-      fmt.Print(doc, "\n---\n")
+   for _, sug := range sugs {
+      fmt.Println(sug)
    }
 }
 
@@ -36,13 +34,30 @@ func TestReview(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   LogLevel = 1
-   revs, err := auth.Header(dev).Reviews("com.comuto")
+   revs, err := auth.Header(dev).Reviews("com.google.android.youtube")
    if err != nil {
       t.Fatal(err)
    }
    for _, rev := range revs {
-      fmt.Printf("%+v\n", rev)
+      fmt.Println(rev.Author)
+   }
+}
+
+func TestCategory(t *testing.T) {
+   auth, cache, err := getAuth()
+   if err != nil {
+      t.Fatal(err)
+   }
+   dev, err := OpenDevice(cache + "/googleplay/device.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   docs, err := auth.Header(dev).Category("GAME")
+   if err != nil {
+      t.Fatal(err)
+   }
+   for _, doc := range docs {
+      fmt.Print(doc, "\n---\n")
    }
 }
 
@@ -78,8 +93,6 @@ func TestToken(t *testing.T) {
       t.Fatal(err)
    }
 }
-
-const email = "srpen6@gmail.com"
 
 type app struct {
    down, id string

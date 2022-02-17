@@ -23,6 +23,28 @@ func deliveryResponse(responseWrapper protobuf.Message) error {
    return nil
 }
 
+func (a Auth) Header(dev *Device) Header {
+   return a.headerVersion(dev, 9999_9999)
+}
+
+func (a Auth) SingleAPK(dev *Device) Header {
+   return a.headerVersion(dev, 8091_9999)
+}
+
+func (a Auth) headerVersion(dev *Device, version int64) Header {
+   var val Header
+   val.Header = make(http.Header)
+   val.Set("Authorization", "Bearer " + a.Auth)
+   // User-Agent is only needed with "/fdfe/details" for some apps, example:
+   // com.xiaomi.smarthome
+   buf := []byte("Android-Finsky (sdk=9,versionCode=")
+   buf = strconv.AppendInt(buf, version, 10)
+   val.Set("User-Agent", string(buf))
+   id := strconv.FormatUint(dev.AndroidID, 16)
+   val.Set("X-DFE-Device-ID", id)
+   return val
+}
+
 type Header struct {
    http.Header
 }
@@ -202,23 +224,30 @@ func (h Header) Reviews(app string) ([]Review, error) {
    return revs, nil
 }
 
-// iana.org/assignments/language-subtag-registry
-func (h Header) language(subtag string) {
-   h.Set("Accept-Language", subtag)
-}
-
-func (h Header) SingleAPK() {
-   h.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=80919999)")
-}
-
-func (a Auth) Header(dev *Device) Header {
-   var val Header
-   val.Header = make(http.Header)
-   val.Set("Authorization", "Bearer " + a.Auth)
-   // User-Agent is only needed with "/fdfe/details" for some apps, example:
-   // com.xiaomi.smarthome
-   val.Set("User-Agent", "Android-Finsky (sdk=9,versionCode=99999999)")
-   id := strconv.FormatUint(dev.AndroidID, 16)
-   val.Set("X-DFE-Device-ID", id)
-   return val
+func (h Header) Suggest(query string) ([]string, error) {
+   req, err := http.NewRequest("GET", origin + "/fdfe/searchSuggest", nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = h.Header
+   req.URL.RawQuery = "sst=2&q=" + url.QueryEscape(query)
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   suggestion := responseWrapper.Get(1, "payload").
+      Get(40, "searchSuggestResponse").
+      GetMessages(1, "suggestion")
+   var sugs []string
+   for _, element := range suggestion {
+      sug := element.GetString(2, "suggestedQuery")
+      sugs = append(sugs, sug)
+   }
+   return sugs, nil
 }

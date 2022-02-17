@@ -20,7 +20,11 @@ func doDelivery(app string, ver int64, single bool) error {
    if err != nil {
       return err
    }
-   del, err := auth.Header(dev, single).Delivery(app, ver)
+   head := auth.Header(dev)
+   if single {
+      head = auth.SingleAPK(dev)
+   }
+   del, err := head.Delivery(app, ver)
    if err != nil {
       return err
    }
@@ -47,7 +51,7 @@ func doDetails(app string) (*gp.Details, error) {
    if err != nil {
       return nil, err
    }
-   return auth.Header(dev, false).Details(app)
+   return auth.Header(dev).Details(app)
 }
 
 func doDevice() (string, error) {
@@ -77,7 +81,7 @@ func doPurchase(app string) error {
    if err != nil {
       return err
    }
-   return auth.Header(dev, false).Purchase(app)
+   return auth.Header(dev).Purchase(app)
 }
 
 func doToken(email, password string) error {
