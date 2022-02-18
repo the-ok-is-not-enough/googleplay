@@ -1,4 +1,3 @@
-*.apk
-*.exe
 ignore.go
 ignore.json
+ignore.txt
