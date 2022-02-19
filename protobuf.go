@@ -11,31 +11,32 @@ import (
 // A Sleep is needed after this.
 func NewDevice(con Config) (*Device, error) {
    checkin := protobuf.Message{
-      {4, "checkin"}: protobuf.Message{
-         {1, "build"}: protobuf.Message{
-            {10, "sdkVersion"}: uint64(29),
+      tag(4, "checkin"): protobuf.Message{
+         tag(1, "build"): protobuf.Message{
+            tag(10, "sdkVersion"): uint64(29),
          },
       },
-      {14, "version"}: uint64(3),
-      {18, "deviceConfiguration"}: protobuf.Message{
-         {1, "touchScreen"}: con.TouchScreen,
-         {2, "keyboard"}: con.Keyboard,
-         {3, "navigation"}: con.Navigation,
-         {4, "screenLayout"}: con.ScreenLayout,
-         {5, "hasHardKeyboard"}: con.HasHardKeyboard,
-         {6, "hasFiveWayNavigation"}: con.HasFiveWayNavigation,
-         {7, "screenDensity"}: con.ScreenDensity,
-         {8, "glEsVersion"}: con.GLESversion,
-         {9, "systemSharedLibrary"}: con.SystemSharedLibrary,
-         {11, "nativePlatform"}: con.NativePlatform,
-         {15, "glExtension"}: con.GLextension,
+      tag(14, "version"): uint64(3),
+      tag(18, "deviceConfiguration"): protobuf.Message{
+         tag(1, "touchScreen"): con.TouchScreen,
+         tag(2, "keyboard"): con.Keyboard,
+         tag(3, "navigation"): con.Navigation,
+         tag(4, "screenLayout"): con.ScreenLayout,
+         tag(5, "hasHardKeyboard"): con.HasHardKeyboard,
+         tag(6, "hasFiveWayNavigation"): con.HasFiveWayNavigation,
+         tag(7, "screenDensity"): con.ScreenDensity,
+         tag(8, "glEsVersion"): con.GLESversion,
+         tag(9, "systemSharedLibrary"): con.SystemSharedLibrary,
+         tag(11, "nativePlatform"): con.NativePlatform,
+         tag(15, "glExtension"): con.GLextension,
       },
    }
-   for _, feature := range con.DeviceFeature {
-      mes := protobuf.Message{
-         {1, "name"}: feature,
+   config := checkin.Get(tag(18, "deviceConfiguration"))
+   for _, name := range con.DeviceFeature {
+      feature := protobuf.Message{
+         tag(1, "name"): name,
       }
-      checkin.Get(18, "deviceConfiguration").Add(26, "deviceFeature", mes)
+      config.Add(tag(26, "deviceFeature"), feature)
    }
    req, err := http.NewRequest(
       "POST", origin + "/checkin", bytes.NewReader(checkin.Marshal()),
@@ -55,23 +56,8 @@ func NewDevice(con Config) (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetFixed64(7, "androidId")
+   dev.AndroidID = checkinResponse.GetFixed64(tag(7, "androidId"))
    return &dev, nil
-}
-
-func deliveryResponse(responseWrapper protobuf.Message) error {
-   status := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      GetVarint(1, "status")
-   switch status {
-   case 2:
-      return errorString("Regional lockout")
-   case 3:
-      return errorString("Purchase required")
-   case 5:
-      return errorString("Invalid version")
-   }
-   return nil
 }
 
 func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
@@ -94,19 +80,27 @@ func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   if err := deliveryResponse(responseWrapper); err != nil {
-      return nil, err
+   status := responseWrapper.Get(tag(1, "payload")).
+      Get(tag(21, "deliveryResponse")).
+      GetVarint(tag(1, "status"))
+   switch status {
+   case 2:
+      return nil, errorString("Regional lockout")
+   case 3:
+      return nil, errorString("Purchase required")
+   case 5:
+      return nil, errorString("Invalid version")
    }
+   appData := responseWrapper.Get(tag(1, "payload")).
+      Get(tag(21, "deliveryResponse")).
+      Get(tag(2, "appDeliveryData"))
    var del Delivery
-   deliveryData := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      Get(2, "appDeliveryData")
-   del.DownloadURL = deliveryData.GetString(3, "downloadUrl")
-   for _, split := range deliveryData.GetMessages(15, "splitDeliveryData") {
-      var data SplitDeliveryData
-      data.ID = split.GetString(1, "id")
-      data.DownloadURL = split.GetString(5, "downloadUrl")
-      del.SplitDeliveryData = append(del.SplitDeliveryData, data)
+   del.DownloadURL = appData.GetString(tag(3, "downloadUrl"))
+   for _, data := range appData.GetMessages(tag(15, "splitDeliveryData")) {
+      var split SplitDeliveryData
+      split.ID = data.GetString(tag(1, "id"))
+      split.DownloadURL = data.GetString(tag(5, "downloadUrl"))
+      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
    return &del, nil
 }
@@ -130,30 +124,32 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
+   docV2 := responseWrapper.Get(tag(1, "payload")).
+      Get(tag(2, "detailsResponse")).
+      Get(tag(4, "docV2"))
    var det Details
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(2, "detailsResponse").
-      Get(4, "docV2")
-   det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
-   det.Micros = docV2.Get(8, "offer").GetVarint(1, "micros")
-   det.NumDownloads = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetVarint(70, "numDownloads")
+   det.CurrencyCode = docV2.Get(tag(8, "offer")).
+      GetString(tag(2, "currencyCode"))
+   det.Micros = docV2.Get(tag(8, "offer")).
+      GetVarint(tag(1, "micros"))
+   det.NumDownloads = docV2.Get(tag(13, "details")).
+      Get(tag(1, "appDetails")).
+      GetVarint(tag(70, "numDownloads"))
    // The shorter path 13,1,9 returns wrong size for some packages:
    // com.riotgames.league.wildriftvn
-   det.Size = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      Get(34, "installDetails").
-      GetVarint(2, "size")
-   det.Title = docV2.GetString(5, "title")
-   det.UploadDate = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(16, "uploadDate")
-   det.VersionCode = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetVarint(3, "versionCode")
-   det.VersionString = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(4, "versionString")
+   det.Size = docV2.Get(tag(13, "details")).
+      Get(tag(1, "appDetails")).
+      Get(tag(34, "installDetails")).
+      GetVarint(tag(2, "size"))
+   det.Title = docV2.GetString(tag(5, "title"))
+   det.UploadDate = docV2.Get(tag(13, "details")).
+      Get(tag(1, "appDetails")).
+      GetString(tag(16, "uploadDate"))
+   det.VersionCode = docV2.Get(tag(13, "details")).
+      Get(tag(1, "appDetails")).
+      GetVarint(tag(3, "versionCode"))
+   det.VersionString = docV2.Get(tag(13, "details")).
+      Get(tag(1, "appDetails")).
+      GetString(tag(4, "versionString"))
    return &det, nil
 }

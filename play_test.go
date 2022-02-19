@@ -7,60 +7,6 @@ import (
    "time"
 )
 
-func TestSuggest(t *testing.T) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   dev, err := OpenDevice(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   sugs, err := auth.Header(dev).Suggest("hello")
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, sug := range sugs {
-      fmt.Println(sug)
-   }
-}
-
-func TestReview(t *testing.T) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   dev, err := OpenDevice(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   revs, err := auth.Header(dev).Reviews("com.google.android.youtube")
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, rev := range revs {
-      fmt.Println(rev.Author)
-   }
-}
-
-func TestCategory(t *testing.T) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   dev, err := OpenDevice(cache + "/googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   docs, err := auth.Header(dev).Category("GAME")
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, doc := range docs {
-      fmt.Print(doc, "\n---\n")
-   }
-}
-
 var apps = []app{
    {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
    {down: "3.932 B", id: "com.instagram.android"},
