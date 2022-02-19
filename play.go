@@ -14,10 +14,6 @@ import (
    "time"
 )
 
-func tag(number float64, name string) float64 {
-   return number
-}
-
 const (
    Sleep = 4 * time.Second
    origin = "https://android.clients.google.com"

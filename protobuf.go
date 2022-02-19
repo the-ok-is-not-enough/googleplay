@@ -8,6 +8,8 @@ import (
    "strconv"
 )
 
+var tag = protobuf.Tag
+
 // A Sleep is needed after this.
 func NewDevice(con Config) (*Device, error) {
    checkin := protobuf.Message{
@@ -31,12 +33,12 @@ func NewDevice(con Config) (*Device, error) {
          tag(15, "glExtension"): con.GLextension,
       },
    }
-   config := checkin.Get(tag(18, "deviceConfiguration"))
+   config := checkin.Get(18, "deviceConfiguration")
    for _, name := range con.DeviceFeature {
       feature := protobuf.Message{
          tag(1, "name"): name,
       }
-      config.Add(tag(26, "deviceFeature"), feature)
+      config.Add(26, "deviceFeature", feature)
    }
    req, err := http.NewRequest(
       "POST", origin + "/checkin", bytes.NewReader(checkin.Marshal()),
@@ -56,7 +58,7 @@ func NewDevice(con Config) (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetFixed64(tag(7, "androidId"))
+   dev.AndroidID = checkinResponse.GetFixed64(7, "androidId")
    return &dev, nil
 }
 
@@ -80,9 +82,9 @@ func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   status := responseWrapper.Get(tag(1, "payload")).
-      Get(tag(21, "deliveryResponse")).
-      GetVarint(tag(1, "status"))
+   status := responseWrapper.Get(1, "payload").
+      Get(21, "deliveryResponse").
+      GetVarint(1, "status")
    switch status {
    case 2:
       return nil, errorString("Regional lockout")
@@ -91,15 +93,15 @@ func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    case 5:
       return nil, errorString("Invalid version")
    }
-   appData := responseWrapper.Get(tag(1, "payload")).
-      Get(tag(21, "deliveryResponse")).
-      Get(tag(2, "appDeliveryData"))
+   appData := responseWrapper.Get(1, "payload").
+      Get(21, "deliveryResponse").
+      Get(2, "appDeliveryData")
    var del Delivery
-   del.DownloadURL = appData.GetString(tag(3, "downloadUrl"))
-   for _, data := range appData.GetMessages(tag(15, "splitDeliveryData")) {
+   del.DownloadURL = appData.GetString(3, "downloadUrl")
+   for _, data := range appData.GetMessages(15, "splitDeliveryData") {
       var split SplitDeliveryData
-      split.ID = data.GetString(tag(1, "id"))
-      split.DownloadURL = data.GetString(tag(5, "downloadUrl"))
+      split.ID = data.GetString(1, "id")
+      split.DownloadURL = data.GetString(5, "downloadUrl")
       del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
    return &del, nil
@@ -124,32 +126,30 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   docV2 := responseWrapper.Get(tag(1, "payload")).
-      Get(tag(2, "detailsResponse")).
-      Get(tag(4, "docV2"))
+   docV2 := responseWrapper.Get(1, "payload").
+      Get(2, "detailsResponse").
+      Get(4, "docV2")
    var det Details
-   det.CurrencyCode = docV2.Get(tag(8, "offer")).
-      GetString(tag(2, "currencyCode"))
-   det.Micros = docV2.Get(tag(8, "offer")).
-      GetVarint(tag(1, "micros"))
-   det.NumDownloads = docV2.Get(tag(13, "details")).
-      Get(tag(1, "appDetails")).
-      GetVarint(tag(70, "numDownloads"))
+   det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
+   det.Micros = docV2.Get(8, "offer").GetVarint(1, "micros")
+   det.NumDownloads = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetVarint(70, "numDownloads")
    // The shorter path 13,1,9 returns wrong size for some packages:
    // com.riotgames.league.wildriftvn
-   det.Size = docV2.Get(tag(13, "details")).
-      Get(tag(1, "appDetails")).
-      Get(tag(34, "installDetails")).
-      GetVarint(tag(2, "size"))
-   det.Title = docV2.GetString(tag(5, "title"))
-   det.UploadDate = docV2.Get(tag(13, "details")).
-      Get(tag(1, "appDetails")).
-      GetString(tag(16, "uploadDate"))
-   det.VersionCode = docV2.Get(tag(13, "details")).
-      Get(tag(1, "appDetails")).
-      GetVarint(tag(3, "versionCode"))
-   det.VersionString = docV2.Get(tag(13, "details")).
-      Get(tag(1, "appDetails")).
-      GetString(tag(4, "versionString"))
+   det.Size = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      Get(34, "installDetails").
+      GetVarint(2, "size")
+   det.Title = docV2.GetString(5, "title")
+   det.UploadDate = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetString(16, "uploadDate")
+   det.VersionCode = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetVarint(3, "versionCode")
+   det.VersionString = docV2.Get(13, "details").
+      Get(1, "appDetails").
+      GetString(4, "versionString")
    return &det, nil
 }
