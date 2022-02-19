@@ -21,6 +21,33 @@ const (
 
 var LogLevel format.LogLevel
 
+func decode(val interface{}, elem ...string) error {
+   name := filepath.Join(elem...)
+   file, err := os.Open(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   return json.NewDecoder(file).Decode(val)
+}
+
+func encode(val interface{}, elem ...string) error {
+   name := filepath.Join(elem...)
+   err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
+   if err != nil {
+      return err
+   }
+   os.Stdout.WriteString("Create " + name + "\n")
+   file, err := os.Create(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   enc := json.NewEncoder(file)
+   enc.SetIndent("", " ")
+   return enc.Encode(val)
+}
+
 type Auth struct {
    Auth string
 }
@@ -128,6 +155,15 @@ func NewToken(email, password string) (*Token, error) {
    return nil, notFound{"Token"}
 }
 
+func OpenToken(elem ...string) (*Token, error) {
+   tok := new(Token)
+   err := decode(tok, elem...)
+   if err != nil {
+      return nil, err
+   }
+   return tok, nil
+}
+
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
    val := url.Values{
@@ -162,6 +198,10 @@ func (t Token) Auth() (*Auth, error) {
    return nil, notFound{"Auth"}
 }
 
+func (t Token) Create(elem ...string) error {
+   return encode(t, elem...)
+}
+
 type errorString string
 
 func (e errorString) Error() string {
@@ -174,185 +214,4 @@ type notFound struct {
 
 func (n notFound) Error() string {
    return strconv.Quote(n.value) + " not found"
-}
-
-var DefaultConfig = Config{
-   DeviceFeature: []string{
-      // com.google.android.apps.walletnfcrel
-      "android.software.device_admin",
-      // com.google.android.youtube
-      "android.hardware.touchscreen",
-      "android.hardware.wifi",
-      // com.pinterest
-      "android.hardware.camera",
-      "android.hardware.location",
-      "android.hardware.screen.portrait",
-      // com.smarty.voomvoom
-      "android.hardware.location.gps",
-      "android.hardware.sensor.accelerometer",
-      // com.tgc.sky.android
-      "android.hardware.touchscreen.multitouch",
-      "android.hardware.touchscreen.multitouch.distinct",
-      "android.hardware.vulkan.level",
-      "android.hardware.vulkan.version",
-      // org.videolan.vlc
-      "android.hardware.screen.landscape",
-      // com.vimeo.android.videoapp
-      "android.hardware.microphone",
-      // com.xiaomi.smarthome
-      "android.hardware.bluetooth",
-      "android.hardware.bluetooth_le",
-      "android.hardware.camera.autofocus",
-      "android.hardware.usb.host",
-      // org.thoughtcrime.securesms
-      "android.hardware.telephony",
-      // se.pax.calima
-      "android.hardware.location.network",
-   },
-   // com.axis.drawingdesk.v3
-   GLESversion: 0x0003_0001,
-   GLextension: []string{
-      // com.instagram.android
-      "GL_OES_compressed_ETC1_RGB8_texture",
-   },
-   NativePlatform: []string{
-      // com.vimeo.android.videoapp
-      "x86",
-      // com.axis.drawingdesk.v3
-      "armeabi-v7a",
-      // com.exnoa.misttraingirls
-      "arm64-v8a",
-   },
-   SystemSharedLibrary: []string{
-      // com.bbca.bbcafullepisodes
-      "org.apache.http.legacy",
-      // com.miui.weather2
-      "global-miui11-empty.jar",
-   },
-   // com.valvesoftware.android.steam.community
-   TouchScreen: 3,
-}
-
-type Config struct {
-   DeviceFeature []string
-   GLESversion uint64
-   GLextension []string
-   // this can be 0, but it must be included:
-   HasFiveWayNavigation uint64
-   // this can be 0, but it must be included:
-   HasHardKeyboard uint64
-   // this can be 0, but it must be included:
-   Keyboard uint64
-   NativePlatform []string
-   // this can be 0, but it must be included:
-   Navigation uint64
-   // this can be 0, but it must be included:
-   ScreenDensity uint64
-   // this can be 0, but it must be included:
-   ScreenLayout uint64
-   SystemSharedLibrary []string
-   // this can be 0, but it must be included:
-   TouchScreen uint64
-}
-
-type Device struct {
-   AndroidID uint64
-}
-
-func (a Auth) Header(dev *Device) Header {
-   return a.headerVersion(dev, 9999_9999)
-}
-
-func (a Auth) SingleAPK(dev *Device) Header {
-   return a.headerVersion(dev, 8091_9999)
-}
-
-func (a Auth) headerVersion(dev *Device, version int64) Header {
-   var val Header
-   val.Header = make(http.Header)
-   val.Set("Authorization", "Bearer " + a.Auth)
-   // User-Agent is only needed with "/fdfe/details" for some apps, example:
-   // com.xiaomi.smarthome
-   buf := []byte("Android-Finsky (sdk=9,versionCode=")
-   buf = strconv.AppendInt(buf, version, 10)
-   val.Set("User-Agent", string(buf))
-   id := strconv.FormatUint(dev.AndroidID, 16)
-   val.Set("X-DFE-Device-ID", id)
-   return val
-}
-
-type Header struct {
-   http.Header
-}
-
-// Purchase app. Only needs to be done once per Google account.
-func (h Header) Purchase(app string) error {
-   query := "doc=" + url.QueryEscape(app)
-   req, err := http.NewRequest(
-      "POST", origin + "/fdfe/purchase", strings.NewReader(query),
-   )
-   if err != nil {
-      return err
-   }
-   h.Set("Content-Type", "application/x-www-form-urlencoded")
-   req.Header = h.Header
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return err
-   }
-   return res.Body.Close()
-}
-
-func decode(val interface{}, elem ...string) error {
-   name := filepath.Join(elem...)
-   file, err := os.Open(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   return json.NewDecoder(file).Decode(val)
-}
-
-func OpenToken(elem ...string) (*Token, error) {
-   tok := new(Token)
-   err := decode(tok, elem...)
-   if err != nil {
-      return nil, err
-   }
-   return tok, nil
-}
-
-func OpenDevice(elem ...string) (*Device, error) {
-   dev := new(Device)
-   err := decode(dev, elem...)
-   if err != nil {
-      return nil, err
-   }
-   return dev, nil
-}
-
-func encode(val interface{}, elem ...string) error {
-   name := filepath.Join(elem...)
-   err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
-   if err != nil {
-      return err
-   }
-   os.Stdout.WriteString("Create " + name + "\n")
-   file, err := os.Create(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   enc := json.NewEncoder(file)
-   enc.SetIndent("", " ")
-   return enc.Encode(val)
-}
-
-func (t Token) Create(elem ...string) error {
-   return encode(t, elem...)
-}
-
-func (d Device) Create(elem ...string) error {
-   return encode(d, elem...)
 }
