@@ -47,11 +47,10 @@ func main() {
          panic(err)
       }
    } else if device {
-      cache, err := doDevice()
+      err := doDevice()
       if err != nil {
          panic(err)
       }
-      fmt.Println("Create", cache)
    } else if app != "" {
       if purchase {
          err := doPurchase(app)

@@ -78,11 +78,6 @@ func (d Document) String() string {
    return buf.String()
 }
 
-type Review struct {
-   Author string
-   Comment string
-}
-
 type SplitDeliveryData struct {
    ID string
    DownloadURL string
@@ -133,19 +128,6 @@ func NewToken(email, password string) (*Token, error) {
    return nil, notFound{"Token"}
 }
 
-func OpenToken(name string) (*Token, error) {
-   file, err := os.Open(name)
-   if err != nil {
-      return nil, err
-   }
-   defer file.Close()
-   tok := new(Token)
-   if err := json.NewDecoder(file).Decode(tok); err != nil {
-      return nil, err
-   }
-   return tok, nil
-}
-
 // Exchange refresh token for access token.
 func (t Token) Auth() (*Auth, error) {
    val := url.Values{
@@ -180,21 +162,6 @@ func (t Token) Auth() (*Auth, error) {
    return nil, notFound{"Auth"}
 }
 
-func (t Token) Create(name string) error {
-   err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
-   if err != nil {
-      return err
-   }
-   file, err := os.Create(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   enc := json.NewEncoder(file)
-   enc.SetIndent("", " ")
-   return enc.Encode(t)
-}
-
 type errorString string
 
 func (e errorString) Error() string {
@@ -208,7 +175,6 @@ type notFound struct {
 func (n notFound) Error() string {
    return strconv.Quote(n.value) + " not found"
 }
-
 
 var DefaultConfig = Config{
    DeviceFeature: []string{
@@ -293,30 +259,6 @@ type Device struct {
    AndroidID uint64
 }
 
-func OpenDevice(name string) (*Device, error) {
-   file, err := os.Open(name)
-   if err != nil {
-      return nil, err
-   }
-   defer file.Close()
-   dev := new(Device)
-   if err := json.NewDecoder(file).Decode(dev); err != nil {
-      return nil, err
-   }
-   return dev, nil
-}
-
-func (d Device) Create(name string) error {
-   file, err := os.Create(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   enc := json.NewEncoder(file)
-   enc.SetIndent("", " ")
-   return enc.Encode(d)
-}
-
 func (a Auth) Header(dev *Device) Header {
    return a.headerVersion(dev, 9999_9999)
 }
@@ -360,4 +302,57 @@ func (h Header) Purchase(app string) error {
       return err
    }
    return res.Body.Close()
+}
+
+func decode(val interface{}, elem ...string) error {
+   name := filepath.Join(elem...)
+   file, err := os.Open(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   return json.NewDecoder(file).Decode(val)
+}
+
+func OpenToken(elem ...string) (*Token, error) {
+   tok := new(Token)
+   err := decode(tok, elem...)
+   if err != nil {
+      return nil, err
+   }
+   return tok, nil
+}
+
+func OpenDevice(elem ...string) (*Device, error) {
+   dev := new(Device)
+   err := decode(dev, elem...)
+   if err != nil {
+      return nil, err
+   }
+   return dev, nil
+}
+
+func encode(val interface{}, elem ...string) error {
+   name := filepath.Join(elem...)
+   err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
+   if err != nil {
+      return err
+   }
+   os.Stdout.WriteString("Create " + name + "\n")
+   file, err := os.Create(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   enc := json.NewEncoder(file)
+   enc.SetIndent("", " ")
+   return enc.Encode(val)
+}
+
+func (t Token) Create(elem ...string) error {
+   return encode(t, elem...)
+}
+
+func (d Device) Create(elem ...string) error {
+   return encode(d, elem...)
 }

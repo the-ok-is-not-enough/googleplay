@@ -5,7 +5,6 @@ import (
    "github.com/89z/format"
    "net/http"
    "os"
-   "path/filepath"
    "strconv"
    "time"
    gp "github.com/89z/googleplay"
@@ -16,7 +15,7 @@ func doDelivery(app string, ver int64, single bool) error {
    if err != nil {
       return err
    }
-   dev, err := gp.OpenDevice(cache + "/googleplay/device.json")
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
    if err != nil {
       return err
    }
@@ -47,29 +46,25 @@ func doDetails(app string) (*gp.Details, error) {
    if err != nil {
       return nil, err
    }
-   dev, err := gp.OpenDevice(cache + "/googleplay/device.json")
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
    if err != nil {
       return nil, err
    }
    return auth.Header(dev).Details(app)
 }
 
-func doDevice() (string, error) {
+func doDevice() error {
    dev, err := gp.NewDevice(gp.DefaultConfig)
    if err != nil {
-      return "", err
+      return err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
    cache, err := os.UserCacheDir()
    if err != nil {
-      return "", err
+      return err
    }
-   cache = filepath.Join(cache, "/googleplay/device.json")
-   if err := dev.Create(cache); err != nil {
-      return "", err
-   }
-   return cache, nil
+   return dev.Create(cache, "googleplay/device.json")
 }
 
 func doPurchase(app string) error {
@@ -77,7 +72,7 @@ func doPurchase(app string) error {
    if err != nil {
       return err
    }
-   dev, err := gp.OpenDevice(cache + "/googleplay/device.json")
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
    if err != nil {
       return err
    }
@@ -93,11 +88,7 @@ func doToken(email, password string) error {
    if err != nil {
       return err
    }
-   cache = filepath.Join(cache, "googleplay")
-   os.Mkdir(cache, os.ModePerm)
-   cache = filepath.Join(cache, "token.json")
-   fmt.Println("Create", cache)
-   return tok.Create(cache)
+   return tok.Create(cache, "googleplay/token.json")
 }
 
 func download(src, dst string) error {
@@ -137,7 +128,7 @@ func getAuth() (*gp.Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   tok, err := gp.OpenToken(cache + "/googleplay/token.json")
+   tok, err := gp.OpenToken(cache, "googleplay/token.json")
    if err != nil {
       return nil, "", err
    }

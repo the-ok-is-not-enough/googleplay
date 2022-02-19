@@ -8,18 +8,20 @@ import (
    "strconv"
 )
 
+type message = protobuf.Message
+
 var tag = protobuf.Tag
 
 // A Sleep is needed after this.
 func NewDevice(con Config) (*Device, error) {
-   checkin := protobuf.Message{
-      tag(4, "checkin"): protobuf.Message{
-         tag(1, "build"): protobuf.Message{
+   checkin := message{
+      tag(4, "checkin"): message{
+         tag(1, "build"): message{
             tag(10, "sdkVersion"): uint64(29),
          },
       },
       tag(14, "version"): uint64(3),
-      tag(18, "deviceConfiguration"): protobuf.Message{
+      tag(18, "deviceConfiguration"): message{
          tag(1, "touchScreen"): con.TouchScreen,
          tag(2, "keyboard"): con.Keyboard,
          tag(3, "navigation"): con.Navigation,
@@ -35,7 +37,7 @@ func NewDevice(con Config) (*Device, error) {
    }
    config := checkin.Get(18, "deviceConfiguration")
    for _, name := range con.DeviceFeature {
-      feature := protobuf.Message{
+      feature := message{
          tag(1, "name"): name,
       }
       config.Add(26, "deviceFeature", feature)
@@ -152,4 +154,46 @@ func (h Header) Details(app string) (*Details, error) {
       Get(1, "appDetails").
       GetString(4, "versionString")
    return &det, nil
+}
+
+func (h Header) Category(cat string) ([]Document, error) {
+   // You can also use "/fdfe/browse" or "/fdfe/homeV2", but they do Prefetch,
+   // and seem to ignore the X-DFE-No-Prefetch:true header. You can also use
+   // "/fdfe/list", but it requires subcategory.
+   req, err := http.NewRequest("GET", origin + "/fdfe/getHomeStream", nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = h.Header
+   // You can change this to "4", but it will fail with newer versionCode:
+   req.URL.RawQuery = "c=3&cat=" + url.QueryEscape(cat)
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   child := responseWrapper.Get(1, "payload").
+      Get(1, "listResponse").
+      Get(2, "doc").
+      GetMessages(11, "child")
+   var docs []Document
+   for _, element := range child {
+      switch element.GetString(5, "title") {
+      case "Based on your recent activity", "Recommended for you":
+      default:
+         for _, element := range element.GetMessages(11, "child") {
+            var doc Document
+            doc.ID = element.GetString(1, "docID")
+            doc.Title = element.GetString(5, "title")
+            doc.Creator = element.GetString(6, "creator")
+            docs = append(docs, doc)
+         }
+      }
+   }
+   return docs, nil
 }

@@ -35,7 +35,7 @@ func TestToken(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   if err := tok.Create(cache + "/googleplay/token.json"); err != nil {
+   if err := tok.Create(cache, "googleplay/token.json"); err != nil {
       t.Fatal(err)
    }
 }
@@ -50,7 +50,7 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   dev, err := OpenDevice(cache + "/googleplay/device.json")
+   dev, err := OpenDevice(cache, "googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
@@ -78,7 +78,7 @@ func TestDevice(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   if err := dev.Create(cache + "/googleplay/device.json"); err != nil {
+   if err := dev.Create(cache, "googleplay/device.json"); err != nil {
       t.Fatal(err)
    }
    time.Sleep(Sleep)
@@ -89,7 +89,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   dev, err := OpenDevice(cache + "/googleplay/device.json")
+   dev, err := OpenDevice(cache, "googleplay/device.json")
    if err != nil {
       t.Fatal(err)
    }
@@ -105,7 +105,7 @@ func getAuth() (*Auth, string, error) {
    if err != nil {
       return nil, "", err
    }
-   tok, err := OpenToken(cache + "/googleplay/token.json")
+   tok, err := OpenToken(cache, "googleplay/token.json")
    if err != nil {
       return nil, "", err
    }
