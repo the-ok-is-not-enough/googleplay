@@ -47,7 +47,7 @@ adb install-multiple (Get-ChildItem *.apk)
 ## Regional lockout
 
 Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
-to UK. If you try it from US, details will work, but delivery will fail:
+to GB. If you try it from US, details will work, but delivery will fail:
 
 ~~~
 PS C:\> googleplay -a air.ITVMobilePlayer
