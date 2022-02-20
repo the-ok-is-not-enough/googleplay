@@ -54,7 +54,7 @@ func doDetails(app string) (*gp.Details, error) {
 }
 
 func doDevice() error {
-   dev, err := gp.NewDevice(gp.DefaultConfig)
+   dev, err := gp.DefaultConfig.Device()
    if err != nil {
       return err
    }

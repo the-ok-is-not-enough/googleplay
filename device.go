@@ -87,12 +87,8 @@ var DefaultConfig = Config{
    TouchScreen: 3,
 }
 
-type Device struct {
-   AndroidID uint64
-}
-
 // A Sleep is needed after this.
-func NewDevice(con Config) (*Device, error) {
+func (c Config) Device() (*Device, error) {
    checkin := message{
       tag(4, "checkin"): message{
          tag(1, "build"): message{
@@ -101,21 +97,21 @@ func NewDevice(con Config) (*Device, error) {
       },
       tag(14, "version"): uint64(3),
       tag(18, "deviceConfiguration"): message{
-         tag(1, "touchScreen"): con.TouchScreen,
-         tag(2, "keyboard"): con.Keyboard,
-         tag(3, "navigation"): con.Navigation,
-         tag(4, "screenLayout"): con.ScreenLayout,
-         tag(5, "hasHardKeyboard"): con.HasHardKeyboard,
-         tag(6, "hasFiveWayNavigation"): con.HasFiveWayNavigation,
-         tag(7, "screenDensity"): con.ScreenDensity,
-         tag(8, "glEsVersion"): con.GLESversion,
-         tag(9, "systemSharedLibrary"): con.SystemSharedLibrary,
-         tag(11, "nativePlatform"): con.NativePlatform,
-         tag(15, "glExtension"): con.GLextension,
+         tag(1, "touchScreen"): c.TouchScreen,
+         tag(2, "keyboard"): c.Keyboard,
+         tag(3, "navigation"): c.Navigation,
+         tag(4, "screenLayout"): c.ScreenLayout,
+         tag(5, "hasHardKeyboard"): c.HasHardKeyboard,
+         tag(6, "hasFiveWayNavigation"): c.HasFiveWayNavigation,
+         tag(7, "screenDensity"): c.ScreenDensity,
+         tag(8, "glEsVersion"): c.GLESversion,
+         tag(9, "systemSharedLibrary"): c.SystemSharedLibrary,
+         tag(11, "nativePlatform"): c.NativePlatform,
+         tag(15, "glExtension"): c.GLextension,
       },
    }
    config := checkin.Get(18, "deviceConfiguration")
-   for _, name := range con.DeviceFeature {
+   for _, name := range c.DeviceFeature {
       feature := message{
          tag(1, "name"): name,
       }
@@ -141,6 +137,10 @@ func NewDevice(con Config) (*Device, error) {
    var dev Device
    dev.AndroidID = checkinResponse.GetFixed64(7, "androidId")
    return &dev, nil
+}
+
+type Device struct {
+   AndroidID uint64
 }
 
 func OpenDevice(elem ...string) (*Device, error) {

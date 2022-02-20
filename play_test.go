@@ -70,7 +70,7 @@ func TestDetails(t *testing.T) {
 }
 
 func TestDevice(t *testing.T) {
-   dev, err := NewDevice(DefaultConfig)
+   dev, err := DefaultConfig.Device()
    if err != nil {
       t.Fatal(err)
    }
