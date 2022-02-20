@@ -30,25 +30,3 @@ If you need to configure a proxy, in the emulator click `More`. On the
 Studio HTTP proxy settings`. Click `Manual proxy configuration`. Enter `Host
 name` and `Port number` as determined by the proxy program you are using. Click
 `Apply`, and you should see `Proxy status Success`.
-
-## Genymotion
-
-This emulator sucks. Here is Android Studio:
-
-- 0s, launching emulator
-- 49s, click Play Store
-- 1m, sign in to Play Store
-- 1m37s, install Firefox
-- 1m51s, open Firefox
-- 2m9s, http://example.com finish loading
-
-and Genymotion:
-
-- 0s, launching emulator
-- 44s, install Gapps
-- 1m41s, restart device
-- 2m32s, click Play Store
-- 3m, sign in to Play Store
-- 4m53s, install Chrome
-- 5m37s, open Chrome
-- 6m, Chrome crash

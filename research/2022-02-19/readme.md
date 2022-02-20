@@ -22,3 +22,9 @@ only returns seven results
 ## /fdfe/list
 
 requires subcategory
+
+## /fdfe/listTopChartItems
+
+~~~
+listTopChartItems?c=3&scat=APPLICATION&stcid=apps_topselling_free
+~~~

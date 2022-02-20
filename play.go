@@ -168,6 +168,8 @@ func OpenToken(elem ...string) (*Token, error) {
 func (t Token) Auth() (*Auth, error) {
    val := url.Values{
       "Token": {t.Token},
+      // You can also use:
+      // https://www.googleapis.com/auth/login_manager
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
    }.Encode()
    req, err := http.NewRequest(
