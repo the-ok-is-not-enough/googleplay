@@ -17,8 +17,8 @@ Platform | Android | Variant
 ---------|---------|--------
 x86      | 6       | pico
 
-but newer Android should work as well. You should only need on file from the Zip
-archive:
+but newer Android should work as well. You should only need one file from the
+Zip archive:
 
 ~~~
 Core\vending-x86.tar.lz
@@ -38,15 +38,15 @@ emulator -avd Pixel_3a_XL_API_24 -writable-system
 ~~~
 
 Next, install Google Play Store. Note that you cannot use the normal method of
-drag APK to device screen, or you will get errors:
+drag APK to device screen, or you will get one of these errors:
 
 ~~~
-APK Installer
----------------------------
 The APK failed to install.<br/> Error: Could not parse error string
 
-APK Installer
----------------------------
+The APK failed to install.<br/> Error: INSTALL_FAILED_UPDATE_INCOMPATIBLE:
+Package com.android.vending signatures do not match the previously installed
+version; ignoring!
+
 The APK failed to install.<br/> Error: INSTALL_PARSE_FAILED_NO_CERTIFICATES:
 Failed to collect certificates from /data/app/vmdl1047870024.tmp/base.apk:
 META-INF/BNDLTOOL.SF indicates /data/app/vmdl1047870024.tmp/base.apk is signed
