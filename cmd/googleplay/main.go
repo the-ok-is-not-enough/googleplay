@@ -52,18 +52,22 @@ func main() {
          panic(err)
       }
    } else if app != "" {
+      head, err := newHeader(single)
+      if err != nil {
+         panic(err)
+      }
       if purchase {
-         err := doPurchase(app)
+         err := head.Purchase(app)
          if err != nil {
             panic(err)
          }
       } else if version >= 1 {
-         err := doDelivery(app, version, single)
+         err := doDelivery(head, app, version)
          if err != nil {
             panic(err)
          }
       } else {
-         det, err := doDetails(app)
+         det, err := head.Details(app)
          if err != nil {
             panic(err)
          }

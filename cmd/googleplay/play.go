@@ -10,6 +10,25 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doDelivery(head *gp.Header, app string, ver int64) error {
+   del, err := head.Delivery(app, ver)
+   if err != nil {
+      return err
+   }
+   dst := filename(app, "", ver)
+   if err := download(del.DownloadURL, dst); err != nil {
+      return err
+   }
+   for _, split := range del.SplitDeliveryData {
+      dst := filename(app, split.ID, ver)
+      err := download(split.DownloadURL, dst)
+      if err != nil {
+         return err
+      }
+   }
+   return nil
+}
+
 func doDevice() error {
    dev, err := gp.DefaultConfig.Device()
    if err != nil {
@@ -68,7 +87,7 @@ func filename(app, id string, ver int64) string {
    return string(buf)
 }
 
-func newHeader() (*gp.Header, error) {
+func newHeader(single bool) (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
       return nil, err
@@ -81,62 +100,8 @@ func newHeader() (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   return tok.Header(dev)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-func doDelivery(app string, ver int64, single bool) error {
-   auth, cache, err := newHeader()
-   if err != nil {
-      return err
-   }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   head := auth.Header(dev)
    if single {
-      head = auth.SingleAPK(dev)
+      return tok.SingleAPK(dev)
    }
-   del, err := head.Delivery(app, ver)
-   if err != nil {
-      return err
-   }
-   dst := filename(app, "", ver)
-   if err := download(del.DownloadURL, dst); err != nil {
-      return err
-   }
-   for _, split := range del.SplitDeliveryData {
-      dst := filename(app, split.ID, ver)
-      err := download(split.DownloadURL, dst)
-      if err != nil {
-         return err
-      }
-   }
-   return nil
-}
-
-func doDetails(app string) (*gp.Details, error) {
-   auth, cache, err := newHeader()
-   if err != nil {
-      return nil, err
-   }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return nil, err
-   }
-   return auth.Header(dev).Details(app)
-}
-
-func doPurchase(app string) error {
-   auth, cache, err := newHeader()
-   if err != nil {
-      return err
-   }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   return auth.Header(dev).Purchase(app)
+   return tok.Header(dev)
 }
