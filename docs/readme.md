@@ -44,7 +44,7 @@ PowerShell:
 adb install-multiple (Get-ChildItem *.apk)
 ~~~
 
-## Regional lockout
+## Geo-blocking
 
 Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
 to GB. If you try it from US, details will work, but delivery will fail:
@@ -60,7 +60,7 @@ Size: 35.625 MB
 Offer: 0.00 USD
 
 PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
-panic: Regional lockout
+panic: Geo-blocking
 ~~~
 
 You can change the country [1], and then you get expected result:

@@ -8,7 +8,21 @@ import (
    "strings"
 )
 
+type errorString string
+
+func (e errorString) Error() string {
+   return string(e)
+}
+
 var LogLevel format.LogLevel
+
+type document struct {
+   child []document
+   id string
+   title string
+   creator string
+   nextPageURL string
+}
 
 func (d document) String() string {
    var buf strings.Builder
@@ -32,38 +46,25 @@ func (d document) String() string {
    return buf.String()
 }
 
-type document struct {
-   child []document
-   id string
-   title string
-   creator string
-   nextPageURL string
-}
-
-func list(category string) (*document, error) {
-   return document{}.getList(category)
-}
-
-func (d document) list() (*document, error) {
-   return d.getList("")
-}
+////////////////////////////////////////////////////////////////////////////////
 
 func (d document) getList(category string) (*document, error) {
-   req, err := http.NewRequest(
-      "GET", "https://android.clients.google.com/fdfe/", nil,
-   )
-   if err != nil {
-      return nil, err
-   }
+   var buf strings.Builder
+   buf.WriteString("https://android.clients.google.com/fdfe/")
    if d.nextPageURL != "" {
-      req.URL.Path += d.nextPageURL
+      buf.WriteString(d.nextPageURL)
    } else {
-      req.URL.Path += "list"
-      req.URL.RawQuery = url.Values{
+      buf.WriteString("list?")
+      val := url.Values{
          "c": {"3"},
          "cat": {category},
          "ctr": {"apps_topselling_free"},
       }.Encode()
+      buf.WriteString(val)
+   }
+   req, err := http.NewRequest("GET", buf.String(), nil)
+   if err != nil {
+      return nil, err
    }
    req.Header = http.Header{
       "Authorization": {bearer},
@@ -98,8 +99,10 @@ func (d document) getList(category string) (*document, error) {
    return &doc, nil
 }
 
-type errorString string
+func list(category string) (*document, error) {
+   return document{}.getList(category)
+}
 
-func (e errorString) Error() string {
-   return string(e)
+func (d document) list() (*document, error) {
+   return d.getList("")
 }

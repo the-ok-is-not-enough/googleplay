@@ -85,23 +85,6 @@ func (d Details) String() string {
    return string(buf)
 }
 
-type Document struct {
-   ID string
-   Title string
-   Creator string
-}
-
-func (d Document) String() string {
-   var buf strings.Builder
-   buf.WriteString("ID: ")
-   buf.WriteString(d.ID)
-   buf.WriteString("\nTitle: ")
-   buf.WriteString(d.Title)
-   buf.WriteString("\nCreator: ")
-   buf.WriteString(d.Creator)
-   return buf.String()
-}
-
 type SplitDeliveryData struct {
    ID string
    DownloadURL string

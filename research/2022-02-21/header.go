@@ -1,12 +1,50 @@
 package googleplay
 
 import (
+   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
    "strconv"
    "strings"
 )
+
+type Auth struct {
+   Auth string
+}
+
+type Delivery struct {
+   DownloadURL string
+   SplitDeliveryData []SplitDeliveryData
+}
+
+var LogLevel format.LogLevel
+
+type Details struct {
+   Title string
+   UploadDate string
+   VersionString string
+   VersionCode uint64
+   NumDownloads uint64
+   Size uint64
+   Micros uint64
+   CurrencyCode string
+}
+
+type Device struct {
+   AndroidID uint64
+}
+
+type SplitDeliveryData struct {
+   ID string
+   DownloadURL string
+}
+
+type errorString string
+
+func (e errorString) Error() string {
+   return string(e)
+}
 
 func (a Auth) Header(dev *Device) Header {
    return a.headerVersion(dev, 9999_9999)
@@ -79,71 +117,4 @@ func (h Header) Details(app string) (*Details, error) {
       Get(1, "appDetails").
       GetString(4, "versionString")
    return &det, nil
-}
-
-func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
-   req, err := http.NewRequest(
-      "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header = h.Header
-   req.URL.RawQuery = url.Values{
-      "doc": {app},
-      "vc": {strconv.FormatInt(ver, 10)},
-   }.Encode()
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   status := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      GetVarint(1, "status")
-   switch status {
-   case 2:
-      return nil, errorString("Geo-blocking")
-   case 3:
-      return nil, errorString("Purchase required")
-   case 5:
-      return nil, errorString("Invalid version")
-   }
-   appData := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      Get(2, "appDeliveryData")
-   var del Delivery
-   del.DownloadURL = appData.GetString(3, "downloadUrl")
-   for _, data := range appData.GetMessages(15, "splitDeliveryData") {
-      var split SplitDeliveryData
-      split.ID = data.GetString(1, "id")
-      split.DownloadURL = data.GetString(5, "downloadUrl")
-      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
-   }
-   return &del, nil
-}
-
-// Purchase app. Only needs to be done once per Google account.
-func (h Header) Purchase(app string) error {
-   query := "doc=" + url.QueryEscape(app)
-   req, err := http.NewRequest(
-      "POST", "https://android.clients.google.com/fdfe/purchase",
-      strings.NewReader(query),
-   )
-   if err != nil {
-      return err
-   }
-   h.Set("Content-Type", "application/x-www-form-urlencoded")
-   req.Header = h.Header
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return err
-   }
-   return res.Body.Close()
 }
