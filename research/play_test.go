@@ -6,7 +6,7 @@ import (
 )
 
 func TestCategory(t *testing.T) {
-   docs, err := topChartItems("FINANCE")
+   docs, err := list("FINANCE")
    if err != nil {
       t.Fatal(err)
    }

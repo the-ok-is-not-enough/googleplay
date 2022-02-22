@@ -10,26 +10,9 @@ import (
 
 var LogLevel format.LogLevel
 
-type Document struct {
-   ID string
-   Title string
-   Creator string
-}
-
-func (d Document) String() string {
-   var buf strings.Builder
-   buf.WriteString("ID: ")
-   buf.WriteString(d.ID)
-   buf.WriteString("\nTitle: ")
-   buf.WriteString(d.Title)
-   buf.WriteString("\nCreator: ")
-   buf.WriteString(d.Creator)
-   return buf.String()
-}
-
-func topChartItems(category string) ([]Document, error) {
+func list(category string) ([]Document, error) {
    req, err := http.NewRequest(
-      "GET", "https://android.clients.google.com/fdfe/listTopChartItems", nil,
+      "GET", "https://android.clients.google.com/fdfe/list", nil,
    )
    if err != nil {
       return nil, err
@@ -40,8 +23,8 @@ func topChartItems(category string) ([]Document, error) {
    }
    req.URL.RawQuery = url.Values{
       "c": {"3"},
-      "scat": {category},
-      "stcid": {"apps_topselling_free"},
+      "cat": {category},
+      "ctr": {"apps_topselling_free"},
    }.Encode()
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -55,8 +38,8 @@ func topChartItems(category string) ([]Document, error) {
    }
    child := responseWrapper.Get(1, "payload").
       Get(1, "listResponse").
-      Get(2, "doc").
-      GetMessages(11, "child")
+      Get(2, "doc"). // DocV2
+      GetMessages(11, "child") // DocV2
    var docs []Document
    for _, element := range child {
       var doc Document
@@ -66,4 +49,21 @@ func topChartItems(category string) ([]Document, error) {
       docs = append(docs, doc)
    }
    return docs, nil
+}
+
+type docV2 struct {
+   docID string
+   title string
+   creator string
+   child []docV2
+   containerMetadata struct {
+   }
+}
+
+type responseWrapper struct {
+   payload struct {
+      listResponse struct {
+         doc docV2
+      }
+   }
 }
