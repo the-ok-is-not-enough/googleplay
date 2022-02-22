@@ -163,6 +163,9 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return nil, errorString(res.Status)
+   }
    var tok Token
    tok.Token = parseQuery(res.Body).Get("Token")
    return &tok, nil
