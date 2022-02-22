@@ -20,8 +20,6 @@ func (a Auth) headerVersion(dev *Device, version int64) Header {
    var val Header
    val.Header = make(http.Header)
    val.Set("Authorization", "Bearer " + a.Auth)
-   // User-Agent is only needed with "/fdfe/details" for some apps, example:
-   // com.xiaomi.smarthome
    buf := []byte("Android-Finsky (sdk=9,versionCode=")
    buf = strconv.AppendInt(buf, version, 10)
    val.Set("User-Agent", string(buf))
@@ -35,7 +33,9 @@ type Header struct {
 }
 
 func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/delivery", nil)
+   req, err := http.NewRequest(
+      "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
+   )
    if err != nil {
       return nil, err
    }
@@ -80,7 +80,9 @@ func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
 }
 
 func (h Header) Details(app string) (*Details, error) {
-   req, err := http.NewRequest("GET", origin + "/fdfe/details", nil)
+   req, err := http.NewRequest(
+      "GET", "https://android.clients.google.com/fdfe/details", nil,
+   )
    if err != nil {
       return nil, err
    }
@@ -130,7 +132,8 @@ func (h Header) Details(app string) (*Details, error) {
 func (h Header) Purchase(app string) error {
    query := "doc=" + url.QueryEscape(app)
    req, err := http.NewRequest(
-      "POST", origin + "/fdfe/purchase", strings.NewReader(query),
+      "POST", "https://android.clients.google.com/fdfe/purchase",
+      strings.NewReader(query),
    )
    if err != nil {
       return err

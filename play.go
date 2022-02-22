@@ -14,10 +14,7 @@ import (
    "time"
 )
 
-const (
-   Sleep = 4 * time.Second
-   origin = "https://android.clients.google.com"
-)
+const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
 
@@ -119,15 +116,11 @@ func NewToken(email, password string) (*Token, error) {
    val := url.Values{
       "Email": {email},
       "Passwd": {password},
-      // Instead of the following two, you can use this:
-      // sdk_version=20
-      // but I couldnt get newer versions to work, so I think this is the
-      // better option.
       "client_sig": {""},
       "droidguard_results": {""},
    }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(val),
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
    )
    if err != nil {
       return nil, err
@@ -168,12 +161,10 @@ func OpenToken(elem ...string) (*Token, error) {
 func (t Token) Auth() (*Auth, error) {
    val := url.Values{
       "Token": {t.Token},
-      // You can also use:
-      // https://www.googleapis.com/auth/login_manager
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
    }.Encode()
    req, err := http.NewRequest(
-      "POST", origin + "/auth", strings.NewReader(val),
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
    )
    if err != nil {
       return nil, err

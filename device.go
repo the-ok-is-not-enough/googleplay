@@ -118,7 +118,8 @@ func (c Config) Device() (*Device, error) {
       config.Add(26, "deviceFeature", feature)
    }
    req, err := http.NewRequest(
-      "POST", origin + "/checkin", bytes.NewReader(checkin.Marshal()),
+      "POST", "https://android.googleapis.com/checkin",
+      bytes.NewReader(checkin.Marshal()),
    )
    if err != nil {
       return nil, err
