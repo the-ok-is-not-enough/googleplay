@@ -45,30 +45,6 @@ type app struct {
    ver int64
 }
 
-func TestDetails(t *testing.T) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      t.Fatal(err)
-   }
-   dev, err := OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, app := range apps {
-      det, err := auth.Header(dev).Details(app.id)
-      if err != nil {
-         t.Fatal(err)
-      }
-      if det.VersionCode == 0 {
-         t.Fatal(det)
-      }
-      if det.VersionString == "" {
-         t.Fatal(det)
-      }
-      time.Sleep(time.Second)
-   }
-}
-
 func TestDevice(t *testing.T) {
    dev, err := DefaultConfig.Device()
    if err != nil {
@@ -84,34 +60,50 @@ func TestDevice(t *testing.T) {
    time.Sleep(Sleep)
 }
 
-func TestDelivery(t *testing.T) {
-   auth, cache, err := getAuth()
+func newHeader() (*Header, error) {
+   cache, err := os.UserCacheDir()
    if err != nil {
-      t.Fatal(err)
+      return nil, err
+   }
+   tok, err := OpenToken(cache, "googleplay/token.json")
+   if err != nil {
+      return nil, err
    }
    dev, err := OpenDevice(cache, "googleplay/device.json")
    if err != nil {
+      return nil, err
+   }
+   return tok.Header(dev)
+}
+
+func TestDetails(t *testing.T) {
+   head, err := newHeader()
+   if err != nil {
       t.Fatal(err)
    }
-   del, err := auth.Header(dev).Delivery(apps[0].id, apps[0].ver)
+   for _, app := range apps {
+      det, err := head.Details(app.id)
+      if err != nil {
+         t.Fatal(err)
+      }
+      if det.VersionCode == 0 {
+         t.Fatal(det)
+      }
+      if det.VersionString == "" {
+         t.Fatal(det)
+      }
+      time.Sleep(time.Second)
+   }
+}
+
+func TestDelivery(t *testing.T) {
+   head, err := newHeader()
+   if err != nil {
+      t.Fatal(err)
+   }
+   del, err := head.Delivery(apps[0].id, apps[0].ver)
    if err != nil {
       t.Fatal(err)
    }
    fmt.Printf("%+v\n", del)
-}
-
-func getAuth() (*Auth, string, error) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return nil, "", err
-   }
-   tok, err := OpenToken(cache, "googleplay/token.json")
-   if err != nil {
-      return nil, "", err
-   }
-   auth, err := tok.Auth()
-   if err != nil {
-      return nil, "", err
-   }
-   return auth, cache, nil
 }

@@ -10,49 +10,6 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func doDelivery(app string, ver int64, single bool) error {
-   auth, cache, err := getAuth()
-   if err != nil {
-      return err
-   }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   head := auth.Header(dev)
-   if single {
-      head = auth.SingleAPK(dev)
-   }
-   del, err := head.Delivery(app, ver)
-   if err != nil {
-      return err
-   }
-   dst := filename(app, "", ver)
-   if err := download(del.DownloadURL, dst); err != nil {
-      return err
-   }
-   for _, split := range del.SplitDeliveryData {
-      dst := filename(app, split.ID, ver)
-      err := download(split.DownloadURL, dst)
-      if err != nil {
-         return err
-      }
-   }
-   return nil
-}
-
-func doDetails(app string) (*gp.Details, error) {
-   auth, cache, err := getAuth()
-   if err != nil {
-      return nil, err
-   }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return nil, err
-   }
-   return auth.Header(dev).Details(app)
-}
-
 func doDevice() error {
    dev, err := gp.DefaultConfig.Device()
    if err != nil {
@@ -65,18 +22,6 @@ func doDevice() error {
       return err
    }
    return dev.Create(cache, "googleplay/device.json")
-}
-
-func doPurchase(app string) error {
-   auth, cache, err := getAuth()
-   if err != nil {
-      return err
-   }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return err
-   }
-   return auth.Header(dev).Purchase(app)
 }
 
 func doToken(email, password string) error {
@@ -123,18 +68,75 @@ func filename(app, id string, ver int64) string {
    return string(buf)
 }
 
-func getAuth() (*gp.Auth, string, error) {
+func newHeader() (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
-      return nil, "", err
+      return nil, err
    }
    tok, err := gp.OpenToken(cache, "googleplay/token.json")
    if err != nil {
-      return nil, "", err
+      return nil, err
    }
-   auth, err := tok.Auth()
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
    if err != nil {
-      return nil, "", err
+      return nil, err
    }
-   return auth, cache, nil
+   return tok.Header(dev)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+func doDelivery(app string, ver int64, single bool) error {
+   auth, cache, err := newHeader()
+   if err != nil {
+      return err
+   }
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
+   if err != nil {
+      return err
+   }
+   head := auth.Header(dev)
+   if single {
+      head = auth.SingleAPK(dev)
+   }
+   del, err := head.Delivery(app, ver)
+   if err != nil {
+      return err
+   }
+   dst := filename(app, "", ver)
+   if err := download(del.DownloadURL, dst); err != nil {
+      return err
+   }
+   for _, split := range del.SplitDeliveryData {
+      dst := filename(app, split.ID, ver)
+      err := download(split.DownloadURL, dst)
+      if err != nil {
+         return err
+      }
+   }
+   return nil
+}
+
+func doDetails(app string) (*gp.Details, error) {
+   auth, cache, err := newHeader()
+   if err != nil {
+      return nil, err
+   }
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
+   if err != nil {
+      return nil, err
+   }
+   return auth.Header(dev).Details(app)
+}
+
+func doPurchase(app string) error {
+   auth, cache, err := newHeader()
+   if err != nil {
+      return err
+   }
+   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
+   if err != nil {
+      return err
+   }
+   return auth.Header(dev).Purchase(app)
 }
