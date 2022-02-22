@@ -5,6 +5,7 @@ import (
    "encoding/json"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
+   "io"
    "net/http"
    "net/url"
    "os"
@@ -45,8 +46,21 @@ func encode(val interface{}, elem ...string) error {
    return enc.Encode(val)
 }
 
-type Auth struct {
-   Auth string
+func parseQuery(query io.Reader) url.Values {
+   val := make(url.Values)
+   buf := bufio.NewScanner(query)
+   for buf.Scan() {
+      var key string
+      for i, elem := range strings.SplitN(buf.Text(), "=", 2) {
+         switch i {
+         case 0:
+            key = elem
+         case 1:
+            val.Add(key, elem)
+         }
+      }
+   }
+   return val
 }
 
 type Delivery struct {
@@ -85,6 +99,36 @@ func (d Details) String() string {
    return string(buf)
 }
 
+type Document struct {
+   ID string
+   Title string
+   Creator string
+   NextPageURL string
+   Child []Document
+}
+
+func (d Document) String() string {
+   var buf strings.Builder
+   if d.Child != nil {
+      for i, doc := range d.Child {
+         if i >= 1 {
+            buf.WriteString("\n\n")
+         }
+         buf.WriteString(doc.String())
+      }
+      buf.WriteString("\nNextPageURL: ")
+      buf.WriteString(d.NextPageURL)
+   } else {
+      buf.WriteString("ID: ")
+      buf.WriteString(d.ID)
+      buf.WriteString("\nTitle: ")
+      buf.WriteString(d.Title)
+      buf.WriteString("\nCreator: ")
+      buf.WriteString(d.Creator)
+   }
+   return buf.String()
+}
+
 type SplitDeliveryData struct {
    ID string
    DownloadURL string
@@ -119,16 +163,9 @@ func NewToken(email, password string) (*Token, error) {
       return nil, err
    }
    defer res.Body.Close()
-   buf := bufio.NewScanner(res.Body)
-   for buf.Scan() {
-      kv := strings.SplitN(buf.Text(), "=", 2)
-      if len(kv) == 2 && kv[0] == "Token" {
-         var tok Token
-         tok.Token = kv[1]
-         return &tok, nil
-      }
-   }
-   return nil, notFound{"Token"}
+   var tok Token
+   tok.Token = parseQuery(res.Body).Get("Token")
+   return &tok, nil
 }
 
 func OpenToken(elem ...string) (*Token, error) {
@@ -140,40 +177,6 @@ func OpenToken(elem ...string) (*Token, error) {
    return tok, nil
 }
 
-// Exchange refresh token for access token.
-func (t Token) Auth() (*Auth, error) {
-   val := url.Values{
-      "Token": {t.Token},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errorString(res.Status)
-   }
-   buf := bufio.NewScanner(res.Body)
-   for buf.Scan() {
-      kv := strings.SplitN(buf.Text(), "=", 2)
-      if len(kv) == 2 && kv[0] == "Auth" {
-         var auth Auth
-         auth.Auth = kv[1]
-         return &auth, nil
-      }
-   }
-   return nil, notFound{"Auth"}
-}
-
 func (t Token) Create(elem ...string) error {
    return encode(t, elem...)
 }
@@ -182,12 +185,4 @@ type errorString string
 
 func (e errorString) Error() string {
    return string(e)
-}
-
-type notFound struct {
-   value string
-}
-
-func (n notFound) Error() string {
-   return strconv.Quote(n.value) + " not found"
 }

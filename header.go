@@ -8,26 +8,6 @@ import (
    "strings"
 )
 
-func (a Auth) Header(dev *Device) Header {
-   return a.headerVersion(dev, 9999_9999)
-}
-
-func (a Auth) SingleAPK(dev *Device) Header {
-   return a.headerVersion(dev, 8091_9999)
-}
-
-func (a Auth) headerVersion(dev *Device, version int64) Header {
-   var val Header
-   val.Header = make(http.Header)
-   val.Set("Authorization", "Bearer " + a.Auth)
-   buf := []byte("Android-Finsky (sdk=9,versionCode=")
-   buf = strconv.AppendInt(buf, version, 10)
-   val.Set("User-Agent", string(buf))
-   id := strconv.FormatUint(dev.AndroidID, 16)
-   val.Set("X-DFE-Device-ID", id)
-   return val
-}
-
 type Header struct {
    http.Header
 }
@@ -146,4 +126,96 @@ func (h Header) Purchase(app string) error {
       return err
    }
    return res.Body.Close()
+}
+
+func (t Token) Header(dev *Device) (*Header, error) {
+   return t.headerVersion(dev, 9999_9999)
+}
+
+func (t Token) SingleAPK(dev *Device) (*Header, error) {
+   return t.headerVersion(dev, 8091_9999)
+}
+
+func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
+   val := url.Values{
+      "Token": {t.Token},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   var head Header
+   head.Header = make(http.Header)
+   auth := parseQuery(res.Body).Get("Auth")
+   if auth != "" {
+      head.Set("Authorization", "Bearer " + auth)
+   }
+   buf := []byte("Android-Finsky (sdk=9,versionCode=")
+   buf = strconv.AppendInt(buf, version, 10)
+   head.Set("User-Agent", string(buf))
+   head.Set("X-DFE-Device-ID", strconv.FormatUint(dev.AndroidID, 16))
+   return &head, nil
+}
+
+func (h Header) Category(cat string) (*Document, error) {
+   return h.getCategory(cat, "")
+}
+
+func (h Header) CategoryNext(nextPage string) (*Document, error) {
+   return h.getCategory("", nextPage)
+}
+
+func (h Header) getCategory(cat, nextPage string) (*Document, error) {
+   var buf strings.Builder
+   buf.WriteString("https://android.clients.google.com/fdfe/")
+   if cat != "" {
+      buf.WriteString("list?")
+      val := url.Values{
+         "c": {"3"},
+         "cat": {cat},
+         "ctr": {"apps_topselling_free"},
+      }.Encode()
+      buf.WriteString(val)
+   } else {
+      buf.WriteString(nextPage)
+   }
+   req, err := http.NewRequest("GET", buf.String(), nil)
+   if err != nil {
+      return nil, err
+   }
+   req.Header = h.Header
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   docV2 := responseWrapper.Get(1, "payload").
+      Get(1, "listResponse").
+      Get(2, "doc")
+   var doc Document
+   for _, elem := range docV2.GetMessages(11, "child") {
+      var child Document
+      child.ID = elem.GetString(1, "docID")
+      child.Title = elem.GetString(5, "title")
+      child.Creator = elem.GetString(6, "creator")
+      doc.Child = append(doc.Child, child)
+   }
+   doc.NextPageURL = docV2.Get(12, "containerMetadata").
+      GetString(2, "nextPageUrl")
+   return &doc, nil
 }
