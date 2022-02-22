@@ -1,28 +1,11 @@
 package googleplay
 
 import (
-   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
    "strings"
 )
-
-type errorString string
-
-func (e errorString) Error() string {
-   return string(e)
-}
-
-var LogLevel format.LogLevel
-
-type document struct {
-   child []document
-   id string
-   title string
-   creator string
-   nextPageURL string
-}
 
 func (d document) String() string {
    var buf strings.Builder
@@ -46,21 +29,35 @@ func (d document) String() string {
    return buf.String()
 }
 
-////////////////////////////////////////////////////////////////////////////////
+type document struct {
+   child []document
+   id string
+   title string
+   creator string
+   nextPageURL string
+}
 
-func (d document) getList(category string) (*document, error) {
+func category(cat string) (*document, error) {
+   return getCategory(cat, "")
+}
+
+func categoryNext(nextPage string) (*document, error) {
+   return getCategory("", nextPage)
+}
+
+func getCategory(cat, nextPage string) (*document, error) {
    var buf strings.Builder
    buf.WriteString("https://android.clients.google.com/fdfe/")
-   if d.nextPageURL != "" {
-      buf.WriteString(d.nextPageURL)
-   } else {
+   if cat != "" {
       buf.WriteString("list?")
       val := url.Values{
          "c": {"3"},
-         "cat": {category},
+         "cat": {cat},
          "ctr": {"apps_topselling_free"},
       }.Encode()
       buf.WriteString(val)
+   } else {
+      buf.WriteString(nextPage)
    }
    req, err := http.NewRequest("GET", buf.String(), nil)
    if err != nil {
@@ -76,9 +73,6 @@ func (d document) getList(category string) (*document, error) {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errorString(res.Status)
-   }
    responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
@@ -97,12 +91,4 @@ func (d document) getList(category string) (*document, error) {
    doc.nextPageURL = docV2.Get(12, "containerMetadata").
       GetString(2, "nextPageUrl")
    return &doc, nil
-}
-
-func list(category string) (*document, error) {
-   return document{}.getList(category)
-}
-
-func (d document) list() (*document, error) {
-   return d.getList("")
 }
