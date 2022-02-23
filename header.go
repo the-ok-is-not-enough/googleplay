@@ -12,14 +12,6 @@ type Header struct {
    http.Header
 }
 
-func (h Header) Category(cat string) (*Document, error) {
-   return h.getCategory(cat, "")
-}
-
-func (h Header) CategoryNext(nextPage string) (*Document, error) {
-   return h.getCategory("", nextPage)
-}
-
 func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -136,51 +128,6 @@ func (h Header) Purchase(app string) error {
    return res.Body.Close()
 }
 
-func (h Header) getCategory(cat, nextPage string) (*Document, error) {
-   var buf strings.Builder
-   buf.WriteString("https://android.clients.google.com/fdfe/")
-   if cat != "" {
-      buf.WriteString("list?")
-      val := url.Values{
-         "c": {"3"},
-         "cat": {cat},
-         "ctr": {"apps_topselling_free"},
-      }.Encode()
-      buf.WriteString(val)
-   } else {
-      buf.WriteString(nextPage)
-   }
-   req, err := http.NewRequest("GET", buf.String(), nil)
-   if err != nil {
-      return nil, err
-   }
-   req.Header = h.Header
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(1, "listResponse").
-      Get(2, "doc")
-   var doc Document
-   for _, elem := range docV2.GetMessages(11, "child") {
-      var child Document
-      child.ID = elem.GetString(1, "docID")
-      child.Title = elem.GetString(5, "title")
-      child.Creator = elem.GetString(6, "creator")
-      doc.Child = append(doc.Child, child)
-   }
-   doc.NextPageURL = docV2.Get(12, "containerMetadata").
-      GetString(2, "nextPageUrl")
-   return &doc, nil
-}
-
 func (t Token) Header(dev *Device) (*Header, error) {
    return t.headerVersion(dev, 9999_9999)
 }
@@ -222,4 +169,74 @@ func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    id := strconv.FormatUint(dev.AndroidID, 16)
    head.Set("X-DFE-Device-ID", id)
    return &head, nil
+}
+
+func (h Header) documents(cat, next string) ([]Document, string, error) {
+   var buf strings.Builder
+   buf.WriteString("https://android.clients.google.com/fdfe/")
+   if cat != "" {
+      buf.WriteString("list?")
+      val := url.Values{
+         "c": {"3"},
+         "cat": {cat},
+         "ctr": {"apps_topselling_free"},
+      }.Encode()
+      buf.WriteString(val)
+   } else {
+      buf.WriteString(next)
+   }
+   req, err := http.NewRequest("GET", buf.String(), nil)
+   if err != nil {
+      return nil, "", err
+   }
+   req.Header = h.Header
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, "", err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, "", err
+   }
+   docV2 := responseWrapper.Get(1, "payload").
+      Get(1, "listResponse").
+      Get(2, "doc").
+      Get(11, "child")
+   var docs []Document
+   for _, child := range docV2.GetMessages(11, "child") {
+      var doc Document
+      doc.ID = child.GetString(1, "docID")
+      doc.Title = child.GetString(5, "title")
+      doc.Creator = child.GetString(6, "creator")
+      docs = append(docs, doc)
+   }
+   next = docV2.Get(12, "containerMetadata").GetString(2, "nextPageUrl")
+   return docs, next, nil
+}
+
+func (h Header) Category(cat string, length int) ([]Document, error) {
+   var (
+      docs []Document
+      done int
+      next string
+   )
+   for done < length {
+      var (
+         doct []Document
+         err error
+      )
+      if done == 0 {
+         doct, next, err = h.documents(cat, "")
+      } else {
+         doct, next, err = h.documents("", next)
+      }
+      if err != nil {
+         return nil, err
+      }
+      docs = append(docs, doct...)
+      done += len(doct)
+   }
+   return docs, nil
 }

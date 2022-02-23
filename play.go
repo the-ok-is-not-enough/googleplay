@@ -103,30 +103,6 @@ type Document struct {
    ID string
    Title string
    Creator string
-   NextPageURL string
-   Child []Document
-}
-
-func (d Document) String() string {
-   var buf strings.Builder
-   if d.Child != nil {
-      for i, doc := range d.Child {
-         if i >= 1 {
-            buf.WriteString("\n\n")
-         }
-         buf.WriteString(doc.String())
-      }
-      buf.WriteString("\nNextPageURL: ")
-      buf.WriteString(d.NextPageURL)
-   } else {
-      buf.WriteString("ID: ")
-      buf.WriteString(d.ID)
-      buf.WriteString("\nTitle: ")
-      buf.WriteString(d.Title)
-      buf.WriteString("\nCreator: ")
-      buf.WriteString(d.Creator)
-   }
-   return buf.String()
 }
 
 type SplitDeliveryData struct {
