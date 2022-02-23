@@ -7,7 +7,7 @@ import (
 )
 
 func TestDevice(t *testing.T) {
-   dev, err := DefaultConfig.Device()
+   dev, err := DefaultConfig.Checkin()
    if err != nil {
       t.Fatal(err)
    }

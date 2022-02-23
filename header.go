@@ -153,6 +153,9 @@ func (h Header) Purchase(app string) error {
    return res.Body.Close()
 }
 
+// You can also use "/fdfe/browse", but it uses "preFetch".
+// You can also use "/fdfe/homeV2", but it uses "preFetch".
+// You can also use "/fdfe/listTopChartItems" as an alias for "/fdfe/list".
 func (h Header) documents(cat, next string) ([]Document, string, error) {
    var buf strings.Builder
    buf.WriteString("https://android.clients.google.com/fdfe/")

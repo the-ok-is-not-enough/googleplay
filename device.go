@@ -32,6 +32,9 @@ type Config struct {
 
 var DefaultConfig = Config{
    DeviceFeature: []string{
+      // com.google.android.GoogleCamera
+      "android.hardware.camera.level.full",
+      "com.google.android.feature.GOOGLE_EXPERIENCE",
       // com.google.android.apps.walletnfcrel
       "android.software.device_admin",
       // com.google.android.youtube
@@ -88,7 +91,7 @@ var DefaultConfig = Config{
 }
 
 // A Sleep is needed after this.
-func (c Config) Device() (*Device, error) {
+func (c Config) Checkin() (*Device, error) {
    checkin := message{
       tag(4, "checkin"): message{
          tag(1, "build"): message{

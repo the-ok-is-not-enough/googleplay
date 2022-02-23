@@ -29,6 +29,7 @@ var apps = []app{
    {down: "282.669 K", id: "com.smarty.voomvoom"},
    {down: "83.801 K", id: "com.exnoa.misttraingirls"},
    {down: "58.860 K", id: "se.pax.calima"},
+   {down: "1", id: "com.google.android.GoogleCamera"},
 }
 
 func newHeader() (*Header, error) {

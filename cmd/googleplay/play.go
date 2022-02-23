@@ -30,7 +30,7 @@ func doDelivery(head *gp.Header, app string, ver int64) error {
 }
 
 func doDevice() error {
-   dev, err := gp.DefaultConfig.Device()
+   dev, err := gp.DefaultConfig.Checkin()
    if err != nil {
       return err
    }
