@@ -12,6 +12,31 @@ type Header struct {
    http.Header
 }
 
+func (h Header) Category(cat string, min int) ([]Document, error) {
+   var (
+      docs []Document
+      done int
+      next string
+   )
+   for done < min {
+      var (
+         doct []Document
+         err error
+      )
+      if done == 0 {
+         doct, next, err = h.documents(cat, "")
+      } else {
+         doct, next, err = h.documents("", next)
+      }
+      if err != nil {
+         return nil, err
+      }
+      docs = append(docs, doct...)
+      done += len(doct)
+   }
+   return docs, nil
+}
+
 func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -128,49 +153,6 @@ func (h Header) Purchase(app string) error {
    return res.Body.Close()
 }
 
-func (t Token) Header(dev *Device) (*Header, error) {
-   return t.headerVersion(dev, 9999_9999)
-}
-
-func (t Token) SingleAPK(dev *Device) (*Header, error) {
-   return t.headerVersion(dev, 8091_9999)
-}
-
-func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
-   val := url.Values{
-      "Token": {t.Token},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errorString(res.Status)
-   }
-   var head Header
-   head.Header = make(http.Header)
-   auth := parseQuery(res.Body).Get("Auth")
-   if auth != "" {
-      head.Set("Authorization", "Bearer " + auth)
-   }
-   buf := []byte("Android-Finsky (sdk=9,versionCode=")
-   buf = strconv.AppendInt(buf, version, 10)
-   head.Set("User-Agent", string(buf))
-   id := strconv.FormatUint(dev.AndroidID, 16)
-   head.Set("X-DFE-Device-ID", id)
-   return &head, nil
-}
-
 func (h Header) documents(cat, next string) ([]Document, string, error) {
    var buf strings.Builder
    buf.WriteString("https://android.clients.google.com/fdfe/")
@@ -216,27 +198,45 @@ func (h Header) documents(cat, next string) ([]Document, string, error) {
    return docs, next, nil
 }
 
-func (h Header) Category(cat string, length int) ([]Document, error) {
-   var (
-      docs []Document
-      done int
-      next string
+func (t Token) Header(dev *Device) (*Header, error) {
+   return t.headerVersion(dev, 9999_9999)
+}
+
+func (t Token) SingleAPK(dev *Device) (*Header, error) {
+   return t.headerVersion(dev, 8091_9999)
+}
+
+func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
+   val := url.Values{
+      "Token": {t.Token},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
    )
-   for done < length {
-      var (
-         doct []Document
-         err error
-      )
-      if done == 0 {
-         doct, next, err = h.documents(cat, "")
-      } else {
-         doct, next, err = h.documents("", next)
-      }
-      if err != nil {
-         return nil, err
-      }
-      docs = append(docs, doct...)
-      done += len(doct)
+   if err != nil {
+      return nil, err
    }
-   return docs, nil
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return nil, errorString(res.Status)
+   }
+   var head Header
+   head.Header = make(http.Header)
+   auth := parseQuery(res.Body).Get("Auth")
+   if auth != "" {
+      head.Set("Authorization", "Bearer " + auth)
+   }
+   buf := []byte("Android-Finsky (sdk=9,versionCode=")
+   buf = strconv.AppendInt(buf, version, 10)
+   head.Set("User-Agent", string(buf))
+   id := strconv.FormatUint(dev.AndroidID, 16)
+   head.Set("X-DFE-Device-ID", id)
+   return &head, nil
 }
