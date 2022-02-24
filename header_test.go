@@ -7,6 +7,20 @@ import (
    "time"
 )
 
+func TestCategory(t *testing.T) {
+   head, err := newHeader()
+   if err != nil {
+      t.Fatal(err)
+   }
+   docs, err := head.Category("FINANCE", 999)
+   if err != nil {
+      t.Fatal(err)
+   }
+   for _, doc := range docs {
+      fmt.Printf("%+v\n", doc)
+   }
+}
+
 type app struct {
    down, id string
    ver int64
@@ -32,20 +46,16 @@ var apps = []app{
    {down: "1", id: "com.google.android.GoogleCamera"},
 }
 
-func newHeader() (*Header, error) {
-   cache, err := os.UserCacheDir()
+func TestDelivery(t *testing.T) {
+   head, err := newHeader()
    if err != nil {
-      return nil, err
+      t.Fatal(err)
    }
-   tok, err := OpenToken(cache, "googleplay/token.json")
+   del, err := head.Delivery(apps[0].id, apps[0].ver)
    if err != nil {
-      return nil, err
+      t.Fatal(err)
    }
-   dev, err := OpenDevice(cache, "googleplay/device.json")
-   if err != nil {
-      return nil, err
-   }
-   return tok.Header(dev)
+   fmt.Printf("%+v\n", del)
 }
 
 func TestDetails(t *testing.T) {
@@ -68,28 +78,18 @@ func TestDetails(t *testing.T) {
    }
 }
 
-func TestDelivery(t *testing.T) {
-   head, err := newHeader()
+func newHeader() (*Header, error) {
+   cache, err := os.UserCacheDir()
    if err != nil {
-      t.Fatal(err)
+      return nil, err
    }
-   del, err := head.Delivery(apps[0].id, apps[0].ver)
+   tok, err := OpenToken(cache, "googleplay/token.json")
    if err != nil {
-      t.Fatal(err)
+      return nil, err
    }
-   fmt.Printf("%+v\n", del)
-}
-
-func TestCategory(t *testing.T) {
-   head, err := newHeader()
+   dev, err := OpenDevice(cache, "googleplay/device.json")
    if err != nil {
-      t.Fatal(err)
+      return nil, err
    }
-   docs, err := head.Category("FINANCE", 9)
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, doc := range docs {
-      fmt.Printf("%+v\n", doc)
-   }
+   return tok.Header(dev)
 }
