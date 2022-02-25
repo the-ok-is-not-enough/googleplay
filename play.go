@@ -75,6 +75,7 @@ type Details struct {
    VersionCode uint64
    NumDownloads uint64
    Size uint64
+   Files int
    Micros uint64
    CurrencyCode string
 }
@@ -92,6 +93,8 @@ func (d Details) String() string {
    buf = append(buf, format.Number.GetUint64(d.NumDownloads)...)
    buf = append(buf, "\nSize: "...)
    buf = append(buf, format.Size.GetUint64(d.Size)...)
+   buf = append(buf, "\nFiles: "...)
+   buf = append(buf, strconv.Itoa(d.Files)...)
    buf = append(buf, "\nOffer: "...)
    buf = strconv.AppendFloat(buf, float64(d.Micros)/1e6, 'f', 2, 64)
    buf = append(buf, ' ')

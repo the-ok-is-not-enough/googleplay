@@ -1,5 +1,50 @@
 # Docs
 
+## Geo-blocking
+
+Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
+to GB. If you try it from US, details will work, but delivery will fail:
+
+~~~
+PS C:\> googleplay -a air.ITVMobilePlayer
+Title: ITV Hub: Your TV Player - Watch Live & On Demand
+UploadDate: Dec 9, 2021
+VersionString: 9.19.0
+VersionCode: 901900000
+NumDownloads: 17.429 M
+Size: 35.625 MB
+Offer: 0.00 USD
+
+PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
+panic: Geo-blocking
+~~~
+
+It seems headers are ignored as well:
+
+~~~
+Accept-Language: es
+Accept-Language: es-AR
+Accept-Language: es-ES
+~~~
+
+You can change the country [1], and then you get expected result:
+
+~~~
+PS D:\Desktop> googleplay.exe -a air.ITVMobilePlayer
+Title: ITV Hub: Your TV Player - Watch Live & On Demand
+UploadDate: Dec 9, 2021
+VersionString: 9.19.0
+VersionCode: 901900000
+NumDownloads: 17.429 M
+Size: 35.625 MB
+Offer: 0.00 GBP
+
+PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
+GET https://play.googleapis.com/download/by-token/download?token=AOTCm0TiBZQdp...
+~~~
+
+1. https://support.google.com/googleplay/answer/7431675
+
 ## How to determine required features?
 
 Use a command like this:
@@ -43,57 +88,6 @@ PowerShell:
 ~~~
 adb install-multiple (Get-ChildItem *.apk)
 ~~~
-
-## Geo-blocking
-
-Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
-to GB. If you try it from US, details will work, but delivery will fail:
-
-~~~
-PS C:\> googleplay -a air.ITVMobilePlayer
-Title: ITV Hub: Your TV Player - Watch Live & On Demand
-UploadDate: Dec 9, 2021
-VersionString: 9.19.0
-VersionCode: 901900000
-NumDownloads: 17.429 M
-Size: 35.625 MB
-Offer: 0.00 USD
-
-PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
-panic: Geo-blocking
-~~~
-
-You can change the country [1], and then you get expected result:
-
-~~~
-PS D:\Desktop> googleplay.exe -a air.ITVMobilePlayer
-Title: ITV Hub: Your TV Player - Watch Live & On Demand
-UploadDate: Dec 9, 2021
-VersionString: 9.19.0
-VersionCode: 901900000
-NumDownloads: 17.429 M
-Size: 35.625 MB
-Offer: 0.00 GBP
-
-PS C:\> googleplay -a air.ITVMobilePlayer -v 901900000
-GET https://play.googleapis.com/download/by-token/download?token=AOTCm0TiBZQdp...
-~~~
-
-It does look like you can get different results from the website:
-
-- https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=es
-- https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=es&gl=AR
-- https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=es&gl=ES
-
-However with the Google Play app, these all return the same result:
-
-~~~
-Accept-Language: es
-Accept-Language: es-AR
-Accept-Language: es-ES
-~~~
-
-1. https://support.google.com/googleplay/answer/7431675
 
 ## Will you add features?
 

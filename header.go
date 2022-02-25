@@ -115,6 +115,8 @@ func (h Header) Details(app string) (*Details, error) {
       Get(4, "docV2")
    var det Details
    det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
+   file := docV2.Get(13, "details").Get(1, "appDetails").GetMessages(17, "file")
+   det.Files = len(file)
    det.Micros = docV2.Get(8, "offer").GetVarint(1, "micros")
    det.NumDownloads = docV2.Get(13, "details").
       Get(1, "appDetails").
@@ -155,7 +157,11 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   return res.Body.Close()
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return errorString(res.Status)
+   }
+   return nil
 }
 
 // You can also use "/fdfe/browse", but it uses "preFetch".

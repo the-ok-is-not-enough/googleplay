@@ -61,7 +61,7 @@ const script =
    "https://raw.githubusercontent.com/httptoolkit/frida-android-unpinning/" +
    "main/frida-script.js"
 
-const version = "15.1.16"
+const version = "15.1.17"
 
 func newServer(version string) string {
    var buf strings.Builder
