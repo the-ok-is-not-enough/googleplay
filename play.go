@@ -117,7 +117,8 @@ type Token struct {
    Token string
 }
 
-// Request refresh token.
+// You can also use host "android.clients.google.com", but it also uses
+// TLS fingerprinting.
 func NewToken(email, password string) (*Token, error) {
    val := url.Values{
       "Email": {email},
