@@ -1,7 +1,6 @@
 package main
 
 import (
-   "bufio"
    "flag"
    "fmt"
    "os/exec"
@@ -17,26 +16,20 @@ func main() {
    flag.BoolVar(&verbose, "v", false, "verbose")
    flag.Parse()
    if name != "" {
-      cmd := exec.Command("aapt", "dump", "badging", name)
-      pipe, err := cmd.StdoutPipe()
+      buf, err := exec.Command("aapt", "dump", "badging", name).Output()
       if err != nil {
          panic(err)
       }
-      if err := cmd.Start(); err != nil {
-         panic(err)
-      }
-      defer cmd.Wait()
-      buf := bufio.NewScanner(pipe)
-      for buf.Scan() {
-         text := buf.Text()
+      lines := strings.FieldsFunc(string(buf), func(r rune) bool {
+         return r == '\n'
+      })
+      for _, line := range lines {
          if verbose ||
-         strings.HasPrefix(text, "  uses-feature:") ||
-         strings.HasPrefix(text, "native-code:") ||
-         // Sometimes a library becomes required on newer versions, so this can
-         // give us a hint to what is causing the problem:
-         strings.HasPrefix(text, "uses-library-not-required:") ||
-         strings.HasPrefix(text, "uses-library:") {
-            fmt.Println(text)
+         strings.HasPrefix(line, "  uses-feature:") ||
+         strings.HasPrefix(line, "native-code:") ||
+         strings.HasPrefix(line, "uses-library-not-required:") ||
+         strings.HasPrefix(line, "uses-library:") {
+            fmt.Println(line)
          }
       }
    } else {
