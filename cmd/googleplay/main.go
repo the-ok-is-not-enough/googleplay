@@ -17,6 +17,9 @@ func main() {
    // e
    var email string
    flag.StringVar(&email, "e", "", "email")
+   // o
+   var output string
+   flag.StringVar(&output, "o", "", "output")
    // p
    var password string
    flag.StringVar(&password, "p", "", "password")
@@ -62,7 +65,7 @@ func main() {
             panic(err)
          }
       } else if version >= 1 {
-         err := doDelivery(head, app, version)
+         err := doDelivery(head, output, app, version)
          if err != nil {
             panic(err)
          }

@@ -10,17 +10,17 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func doDelivery(head *gp.Header, app string, ver int64) error {
+func doDelivery(head *gp.Header, output, app string, ver int64) error {
    del, err := head.Delivery(app, ver)
    if err != nil {
       return err
    }
-   dst := filename(app, "", ver)
+   dst := filename(output, app, "", ver)
    if err := download(del.DownloadURL, dst); err != nil {
       return err
    }
    for _, split := range del.SplitDeliveryData {
-      dst := filename(app, split.ID, ver)
+      dst := filename(output, app, split.ID, ver)
       err := download(split.DownloadURL, dst)
       if err != nil {
          return err
@@ -74,8 +74,12 @@ func download(src, dst string) error {
    return nil
 }
 
-func filename(app, id string, ver int64) string {
+func filename(output, app, id string, ver int64) string {
    var buf []byte
+   if output != "" {
+      buf = append(buf, output...)
+      buf = append(buf, '/')
+   }
    buf = append(buf, app...)
    buf = append(buf, '-')
    if id != "" {
