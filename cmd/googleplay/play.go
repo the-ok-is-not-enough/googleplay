@@ -10,7 +10,7 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func doDelivery(head *gp.Header, output, app string, ver int64) error {
+func doDelivery(head *gp.Header, output, app string, ver uint64) error {
    del, err := head.Delivery(app, ver)
    if err != nil {
       return err
@@ -74,7 +74,7 @@ func download(src, dst string) error {
    return nil
 }
 
-func filename(output, app, id string, ver int64) string {
+func filename(output, app, id string, ver uint64) string {
    var buf []byte
    if output != "" {
       buf = append(buf, output...)
@@ -86,7 +86,7 @@ func filename(output, app, id string, ver int64) string {
       buf = append(buf, id...)
       buf = append(buf, '-')
    }
-   buf = strconv.AppendInt(buf, ver, 10)
+   buf = strconv.AppendUint(buf, ver, 10)
    buf = append(buf, ".apk"...)
    return string(buf)
 }

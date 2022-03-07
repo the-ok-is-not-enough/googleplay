@@ -23,7 +23,7 @@ func TestCategory(t *testing.T) {
 
 type app struct {
    down, id string
-   ver int64
+   ver uint64
 }
 
 var apps = []app{

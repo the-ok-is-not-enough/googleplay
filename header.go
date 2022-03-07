@@ -42,7 +42,7 @@ func (h Header) Category(cat string, min int) ([]Document, error) {
    return docs, nil
 }
 
-func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
+func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
    )
@@ -52,7 +52,7 @@ func (h Header) Delivery(app string, ver int64) (*Delivery, error) {
    req.Header = h.Header
    req.URL.RawQuery = url.Values{
       "doc": {app},
-      "vc": {strconv.FormatInt(ver, 10)},
+      "vc": {strconv.FormatUint(ver, 10)},
    }.Encode()
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)

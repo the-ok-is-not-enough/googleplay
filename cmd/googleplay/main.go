@@ -35,8 +35,8 @@ func main() {
    var single bool
    flag.BoolVar(&single, "s", false, "single APK")
    // v
-   var version int64
-   flag.Int64Var(&version, "v", 0, "version")
+   var version uint64
+   flag.Uint64Var(&version, "v", 0, "version")
    // verbose
    var verbose bool
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
