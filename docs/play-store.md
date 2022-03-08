@@ -64,7 +64,8 @@ adb reboot
 ~~~
 
 After reboot, install system certificate, and start MITM program. You should
-then be able to start Google Play Store as normal.
+then be able to start Google Play Store as normal. Edit, this method seems to
+break with API 26 or higher. If anyone has advice, I can update the instruction.
 
 - https://github.com/httptoolkit/httptoolkit/issues/200
 - https://multigesture.net/articles/inspecting-https-network-traffic-of-any-android-app
