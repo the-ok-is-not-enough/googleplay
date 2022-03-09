@@ -1,13 +1,6 @@
 # Google Play Store
 
-On "Select Hardware" screen, select a device without "Play Store" icon. On
-"System Image" screen, I selected this option:
-
-API Level | ABI | Target
-----------|-----|----------------------
-24        | x86 | Android 7 Google APIs
-
-but newer APIs should work as well. Then go here:
+First go here:
 
 https://opengapps.org
 
@@ -17,8 +10,19 @@ Platform | Android | Variant
 ---------|---------|--------
 x86      | 6       | pico
 
-but newer Android should work as well. You should only need one file from the
-Zip archive:
+but newer Android should work as well. Then open Android Studio. On "Select
+Hardware" screen, select a device without "Play Store" icon.
+
+## With Google APIs
+
+On "System Image" screen, I selected this option:
+
+API Level | ABI | Target
+----------|-----|----------------------
+24        | x86 | Android 7 Google APIs
+
+but newer APIs should work as well. You should only need one file from the Zip
+archive:
 
 ~~~
 Core\vending-x86.tar.lz
@@ -64,8 +68,36 @@ adb reboot
 ~~~
 
 After reboot, install system certificate, and start MITM program. You should
-then be able to start Google Play Store as normal. Edit, this method seems to
-break with API 26 or higher. If anyone has advice, I can update the instruction.
+then be able to start Google Play Store as normal.
+
+## Without Google APIs
+
+Using the method above with Google APIs image, you still get some apps such as
+YouTube. If you want to install different version of one of these apps, use
+this method. On "System Image" screen, I selected this option:
+
+API Level | ABI | Target
+----------|-----|----------
+24        | x86 | Android 7
+
+but newer APIs should work as well. You need these files from the Zip archive:
+
+~~~
+Core\gmscore-x86.tar.lz
+Core\vending-x86.tar.lz
+~~~
+
+Then extract these from the above files:
+
+~~~
+gmscore-x86\nodpi\priv-app\PrebuiltGmsCore\PrebuiltGmsCore.apk
+vending-x86\nodpi\priv-app\Phonesky\Phonesky.apk
+~~~
+
+Use the same method above to install the APKs. After reboot, you should then be
+able to install YouTube or whatever app. Note that unlike above, you dont
+actually need to run the Google Play setup or even start the Google Play app at
+the end.
 
 - https://github.com/httptoolkit/httptoolkit/issues/200
 - https://multigesture.net/articles/inspecting-https-network-traffic-of-any-android-app
