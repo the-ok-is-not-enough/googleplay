@@ -41,9 +41,7 @@ func encode(val interface{}, elem ...string) error {
       return err
    }
    defer file.Close()
-   enc := json.NewEncoder(file)
-   enc.SetIndent("", " ")
-   return enc.Encode(val)
+   return json.NewEncoder(file).Encode(val)
 }
 
 func parseQuery(query io.Reader) url.Values {
