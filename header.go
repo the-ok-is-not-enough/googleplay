@@ -12,36 +12,6 @@ type Header struct {
    http.Header
 }
 
-// This should work up to 617.
-func (h Header) Category(cat string, min int) ([]Document, error) {
-   var (
-      docs []Document
-      done int
-      next string
-   )
-   for done < min {
-      var (
-         doct []Document
-         err error
-      )
-      if done == 0 {
-         doct, next, err = h.documents(cat, "")
-      } else {
-         doct, next, err = h.documents("", next)
-      }
-      if err != nil {
-         return nil, err
-      }
-      docs = append(docs, doct...)
-      // On the last page, you will have some results, and empty URL.
-      if next == "" {
-         break
-      }
-      done += len(doct)
-   }
-   return docs, nil
-}
-
 func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -162,52 +132,4 @@ func (h Header) Purchase(app string) error {
       return errorString(res.Status)
    }
    return nil
-}
-
-// You can also use "/fdfe/browse", but it uses "preFetch".
-// You can also use "/fdfe/homeV2", but it uses "preFetch".
-// You can also use "/fdfe/listTopChartItems" as an alias for "/fdfe/list".
-func (h Header) documents(cat, next string) ([]Document, string, error) {
-   var buf strings.Builder
-   buf.WriteString("https://android.clients.google.com/fdfe/")
-   if cat != "" {
-      buf.WriteString("list?")
-      val := url.Values{
-         "c": {"3"},
-         "cat": {cat},
-         "ctr": {"apps_topselling_free"},
-      }.Encode()
-      buf.WriteString(val)
-   } else {
-      buf.WriteString(next)
-   }
-   req, err := http.NewRequest("GET", buf.String(), nil)
-   if err != nil {
-      return nil, "", err
-   }
-   req.Header = h.Header
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, "", err
-   }
-   defer res.Body.Close()
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, "", err
-   }
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(1, "listResponse").
-      Get(2, "doc").
-      Get(11, "child")
-   var docs []Document
-   for _, child := range docV2.GetMessages(11, "child") {
-      var doc Document
-      doc.ID = child.GetString(1, "docID")
-      doc.Title = child.GetString(5, "title")
-      doc.Creator = child.GetString(6, "creator")
-      docs = append(docs, doc)
-   }
-   next = docV2.Get(12, "containerMetadata").GetString(2, "nextPageUrl")
-   return docs, next, nil
 }

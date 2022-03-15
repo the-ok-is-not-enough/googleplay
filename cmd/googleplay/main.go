@@ -19,7 +19,7 @@ func main() {
    flag.StringVar(&email, "e", "", "email")
    // o
    var output string
-   flag.StringVar(&output, "o", "", "output")
+   flag.StringVar(&output, "o", "", "output folder, must already exist")
    // p
    var password string
    flag.StringVar(&password, "p", "", "password")

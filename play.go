@@ -15,6 +15,44 @@ import (
    "time"
 )
 
+type Details struct {
+   CurrencyCode string
+   Files int
+   Image []struct {
+      Type uint64
+      URL string
+   }
+   Micros uint64
+   NumDownloads uint64
+   Size uint64
+   Title string
+   UploadDate string
+   VersionCode uint64
+   VersionString string
+}
+
+func (d Details) String() string {
+   buf := []byte("Title: ")
+   buf = append(buf, d.Title...)
+   buf = append(buf, "\nUploadDate: "...)
+   buf = append(buf, d.UploadDate...)
+   buf = append(buf, "\nVersionString: "...)
+   buf = append(buf, d.VersionString...)
+   buf = append(buf, "\nVersionCode: "...)
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = append(buf, "\nNumDownloads: "...)
+   buf = append(buf, format.Number.GetUint64(d.NumDownloads)...)
+   buf = append(buf, "\nSize: "...)
+   buf = append(buf, format.Size.GetUint64(d.Size)...)
+   buf = append(buf, "\nFiles: "...)
+   buf = append(buf, strconv.Itoa(d.Files)...)
+   buf = append(buf, "\nOffer: "...)
+   buf = strconv.AppendFloat(buf, float64(d.Micros)/1e6, 'f', 2, 64)
+   buf = append(buf, ' ')
+   buf = append(buf, d.CurrencyCode...)
+   return string(buf)
+}
+
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
@@ -64,46 +102,6 @@ func parseQuery(query io.Reader) url.Values {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
-}
-
-type Details struct {
-   Title string
-   UploadDate string
-   VersionString string
-   VersionCode uint64
-   NumDownloads uint64
-   Size uint64
-   Files int
-   Micros uint64
-   CurrencyCode string
-}
-
-func (d Details) String() string {
-   buf := []byte("Title: ")
-   buf = append(buf, d.Title...)
-   buf = append(buf, "\nUploadDate: "...)
-   buf = append(buf, d.UploadDate...)
-   buf = append(buf, "\nVersionString: "...)
-   buf = append(buf, d.VersionString...)
-   buf = append(buf, "\nVersionCode: "...)
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
-   buf = append(buf, "\nNumDownloads: "...)
-   buf = append(buf, format.Number.GetUint64(d.NumDownloads)...)
-   buf = append(buf, "\nSize: "...)
-   buf = append(buf, format.Size.GetUint64(d.Size)...)
-   buf = append(buf, "\nFiles: "...)
-   buf = append(buf, strconv.Itoa(d.Files)...)
-   buf = append(buf, "\nOffer: "...)
-   buf = strconv.AppendFloat(buf, float64(d.Micros)/1e6, 'f', 2, 64)
-   buf = append(buf, ' ')
-   buf = append(buf, d.CurrencyCode...)
-   return string(buf)
-}
-
-type Document struct {
-   ID string
-   Title string
-   Creator string
 }
 
 type SplitDeliveryData struct {
