@@ -7,17 +7,27 @@ import (
    "time"
 )
 
-func TestCategory(t *testing.T) {
+func TestDetails(t *testing.T) {
    head, err := newHeader()
    if err != nil {
       t.Fatal(err)
    }
-   docs, err := head.Category("FINANCE", 999)
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, doc := range docs {
-      fmt.Printf("%+v\n", doc)
+   for i, app := range apps {
+      det, err := head.Details(app.id)
+      if err != nil {
+         t.Fatal(err)
+      }
+      if det.VersionCode == 0 {
+         t.Fatal(det)
+      }
+      if det.VersionString == "" {
+         t.Fatal(det)
+      }
+      if i == 0 {
+         fmt.Println(det)
+         fmt.Printf("%a\n", det)
+      }
+      time.Sleep(time.Second)
    }
 }
 
@@ -55,26 +65,6 @@ func TestDelivery(t *testing.T) {
       t.Fatal(err)
    }
    fmt.Printf("%+v\n", del)
-}
-
-func TestDetails(t *testing.T) {
-   head, err := newHeader()
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, app := range apps {
-      det, err := head.Details(app.id)
-      if err != nil {
-         t.Fatal(err)
-      }
-      if det.VersionCode == 0 {
-         t.Fatal(det)
-      }
-      if det.VersionString == "" {
-         t.Fatal(det)
-      }
-      time.Sleep(time.Second)
-   }
 }
 
 func newHeader() (*Header, error) {

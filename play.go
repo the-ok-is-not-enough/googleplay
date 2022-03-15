@@ -3,6 +3,7 @@ package googleplay
 import (
    "bufio"
    "encoding/json"
+   "fmt"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
    "io"
@@ -10,48 +11,9 @@ import (
    "net/url"
    "os"
    "path/filepath"
-   "strconv"
    "strings"
    "time"
 )
-
-type Details struct {
-   CurrencyCode string
-   Files int
-   Image []struct {
-      Type uint64
-      URL string
-   }
-   Micros uint64
-   NumDownloads uint64
-   Size uint64
-   Title string
-   UploadDate string
-   VersionCode uint64
-   VersionString string
-}
-
-func (d Details) String() string {
-   buf := []byte("Title: ")
-   buf = append(buf, d.Title...)
-   buf = append(buf, "\nUploadDate: "...)
-   buf = append(buf, d.UploadDate...)
-   buf = append(buf, "\nVersionString: "...)
-   buf = append(buf, d.VersionString...)
-   buf = append(buf, "\nVersionCode: "...)
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
-   buf = append(buf, "\nNumDownloads: "...)
-   buf = append(buf, format.Number.GetUint64(d.NumDownloads)...)
-   buf = append(buf, "\nSize: "...)
-   buf = append(buf, format.Size.GetUint64(d.Size)...)
-   buf = append(buf, "\nFiles: "...)
-   buf = append(buf, strconv.Itoa(d.Files)...)
-   buf = append(buf, "\nOffer: "...)
-   buf = strconv.AppendFloat(buf, float64(d.Micros)/1e6, 'f', 2, 64)
-   buf = append(buf, ' ')
-   buf = append(buf, d.CurrencyCode...)
-   return string(buf)
-}
 
 const Sleep = 4 * time.Second
 
@@ -102,6 +64,50 @@ func parseQuery(query io.Reader) url.Values {
 type Delivery struct {
    DownloadURL string
    SplitDeliveryData []SplitDeliveryData
+}
+
+type Details struct {
+   CurrencyCode string
+   Files int
+   Images []Image
+   Micros uint64
+   NumDownloads uint64
+   Size uint64
+   Title string
+   UploadDate string
+   VersionCode uint64
+   VersionString string
+}
+
+func (d Details) Format(f fmt.State, verb rune) {
+   // Title
+   fmt.Fprintln(f, "Title:", d.Title)
+   // UploadDate
+   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
+   // VersionString
+   fmt.Fprintln(f, "VersionString:", d.VersionString)
+   // VersionCode
+   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
+   // NumDownloads
+   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
+   // Size
+   fmt.Fprintln(f, "Size:", d.Size)
+   // Files
+   fmt.Fprintln(f, "Files:", d.Files)
+   // Offer
+   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
+   // Images
+   if verb == 'a' {
+      for _, ima := range d.Images {
+         fmt.Fprint(f, "\nType:", ima.Type)
+         fmt.Fprint(f, " URL:", ima.URL)
+      }
+   }
+}
+
+type Image struct {
+   Type uint64
+   URL string
 }
 
 type SplitDeliveryData struct {
@@ -191,15 +197,17 @@ func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    }
    var head Header
    head.Header = make(http.Header)
+   // Authorization
    auth := parseQuery(res.Body).Get("Auth")
    if auth != "" {
       head.Set("Authorization", "Bearer " + auth)
    }
-   buf := []byte("Android-Finsky (sdk=9,versionCode=")
-   buf = strconv.AppendInt(buf, version, 10)
-   head.Set("User-Agent", string(buf))
-   id := strconv.FormatUint(dev.AndroidID, 16)
-   head.Set("X-DFE-Device-ID", id)
+   // User-Agent
+   head.Set(
+      "User-Agent", fmt.Sprint("Android-Finsky (sdk=9,versionCode=", version),
+   )
+   // X-DFE-Device-ID
+   head.Set("X-DFE-Device-ID", fmt.Sprintf("%x", dev.AndroidID))
    return &head, nil
 }
 

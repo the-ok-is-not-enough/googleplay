@@ -84,26 +84,40 @@ func (h Header) Details(app string) (*Details, error) {
       Get(2, "detailsResponse").
       Get(4, "docV2")
    var det Details
+   // CurrencyCode
    det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
+   // Files
    file := docV2.Get(13, "details").Get(1, "appDetails").GetMessages(17, "file")
    det.Files = len(file)
+   // Images
+   for _, mes := range docV2.GetMessages(10, "image") {
+      var ima Image
+      ima.Type = mes.GetVarint(1, "imageType")
+      ima.URL = mes.GetString(5, "imageUrl")
+      det.Images = append(det.Images, ima)
+   }
+   // Micros
    det.Micros = docV2.Get(8, "offer").GetVarint(1, "micros")
+   // NumDownloads
    det.NumDownloads = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetVarint(70, "numDownloads")
-   // The shorter path 13,1,9 returns wrong size for some packages:
-   // com.riotgames.league.wildriftvn
+   // Size
    det.Size = docV2.Get(13, "details").
       Get(1, "appDetails").
       Get(34, "installDetails").
       GetVarint(2, "size")
+   // Title
    det.Title = docV2.GetString(5, "title")
+   // UploadDate
    det.UploadDate = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(16, "uploadDate")
+   // VersionCode
    det.VersionCode = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetVarint(3, "versionCode")
+   // VersionString
    det.VersionString = docV2.Get(13, "details").
       Get(1, "appDetails").
       GetString(4, "versionString")
