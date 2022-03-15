@@ -35,7 +35,7 @@ func encode(val interface{}, elem ...string) error {
    if err != nil {
       return err
    }
-   os.Stdout.WriteString("Create " + name + "\n")
+   fmt.Println("Create", name)
    file, err := os.Create(name)
    if err != nil {
       return err
@@ -103,6 +103,15 @@ func (d Details) Format(f fmt.State, verb rune) {
          fmt.Fprint(f, " URL:", ima.URL)
       }
    }
+}
+
+func (d Details) Icon() string {
+   for _, image := range d.Images {
+      if image.Type == 4 {
+         return image.URL
+      }
+   }
+   return ""
 }
 
 type Image struct {

@@ -6,7 +6,7 @@ import (
    "net/http"
 )
 
-var tag = protobuf.Tag
+var tag = protobuf.NewTag
 
 type Config struct {
    DeviceFeature []string
@@ -90,7 +90,7 @@ var DefaultConfig = Config{
 
 // A Sleep is needed after this.
 func (c Config) Checkin() (*Device, error) {
-   checkin := message{
+   body := message{
       tag(4, "checkin"): message{
          tag(1, "build"): message{
             tag(10, "sdkVersion"): uint64(29),
@@ -111,7 +111,7 @@ func (c Config) Checkin() (*Device, error) {
          tag(15, "glExtension"): c.GLextension,
       },
    }
-   config := checkin.Get(18, "deviceConfiguration")
+   config := body.Get(18, "deviceConfiguration")
    for _, name := range c.DeviceFeature {
       feature := message{
          tag(1, "name"): name,
@@ -120,7 +120,7 @@ func (c Config) Checkin() (*Device, error) {
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
-      bytes.NewReader(checkin.Marshal()),
+      bytes.NewReader(body.Marshal()),
    )
    if err != nil {
       return nil, err
