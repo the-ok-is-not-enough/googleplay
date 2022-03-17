@@ -1,5 +1,9 @@
 # Docs
 
+## App category
+
+https://github.com/89z/googleplay/tree/4ee083e441c3d183c9c1db9da006849630305ba6
+
 ## Geo-blocking
 
 Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
@@ -101,6 +105,20 @@ https://stackoverflow.com/questions/36414219/install-failed-no-matching-abis
 However note that this will still fail in some cases:
 
 https://issuetracker.google.com/issues/207399356
+
+## Version history
+
+If you know the `versionCode`, you can get older APK [1]. Here is one from 2014:
+
+~~~
+googleplay -a com.google.android.youtube -v 5110
+~~~
+
+but I dont know how to get the old version codes, other than looking at
+websites [2] that host the APKs.
+
+1. https://android.stackexchange.com/questions/163181/how-to-download-old-app
+2. https://apkmirror.com/uploads?appcategory=youtube
 
 ## Will you add features?
 
