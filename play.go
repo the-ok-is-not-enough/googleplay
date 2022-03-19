@@ -15,6 +15,32 @@ import (
    "time"
 )
 
+func (d Details) Format(f fmt.State, verb rune) {
+   // Title
+   fmt.Fprintln(f, "Title:", d.Title)
+   // UploadDate
+   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
+   // VersionString
+   fmt.Fprintln(f, "VersionString:", d.VersionString)
+   // VersionCode
+   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
+   // NumDownloads
+   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
+   // Size
+   fmt.Fprintln(f, "Size:", format.LabelSize(d.Size))
+   // Files
+   fmt.Fprintln(f, "Files:", d.Files)
+   // Offer
+   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
+   // Images
+   if verb == 'a' {
+      for _, ima := range d.Images {
+         fmt.Fprint(f, "\nType:", ima.Type)
+         fmt.Fprint(f, " URL:", ima.URL)
+      }
+   }
+}
+
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
@@ -45,20 +71,15 @@ func encode(val interface{}, elem ...string) error {
 }
 
 func parseQuery(query io.Reader) url.Values {
-   val := make(url.Values)
+   vals := make(url.Values)
    buf := bufio.NewScanner(query)
    for buf.Scan() {
-      var key string
-      for i, elem := range strings.SplitN(buf.Text(), "=", 2) {
-         switch i {
-         case 0:
-            key = elem
-         case 1:
-            val.Add(key, elem)
-         }
+      key, val, ok := strings.Cut(buf.Text(), "=")
+      if ok {
+         vals.Add(key, val)
       }
    }
-   return val
+   return vals
 }
 
 type Delivery struct {
@@ -77,32 +98,6 @@ type Details struct {
    UploadDate string
    VersionCode uint64
    VersionString string
-}
-
-func (d Details) Format(f fmt.State, verb rune) {
-   // Title
-   fmt.Fprintln(f, "Title:", d.Title)
-   // UploadDate
-   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
-   // VersionString
-   fmt.Fprintln(f, "VersionString:", d.VersionString)
-   // VersionCode
-   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
-   // NumDownloads
-   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
-   // Size
-   fmt.Fprintln(f, "Size:", d.Size)
-   // Files
-   fmt.Fprintln(f, "Files:", d.Files)
-   // Offer
-   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
-   // Images
-   if verb == 'a' {
-      for _, ima := range d.Images {
-         fmt.Fprint(f, "\nType:", ima.Type)
-         fmt.Fprint(f, " URL:", ima.URL)
-      }
-   }
 }
 
 func (d Details) Icon() string {
