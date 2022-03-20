@@ -6,8 +6,6 @@ import (
    "net/http"
 )
 
-var tag = protobuf.NewTag
-
 type Config struct {
    DeviceFeature []string
    GLESversion uint64
@@ -88,39 +86,39 @@ var DefaultConfig = Config{
    TouchScreen: 3,
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 // A Sleep is needed after this.
 func (c Config) Checkin() (*Device, error) {
-   body := message{
-      tag(4, "checkin"): message{
-         tag(1, "build"): message{
-            tag(10, "sdkVersion"): uint64(29),
+   checkinRequest := protobuf.Message{
+      4 /* checkin */: protobuf.Message{
+         1 /* build */: protobuf.Message{
+            10 /* sdkVersion */: uint64(29),
          },
       },
-      tag(14, "version"): uint64(3),
-      tag(18, "deviceConfiguration"): message{
-         tag(1, "touchScreen"): c.TouchScreen,
-         tag(2, "keyboard"): c.Keyboard,
-         tag(3, "navigation"): c.Navigation,
-         tag(4, "screenLayout"): c.ScreenLayout,
-         tag(5, "hasHardKeyboard"): c.HasHardKeyboard,
-         tag(6, "hasFiveWayNavigation"): c.HasFiveWayNavigation,
-         tag(7, "screenDensity"): c.ScreenDensity,
-         tag(8, "glEsVersion"): c.GLESversion,
-         tag(9, "systemSharedLibrary"): c.SystemSharedLibrary,
-         tag(11, "nativePlatform"): c.NativePlatform,
-         tag(15, "glExtension"): c.GLextension,
+      14 /* version */: uint64(3),
+      18 /* deviceConfiguration */: protobuf.Message{
+         1 /* touchScreen */: c.TouchScreen,
+         2 /* keyboard */: c.Keyboard,
+         3 /* navigation */: c.Navigation,
+         4 /* screenLayout */: c.ScreenLayout,
+         5 /* hasHardKeyboard */: c.HasHardKeyboard,
+         6 /* hasFiveWayNavigation */: c.HasFiveWayNavigation,
+         7 /* screenDensity */: c.ScreenDensity,
+         8 /* glEsVersion */: c.GLESversion,
+         9 /* systemSharedLibrary */: c.SystemSharedLibrary,
+         11 /* nativePlatform */: c.NativePlatform,
+         15 /* glExtension */: c.GLextension,
       },
    }
-   config := body.Get(18, "deviceConfiguration")
+   config := checkinRequest.Get(18 /* deviceConfiguration */)
    for _, name := range c.DeviceFeature {
-      feature := message{
-         tag(1, "name"): name,
-      }
-      config.Add(26, "deviceFeature", feature)
+      feature := protobuf.Message{1 /* name */: name}
+      config.Add(26 /* deviceFeature*/, feature)
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
-      bytes.NewReader(body.Marshal()),
+      bytes.NewReader(checkinRequest.Marshal()),
    )
    if err != nil {
       return nil, err
@@ -132,12 +130,12 @@ func (c Config) Checkin() (*Device, error) {
       return nil, err
    }
    defer res.Body.Close()
-   checkinResponse, err := protobuf.Decode(res.Body)
+   checkin, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetFixed64(7, "androidId")
+   dev.AndroidID = checkin.GetUint64(7 /* androidId */)
    return &dev, nil
 }
 

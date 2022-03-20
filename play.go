@@ -45,17 +45,17 @@ const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
 
-func decode(val interface{}, elem ...string) error {
+func decode(value any, elem ...string) error {
    name := filepath.Join(elem...)
    file, err := os.Open(name)
    if err != nil {
       return err
    }
    defer file.Close()
-   return json.NewDecoder(file).Decode(val)
+   return json.NewDecoder(file).Decode(value)
 }
 
-func encode(val interface{}, elem ...string) error {
+func encode(value any, elem ...string) error {
    name := filepath.Join(elem...)
    err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
    if err != nil {
@@ -67,7 +67,7 @@ func encode(val interface{}, elem ...string) error {
       return err
    }
    defer file.Close()
-   return json.NewEncoder(file).Encode(val)
+   return json.NewEncoder(file).Encode(value)
 }
 
 func parseQuery(query io.Reader) url.Values {

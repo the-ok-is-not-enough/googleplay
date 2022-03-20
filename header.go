@@ -34,9 +34,9 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   status := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      GetVarint(1, "status")
+   status := responseWrapper.Get(1 /* payload */).
+      Get(21 /* deliveryResponse */).
+      GetUint64(1 /* status */)
    switch status {
    case 2:
       return nil, errorString("Geo-blocking")
@@ -45,15 +45,15 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    case 5:
       return nil, errorString("Invalid version")
    }
-   appData := responseWrapper.Get(1, "payload").
-      Get(21, "deliveryResponse").
-      Get(2, "appDeliveryData")
+   appData := responseWrapper.Get(1 /* payload */).
+      Get(21 /* deliveryResponse */).
+      Get(2 /* appDeliveryData */)
    var del Delivery
-   del.DownloadURL = appData.GetString(3, "downloadUrl")
-   for _, data := range appData.GetMessages(15, "splitDeliveryData") {
+   del.DownloadURL = appData.GetString(3)
+   for _, data := range appData.GetMessages(15 /* splitDeliveryData */) {
       var split SplitDeliveryData
-      split.ID = data.GetString(1, "id")
-      split.DownloadURL = data.GetString(5, "downloadUrl")
+      split.ID = data.GetString(1)
+      split.DownloadURL = data.GetString(5)
       del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
    return &del, nil
@@ -80,47 +80,37 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   docV2 := responseWrapper.Get(1, "payload").
-      Get(2, "detailsResponse").
-      Get(4, "docV2")
+   docV2 := responseWrapper.Get(1 /* payload */).
+      Get(2 /* detailsResponse */).
+      Get(4)
    var det Details
-   // CurrencyCode
-   det.CurrencyCode = docV2.Get(8, "offer").GetString(2, "currencyCode")
-   // Files
-   file := docV2.Get(13, "details").Get(1, "appDetails").GetMessages(17, "file")
+   det.CurrencyCode = docV2.Get(8 /* offer */).GetString(2)
+   file := docV2.Get(13 /* details */).Get(1 /* appDetails */).GetMessages(17)
    det.Files = len(file)
-   // Images
-   for _, mes := range docV2.GetMessages(10, "image") {
+   for _, mes := range docV2.GetMessages(10 /* image */) {
       var ima Image
-      ima.Type = mes.GetVarint(1, "imageType")
-      ima.URL = mes.GetString(5, "imageUrl")
+      ima.Type = mes.GetUint64(1 /* imageType */)
+      ima.URL = mes.GetString(5 /* imageUrl */)
       det.Images = append(det.Images, ima)
    }
-   // Micros
-   det.Micros = docV2.Get(8, "offer").GetVarint(1, "micros")
-   // NumDownloads
-   det.NumDownloads = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetVarint(70, "numDownloads")
-   // Size
-   det.Size = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      Get(34, "installDetails").
-      GetVarint(2, "size")
-   // Title
-   det.Title = docV2.GetString(5, "title")
-   // UploadDate
-   det.UploadDate = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(16, "uploadDate")
-   // VersionCode
-   det.VersionCode = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetVarint(3, "versionCode")
-   // VersionString
-   det.VersionString = docV2.Get(13, "details").
-      Get(1, "appDetails").
-      GetString(4, "versionString")
+   det.Micros = docV2.Get(8 /* offer */).GetUint64(1)
+   det.NumDownloads = docV2.Get(13 /* details */).
+      Get(1 /* appDetails */).
+      GetUint64(70)
+   det.Size = docV2.Get(13 /* details */).
+      Get(1 /* appDetails */).
+      Get(34 /* installDetails */).
+      GetUint64(2)
+   det.Title = docV2.GetString(5)
+   det.UploadDate = docV2.Get(13 /* details */).
+      Get(1 /* appDetails */).
+      GetString(16)
+   det.VersionCode = docV2.Get(13 /* details */).
+      Get(1 /* appDetails */).
+      GetUint64(3)
+   det.VersionString = docV2.Get(13 /* details */).
+      Get(1 /* appDetails */).
+      GetString(4)
    return &det, nil
 }
 

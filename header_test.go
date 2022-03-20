@@ -12,20 +12,31 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   for i, app := range apps {
+   for _, app := range apps {
       det, err := head.Details(app.id)
       if err != nil {
          t.Fatal(err)
+      }
+      if det.CurrencyCode == "" {
+         t.Fatal(det)
+      }
+      if det.NumDownloads == 0 {
+         t.Fatal(det)
+      }
+      if det.Size == 0 {
+         t.Fatal(det)
+      }
+      if det.Title == "" {
+         t.Fatal(det)
+      }
+      if det.UploadDate == "" {
+         t.Fatal(det)
       }
       if det.VersionCode == 0 {
          t.Fatal(det)
       }
       if det.VersionString == "" {
          t.Fatal(det)
-      }
-      if i == 0 {
-         fmt.Println(det)
-         fmt.Printf("%a\n", det)
       }
       time.Sleep(time.Second)
    }
