@@ -34,9 +34,9 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   status := responseWrapper.Get(1 /* payload */).
-      Get(21 /* deliveryResponse */).
-      GetUint64(1 /* status */)
+   status := responseWrapper.Get(/* payload */ 1).
+      Get(/* deliveryResponse */ 21).
+      GetUint64(1)
    switch status {
    case 2:
       return nil, errorString("Geo-blocking")
@@ -45,12 +45,12 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    case 5:
       return nil, errorString("Invalid version")
    }
-   appData := responseWrapper.Get(1 /* payload */).
-      Get(21 /* deliveryResponse */).
-      Get(2 /* appDeliveryData */)
+   appData := responseWrapper.Get(/* payload */ 1).
+      Get(/* deliveryResponse */ 21).
+      Get(/* appDeliveryData */ 2)
    var del Delivery
    del.DownloadURL = appData.GetString(3)
-   for _, data := range appData.GetMessages(15 /* splitDeliveryData */) {
+   for _, data := range appData.GetMessages(/* splitDeliveryData */ 15) {
       var split SplitDeliveryData
       split.ID = data.GetString(1)
       split.DownloadURL = data.GetString(5)
@@ -80,36 +80,36 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   docV2 := responseWrapper.Get(1 /* payload */).
-      Get(2 /* detailsResponse */).
+   docV2 := responseWrapper.Get(/* payload */ 1).
+      Get(/* detailsResponse */ 2).
       Get(4)
    var det Details
-   det.CurrencyCode = docV2.Get(8 /* offer */).GetString(2)
-   file := docV2.Get(13 /* details */).Get(1 /* appDetails */).GetMessages(17)
+   det.CurrencyCode = docV2.Get(/* offer */ 8).GetString(2)
+   file := docV2.Get(/* details */ 13).Get(/* appDetails */ 1).GetMessages(17)
    det.Files = len(file)
-   for _, mes := range docV2.GetMessages(10 /* image */) {
-      var ima Image
-      ima.Type = mes.GetUint64(1 /* imageType */)
-      ima.URL = mes.GetString(5 /* imageUrl */)
-      det.Images = append(det.Images, ima)
+   for _, mes := range docV2.GetMessages(/* image */ 10) {
+      var image Image
+      image.Type = mes.GetUint64(/* imageType */ 1)
+      image.URL = mes.GetString(/* imageUrl */ 5)
+      det.Images = append(det.Images, image)
    }
-   det.Micros = docV2.Get(8 /* offer */).GetUint64(1)
-   det.NumDownloads = docV2.Get(13 /* details */).
-      Get(1 /* appDetails */).
+   det.Micros = docV2.Get(/* offer */ 8).GetUint64(1)
+   det.NumDownloads = docV2.Get(/* details */ 13).
+      Get(/* appDetails */ 1).
       GetUint64(70)
-   det.Size = docV2.Get(13 /* details */).
-      Get(1 /* appDetails */).
-      Get(34 /* installDetails */).
+   det.Size = docV2.Get(/* details */ 13).
+      Get(/* appDetails */ 1).
+      Get(/* installDetails */ 34).
       GetUint64(2)
    det.Title = docV2.GetString(5)
-   det.UploadDate = docV2.Get(13 /* details */).
-      Get(1 /* appDetails */).
+   det.UploadDate = docV2.Get(/* details */ 13).
+      Get(/* appDetails */ 1).
       GetString(16)
-   det.VersionCode = docV2.Get(13 /* details */).
-      Get(1 /* appDetails */).
+   det.VersionCode = docV2.Get(/* details */ 13).
+      Get(/* appDetails */ 1).
       GetUint64(3)
-   det.VersionString = docV2.Get(13 /* details */).
-      Get(1 /* appDetails */).
+   det.VersionString = docV2.Get(/* details */ 13).
+      Get(/* appDetails */ 1).
       GetString(4)
    return &det, nil
 }

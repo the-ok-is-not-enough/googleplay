@@ -86,35 +86,33 @@ var DefaultConfig = Config{
    TouchScreen: 3,
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 // A Sleep is needed after this.
 func (c Config) Checkin() (*Device, error) {
    checkinRequest := protobuf.Message{
-      4 /* checkin */: protobuf.Message{
-         1 /* build */: protobuf.Message{
-            10 /* sdkVersion */: uint64(29),
+      /* checkin */ 4: protobuf.Message{
+         /* build */ 1: protobuf.Message{
+            /* sdkVersion */ 10: uint64(29),
          },
       },
-      14 /* version */: uint64(3),
-      18 /* deviceConfiguration */: protobuf.Message{
-         1 /* touchScreen */: c.TouchScreen,
-         2 /* keyboard */: c.Keyboard,
-         3 /* navigation */: c.Navigation,
-         4 /* screenLayout */: c.ScreenLayout,
-         5 /* hasHardKeyboard */: c.HasHardKeyboard,
-         6 /* hasFiveWayNavigation */: c.HasFiveWayNavigation,
-         7 /* screenDensity */: c.ScreenDensity,
-         8 /* glEsVersion */: c.GLESversion,
-         9 /* systemSharedLibrary */: c.SystemSharedLibrary,
-         11 /* nativePlatform */: c.NativePlatform,
-         15 /* glExtension */: c.GLextension,
+      /* version */ 14: uint64(3),
+      /* deviceConfiguration */ 18: protobuf.Message{
+         1: c.TouchScreen,
+         2: c.Keyboard,
+         3: c.Navigation,
+         4: c.ScreenLayout,
+         5: c.HasHardKeyboard,
+         6: c.HasFiveWayNavigation,
+         7: c.ScreenDensity,
+         8: c.GLESversion,
+         9: c.SystemSharedLibrary,
+         11: c.NativePlatform,
+         15: c.GLextension,
       },
    }
-   config := checkinRequest.Get(18 /* deviceConfiguration */)
+   deviceConfiguration := checkinRequest.Get(18)
    for _, name := range c.DeviceFeature {
-      feature := protobuf.Message{1 /* name */: name}
-      config.Add(26 /* deviceFeature*/, feature)
+      deviceFeature := protobuf.Message{1: name}
+      deviceConfiguration.Add(26, deviceFeature)
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
@@ -135,7 +133,7 @@ func (c Config) Checkin() (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkin.GetUint64(7 /* androidId */)
+   dev.AndroidID = checkin.GetUint64(7)
    return &dev, nil
 }
 
@@ -155,5 +153,3 @@ func OpenDevice(elem ...string) (*Device, error) {
 func (d Device) Create(elem ...string) error {
    return encode(d, elem...)
 }
-
-type message = protobuf.Message
