@@ -16,12 +16,12 @@ func doDelivery(head *gp.Header, output, app string, ver uint64) error {
       return err
    }
    dst := filename(output, app, "", ver)
-   if err := download(del.DownloadURL, dst); err != nil {
+   if err := download(del.GetURL(), dst); err != nil {
       return err
    }
    for _, split := range del.SplitDeliveryData {
-      dst := filename(output, app, split.ID, ver)
-      err := download(split.DownloadURL, dst)
+      dst := filename(output, app, split.GetID(), ver)
+      err := download(split.GetURL(), dst)
       if err != nil {
          return err
       }

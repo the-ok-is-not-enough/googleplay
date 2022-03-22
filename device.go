@@ -6,30 +6,24 @@ import (
    "net/http"
 )
 
+// These can use default values, but they must all be included
 type Config struct {
-   DeviceFeature []string
-   GLESversion uint64
-   GLextension []string
-   // this can be 0, but it must be included:
-   HasFiveWayNavigation uint64
-   // this can be 0, but it must be included:
-   HasHardKeyboard uint64
-   // this can be 0, but it must be included:
-   Keyboard uint64
-   NativePlatform []string
-   // this can be 0, but it must be included:
-   Navigation uint64
-   // this can be 0, but it must be included:
-   ScreenDensity uint64
-   // this can be 0, but it must be included:
-   ScreenLayout uint64
-   SystemSharedLibrary []string
-   // this can be 0, but it must be included:
-   TouchScreen uint64
+   DeviceFeature []protobuf.String
+   GLESversion protobuf.Uint64
+   GLextension protobuf.String
+   HasFiveWayNavigation protobuf.Uint64
+   HasHardKeyboard protobuf.Uint64
+   Keyboard protobuf.Uint64
+   NativePlatform []protobuf.String
+   Navigation protobuf.Uint64
+   ScreenDensity protobuf.Uint64
+   ScreenLayout protobuf.Uint64
+   SystemSharedLibrary protobuf.String
+   TouchScreen protobuf.Uint64
 }
 
 var DefaultConfig = Config{
-   DeviceFeature: []string{
+   DeviceFeature: []protobuf.String{
       // com.google.android.GoogleCamera
       "android.hardware.camera.level.full",
       "com.google.android.feature.GOOGLE_EXPERIENCE",
@@ -66,11 +60,9 @@ var DefaultConfig = Config{
    },
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
-   GLextension: []string{
-      // com.instagram.android
-      "GL_OES_compressed_ETC1_RGB8_texture",
-   },
-   NativePlatform: []string{
+   // com.instagram.android
+   GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
+   NativePlatform: []protobuf.String{
       // com.vimeo.android.videoapp
       "x86",
       // com.axis.drawingdesk.v3
@@ -78,23 +70,21 @@ var DefaultConfig = Config{
       // com.exnoa.misttraingirls
       "arm64-v8a",
    },
-   SystemSharedLibrary: []string{
-      // com.miui.weather2
-      "global-miui11-empty.jar",
-   },
+   // com.miui.weather2
+   SystemSharedLibrary: "global-miui11-empty.jar",
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,
 }
 
 // A Sleep is needed after this.
 func (c Config) Checkin() (*Device, error) {
-   checkinRequest := protobuf.Message{
+   checkin := protobuf.Message{
       /* checkin */ 4: protobuf.Message{
          /* build */ 1: protobuf.Message{
-            /* sdkVersion */ 10: uint64(29),
+            /* sdkVersion */ 10: protobuf.Uint64(29),
          },
       },
-      /* version */ 14: uint64(3),
+      /* version */ 14: protobuf.Uint64(3),
       /* deviceConfiguration */ 18: protobuf.Message{
          1: c.TouchScreen,
          2: c.Keyboard,
@@ -105,18 +95,18 @@ func (c Config) Checkin() (*Device, error) {
          7: c.ScreenDensity,
          8: c.GLESversion,
          9: c.SystemSharedLibrary,
-         11: c.NativePlatform,
          15: c.GLextension,
       },
    }
-   deviceConfiguration := checkinRequest.Get(18)
-   for _, name := range c.DeviceFeature {
-      deviceFeature := protobuf.Message{1: name}
-      deviceConfiguration.Add(26, deviceFeature)
+   for _, each := range c.NativePlatform {
+      checkin.Get(18).AddString(11, each)
+   }
+   for _, each := range c.DeviceFeature {
+      checkin.Get(18).Add(26, protobuf.Message{1: each})
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
-      bytes.NewReader(checkinRequest.Marshal()),
+      bytes.NewReader(checkin.Marshal()),
    )
    if err != nil {
       return nil, err
@@ -128,17 +118,17 @@ func (c Config) Checkin() (*Device, error) {
       return nil, err
    }
    defer res.Body.Close()
-   checkin, err := protobuf.Decode(res.Body)
+   checkinResponse, err := protobuf.Decode(res.Body)
    if err != nil {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkin.GetUint64(7)
+   dev.AndroidID = checkinResponse.GetUint64(7)
    return &dev, nil
 }
 
 type Device struct {
-   AndroidID uint64
+   AndroidID protobuf.Uint64
 }
 
 func OpenDevice(elem ...string) (*Device, error) {

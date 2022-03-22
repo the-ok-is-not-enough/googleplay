@@ -8,6 +8,27 @@ import (
    "strings"
 )
 
+type Delivery struct {
+   DownloadURL protobuf.String
+   SplitDeliveryData []SplitDeliveryData
+}
+
+func (d Delivery) GetURL() string {
+   return string(d.DownloadURL)
+}
+
+type Details struct {
+   CurrencyCode protobuf.String
+   Files int
+   Micros protobuf.Uint64
+   NumDownloads protobuf.Uint64
+   Size protobuf.Uint64
+   Title protobuf.String
+   UploadDate protobuf.String
+   VersionCode protobuf.Uint64
+   VersionString protobuf.String
+}
+
 type Header struct {
    http.Header
 }
@@ -87,16 +108,12 @@ func (h Header) Details(app string) (*Details, error) {
    det.CurrencyCode = docV2.Get(/* offer */ 8).GetString(2)
    file := docV2.Get(/* details */ 13).Get(/* appDetails */ 1).GetMessages(17)
    det.Files = len(file)
-   for _, mes := range docV2.GetMessages(/* image */ 10) {
-      var image Image
-      image.Type = mes.GetUint64(/* imageType */ 1)
-      image.URL = mes.GetString(/* imageUrl */ 5)
-      det.Images = append(det.Images, image)
-   }
    det.Micros = docV2.Get(/* offer */ 8).GetUint64(1)
    det.NumDownloads = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
       GetUint64(70)
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
    det.Size = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
       Get(/* installDetails */ 34).
@@ -136,4 +153,17 @@ func (h Header) Purchase(app string) error {
       return errorString(res.Status)
    }
    return nil
+}
+
+type SplitDeliveryData struct {
+   ID protobuf.String
+   DownloadURL protobuf.String
+}
+
+func (s SplitDeliveryData) GetID() string {
+   return string(s.ID)
+}
+
+func (s SplitDeliveryData) GetURL() string {
+   return string(s.DownloadURL)
 }

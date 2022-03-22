@@ -15,32 +15,6 @@ import (
    "time"
 )
 
-func (d Details) Format(f fmt.State, verb rune) {
-   // Title
-   fmt.Fprintln(f, "Title:", d.Title)
-   // UploadDate
-   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
-   // VersionString
-   fmt.Fprintln(f, "VersionString:", d.VersionString)
-   // VersionCode
-   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
-   // NumDownloads
-   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
-   // Size
-   fmt.Fprintln(f, "Size:", format.LabelSize(d.Size))
-   // Files
-   fmt.Fprintln(f, "Files:", d.Files)
-   // Offer
-   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
-   // Images
-   if verb == 'a' {
-      for _, ima := range d.Images {
-         fmt.Fprint(f, "\nType:", ima.Type)
-         fmt.Fprint(f, " URL:", ima.URL)
-      }
-   }
-}
-
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
@@ -55,19 +29,19 @@ func decode(value any, elem ...string) error {
    return json.NewDecoder(file).Decode(value)
 }
 
-func encode(value any, elem ...string) error {
+func encode(val interface{}, elem ...string) error {
    name := filepath.Join(elem...)
    err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
    if err != nil {
       return err
    }
-   fmt.Println("Create", name)
+   os.Stdout.WriteString("Create " + name + "\n")
    file, err := os.Create(name)
    if err != nil {
       return err
    }
    defer file.Close()
-   return json.NewEncoder(file).Encode(value)
+   return json.NewEncoder(file).Encode(val)
 }
 
 func parseQuery(query io.Reader) url.Values {
@@ -80,43 +54,6 @@ func parseQuery(query io.Reader) url.Values {
       }
    }
    return vals
-}
-
-type Delivery struct {
-   DownloadURL string
-   SplitDeliveryData []SplitDeliveryData
-}
-
-type Details struct {
-   CurrencyCode string
-   Files int
-   Images []Image
-   Micros uint64
-   NumDownloads uint64
-   Size uint64
-   Title string
-   UploadDate string
-   VersionCode uint64
-   VersionString string
-}
-
-func (d Details) Icon() string {
-   for _, image := range d.Images {
-      if image.Type == 4 {
-         return image.URL
-      }
-   }
-   return ""
-}
-
-type Image struct {
-   Type uint64
-   URL string
-}
-
-type SplitDeliveryData struct {
-   ID string
-   DownloadURL string
 }
 
 type Token struct {
@@ -178,6 +115,25 @@ func (t Token) SingleAPK(dev *Device) (*Header, error) {
    return t.headerVersion(dev, 8091_9999)
 }
 
+type errorString string
+
+func (e errorString) Error() string {
+   return string(e)
+}
+
+func (d Details) Format(f fmt.State, verb rune) {
+   fmt.Fprintln(f, "Title:", d.Title)
+   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
+   fmt.Fprintln(f, "VersionString:", d.VersionString)
+   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
+   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
+   fmt.Fprintln(f, "Size:", d.Size)
+   fmt.Fprintln(f, "Files:", d.Files)
+   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
@@ -202,21 +158,19 @@ func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    var head Header
    head.Header = make(http.Header)
    // Authorization
-   auth := parseQuery(res.Body).Get("Auth")
-   if auth != "" {
-      head.Set("Authorization", "Bearer " + auth)
-   }
+   head.Set(
+      "Authorization",
+      "Bearer " + parseQuery(res.Body).Get("Auth"),
+   )
    // User-Agent
    head.Set(
-      "User-Agent", fmt.Sprint("Android-Finsky (sdk=9,versionCode=", version),
+      "User-Agent",
+      fmt.Sprintf("Android-Finsky (sdk=9,versionCode=%v", version),
    )
    // X-DFE-Device-ID
-   head.Set("X-DFE-Device-ID", fmt.Sprintf("%x", dev.AndroidID))
+   head.Set(
+      "X-DFE-Device-ID",
+      fmt.Sprintf("%x", dev.AndroidID),
+   )
    return &head, nil
-}
-
-type errorString string
-
-func (e errorString) Error() string {
-   return string(e)
 }
