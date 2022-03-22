@@ -17,18 +17,6 @@ func (d Delivery) GetURL() string {
    return string(d.DownloadURL)
 }
 
-type Details struct {
-   CurrencyCode protobuf.String
-   Files int
-   Micros protobuf.Uint64
-   NumDownloads protobuf.Uint64
-   Size protobuf.Uint64
-   Title protobuf.String
-   UploadDate protobuf.String
-   VersionCode protobuf.Uint64
-   VersionString protobuf.String
-}
-
 type Header struct {
    http.Header
 }
@@ -57,7 +45,7 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    }
    status := responseWrapper.Get(/* payload */ 1).
       Get(/* deliveryResponse */ 21).
-      GetUint64(1)
+      GetVarint(1)
    switch status {
    case 2:
       return nil, errorString("Geo-blocking")
@@ -106,29 +94,47 @@ func (h Header) Details(app string) (*Details, error) {
       Get(4)
    var det Details
    det.CurrencyCode = docV2.Get(/* offer */ 8).GetString(2)
-   file := docV2.Get(/* details */ 13).Get(/* appDetails */ 1).GetMessages(17)
-   det.Files = len(file)
-   det.Micros = docV2.Get(/* offer */ 8).GetUint64(1)
+   det.Micros = docV2.Get(/* offer */ 8).GetVarint(1)
    det.NumDownloads = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
-      GetUint64(70)
+      GetVarint(70)
    // The shorter path 13,1,9 returns wrong size for some packages:
    // com.riotgames.league.wildriftvn
    det.Size = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
       Get(/* installDetails */ 34).
-      GetUint64(2)
+      GetVarint(2)
    det.Title = docV2.GetString(5)
    det.UploadDate = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
       GetString(16)
    det.VersionCode = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
-      GetUint64(3)
+      GetVarint(3)
    det.VersionString = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
       GetString(4)
+   // file
+   file := docV2.Get(/* details */ 13).Get(/* appDetails */ 1).GetMessages(17)
+   det.Files = len(file)
    return &det, nil
+}
+
+type File struct {
+   Size protobuf.Varint
+   VersionCode protobuf.Varint
+}
+
+type Details struct {
+   CurrencyCode protobuf.String
+   Files int
+   Micros protobuf.Varint
+   NumDownloads protobuf.Varint
+   Size protobuf.Varint
+   Title protobuf.String
+   UploadDate protobuf.String
+   VersionCode protobuf.Varint
+   VersionString protobuf.String
 }
 
 // Purchase app. Only needs to be done once per Google account.

@@ -9,17 +9,17 @@ import (
 // These can use default values, but they must all be included
 type Config struct {
    DeviceFeature []protobuf.String
-   GLESversion protobuf.Uint64
+   GLESversion protobuf.Varint
    GLextension protobuf.String
-   HasFiveWayNavigation protobuf.Uint64
-   HasHardKeyboard protobuf.Uint64
-   Keyboard protobuf.Uint64
+   HasFiveWayNavigation protobuf.Varint
+   HasHardKeyboard protobuf.Varint
+   Keyboard protobuf.Varint
    NativePlatform []protobuf.String
-   Navigation protobuf.Uint64
-   ScreenDensity protobuf.Uint64
-   ScreenLayout protobuf.Uint64
+   Navigation protobuf.Varint
+   ScreenDensity protobuf.Varint
+   ScreenLayout protobuf.Varint
    SystemSharedLibrary protobuf.String
-   TouchScreen protobuf.Uint64
+   TouchScreen protobuf.Varint
 }
 
 var DefaultConfig = Config{
@@ -81,10 +81,10 @@ func (c Config) Checkin() (*Device, error) {
    checkin := protobuf.Message{
       /* checkin */ 4: protobuf.Message{
          /* build */ 1: protobuf.Message{
-            /* sdkVersion */ 10: protobuf.Uint64(29),
+            /* sdkVersion */ 10: protobuf.Varint(29),
          },
       },
-      /* version */ 14: protobuf.Uint64(3),
+      /* version */ 14: protobuf.Varint(3),
       /* deviceConfiguration */ 18: protobuf.Message{
          1: c.TouchScreen,
          2: c.Keyboard,
@@ -98,11 +98,11 @@ func (c Config) Checkin() (*Device, error) {
          15: c.GLextension,
       },
    }
-   for _, each := range c.NativePlatform {
-      checkin.Get(18).AddString(11, each)
+   for _, platform := range c.NativePlatform {
+      checkin.Get(18).AddString(11, platform)
    }
-   for _, each := range c.DeviceFeature {
-      checkin.Get(18).Add(26, protobuf.Message{1: each})
+   for _, name := range c.DeviceFeature {
+      checkin.Get(18).Add(26, protobuf.Message{1: name})
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
@@ -123,23 +123,12 @@ func (c Config) Checkin() (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetUint64(7)
+   dev.AndroidID = checkinResponse.GetFixed64(7)
+   dev.TimeMsec = checkinResponse.GetVarint(3)
    return &dev, nil
 }
 
 type Device struct {
-   AndroidID protobuf.Uint64
-}
-
-func OpenDevice(elem ...string) (*Device, error) {
-   dev := new(Device)
-   err := decode(dev, elem...)
-   if err != nil {
-      return nil, err
-   }
-   return dev, nil
-}
-
-func (d Device) Create(elem ...string) error {
-   return encode(d, elem...)
+   AndroidID protobuf.Fixed64
+   TimeMsec protobuf.Varint
 }

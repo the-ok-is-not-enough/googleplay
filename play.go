@@ -2,47 +2,35 @@ package googleplay
 
 import (
    "bufio"
-   "encoding/json"
    "fmt"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
    "io"
    "net/http"
    "net/url"
-   "os"
-   "path/filepath"
    "strings"
    "time"
 )
 
+func OpenDevice(elem ...string) (*Device, error) {
+   return format.Open[Device](elem...)
+}
+
+func (d Device) Create(elem ...string) error {
+   return format.Create(d, elem...)
+}
+
+func OpenToken(elem ...string) (*Token, error) {
+   return format.Open[Token](elem...)
+}
+
+func (t Token) Create(elem ...string) error {
+   return format.Create(t, elem...)
+}
+
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
-
-func decode(value any, elem ...string) error {
-   name := filepath.Join(elem...)
-   file, err := os.Open(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   return json.NewDecoder(file).Decode(value)
-}
-
-func encode(val interface{}, elem ...string) error {
-   name := filepath.Join(elem...)
-   err := os.MkdirAll(filepath.Dir(name), os.ModeDir)
-   if err != nil {
-      return err
-   }
-   os.Stdout.WriteString("Create " + name + "\n")
-   file, err := os.Create(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   return json.NewEncoder(file).Encode(val)
-}
 
 func parseQuery(query io.Reader) url.Values {
    vals := make(url.Values)
@@ -56,21 +44,17 @@ func parseQuery(query io.Reader) url.Values {
    return vals
 }
 
-type Token struct {
-   Token string
-}
-
 // You can also use host "android.clients.google.com", but it also uses
 // TLS fingerprinting.
 func NewToken(email, password string) (*Token, error) {
-   val := url.Values{
+   body := url.Values{
       "Email": {email},
       "Passwd": {password},
       "client_sig": {""},
       "droidguard_results": {""},
    }.Encode()
    req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(body),
    )
    if err != nil {
       return nil, err
@@ -89,22 +73,16 @@ func NewToken(email, password string) (*Token, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errorString(res.Status)
    }
+   val := parseQuery(res.Body)
    var tok Token
-   tok.Token = parseQuery(res.Body).Get("Token")
+   tok.Services = val.Get("services")
+   tok.Token = val.Get("Token")
    return &tok, nil
 }
 
-func OpenToken(elem ...string) (*Token, error) {
-   tok := new(Token)
-   err := decode(tok, elem...)
-   if err != nil {
-      return nil, err
-   }
-   return tok, nil
-}
-
-func (t Token) Create(elem ...string) error {
-   return encode(t, elem...)
+type Token struct {
+   Services string
+   Token string
 }
 
 func (t Token) Header(dev *Device) (*Header, error) {
@@ -131,8 +109,6 @@ func (d Details) Format(f fmt.State, verb rune) {
    fmt.Fprintln(f, "Files:", d.Files)
    fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    val := url.Values{
@@ -174,3 +150,4 @@ func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    )
    return &head, nil
 }
+

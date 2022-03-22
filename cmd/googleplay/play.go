@@ -96,16 +96,16 @@ func newHeader(single bool) (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   tok, err := gp.OpenToken(cache, "googleplay/token.json")
+   token, err := gp.OpenToken(cache, "googleplay/token.json")
    if err != nil {
       return nil, err
    }
-   dev, err := gp.OpenDevice(cache, "googleplay/device.json")
+   device, err := gp.OpenDevice(cache, "googleplay/device.json")
    if err != nil {
       return nil, err
    }
    if single {
-      return tok.SingleAPK(dev)
+      return token.SingleAPK(device)
    }
-   return tok.Header(dev)
+   return token.Header(device)
 }
