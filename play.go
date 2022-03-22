@@ -12,22 +12,6 @@ import (
    "time"
 )
 
-func OpenDevice(elem ...string) (*Device, error) {
-   return format.Open[Device](elem...)
-}
-
-func (d Device) Create(elem ...string) error {
-   return format.Create(d, elem...)
-}
-
-func OpenToken(elem ...string) (*Token, error) {
-   return format.Open[Token](elem...)
-}
-
-func (t Token) Create(elem ...string) error {
-   return format.Create(t, elem...)
-}
-
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
@@ -42,6 +26,56 @@ func parseQuery(query io.Reader) url.Values {
       }
    }
    return vals
+}
+
+type Delivery struct {
+   DownloadURL String
+   SplitDeliveryData []SplitDeliveryData
+}
+
+func (d Delivery) GetURL() string {
+   return string(d.DownloadURL)
+}
+
+type Details struct {
+   CurrencyCode String
+   Files int
+   Micros Varint
+   NumDownloads Varint
+   Size Varint
+   Title String
+   UploadDate String
+   VersionCode Varint
+   VersionString String
+}
+
+func (d Details) Format(f fmt.State, verb rune) {
+   fmt.Fprintln(f, "Title:", d.Title)
+   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
+   fmt.Fprintln(f, "VersionString:", d.VersionString)
+   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
+   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
+   fmt.Fprintln(f, "Size:", d.Size)
+   fmt.Fprintln(f, "Files:", d.Files)
+   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
+}
+
+type SplitDeliveryData struct {
+   ID String
+   DownloadURL String
+}
+
+func (s SplitDeliveryData) GetID() string {
+   return string(s.ID)
+}
+
+func (s SplitDeliveryData) GetURL() string {
+   return string(s.DownloadURL)
+}
+
+type Token struct {
+   Services string
+   Token string
 }
 
 // You can also use host "android.clients.google.com", but it also uses
@@ -80,9 +114,12 @@ func NewToken(email, password string) (*Token, error) {
    return &tok, nil
 }
 
-type Token struct {
-   Services string
-   Token string
+func OpenToken(elem ...string) (*Token, error) {
+   return format.Open[Token](elem...)
+}
+
+func (t Token) Create(elem ...string) error {
+   return format.Create(t, elem...)
 }
 
 func (t Token) Header(dev *Device) (*Header, error) {
@@ -91,23 +128,6 @@ func (t Token) Header(dev *Device) (*Header, error) {
 
 func (t Token) SingleAPK(dev *Device) (*Header, error) {
    return t.headerVersion(dev, 8091_9999)
-}
-
-type errorString string
-
-func (e errorString) Error() string {
-   return string(e)
-}
-
-func (d Details) Format(f fmt.State, verb rune) {
-   fmt.Fprintln(f, "Title:", d.Title)
-   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
-   fmt.Fprintln(f, "VersionString:", d.VersionString)
-   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
-   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
-   fmt.Fprintln(f, "Size:", d.Size)
-   fmt.Fprintln(f, "Files:", d.Files)
-   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
 }
 
 func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
@@ -151,3 +171,8 @@ func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
    return &head, nil
 }
 
+type errorString string
+
+func (e errorString) Error() string {
+   return string(e)
+}

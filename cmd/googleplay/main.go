@@ -3,8 +3,8 @@ package main
 import (
    "flag"
    "fmt"
-   "github.com/89z/googleplay"
    "strings"
+   gp "github.com/89z/googleplay"
 )
 
 func main() {
@@ -17,9 +17,6 @@ func main() {
    // e
    var email string
    flag.StringVar(&email, "e", "", "email")
-   // o
-   var output string
-   flag.StringVar(&output, "o", "", "output folder, must already exist")
    // p
    var password string
    flag.StringVar(&password, "p", "", "password")
@@ -42,7 +39,7 @@ func main() {
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
-      googleplay.LogLevel = 1
+      gp.LogLevel = 1
    }
    if email != "" {
       err := doToken(email, password)
@@ -65,7 +62,7 @@ func main() {
             panic(err)
          }
       } else if version >= 1 {
-         err := doDelivery(head, output, app, version)
+         err := doDelivery(head, app, version)
          if err != nil {
             panic(err)
          }

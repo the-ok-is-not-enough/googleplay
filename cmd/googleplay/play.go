@@ -10,17 +10,30 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func doDelivery(head *gp.Header, output, app string, ver uint64) error {
-   del, err := head.Delivery(app, ver)
+func filename(app, id string, ver uint64) string {
+   var buf []byte
+   buf = append(buf, app...)
+   buf = append(buf, '-')
+   if id != "" {
+      buf = append(buf, id...)
+      buf = append(buf, '-')
+   }
+   buf = strconv.AppendUint(buf, ver, 10)
+   buf = append(buf, ".apk"...)
+   return string(buf)
+}
+
+func doDelivery(head *gp.Header, app string, ver uint64) error {
+   del, err := head.Delivery(app, gp.Varint(ver))
    if err != nil {
       return err
    }
-   dst := filename(output, app, "", ver)
+   dst := filename(app, "", ver)
    if err := download(del.GetURL(), dst); err != nil {
       return err
    }
    for _, split := range del.SplitDeliveryData {
-      dst := filename(output, app, split.GetID(), ver)
+      dst := filename(app, split.GetID(), ver)
       err := download(split.GetURL(), dst)
       if err != nil {
          return err
@@ -72,23 +85,6 @@ func download(src, dst string) error {
       return err
    }
    return nil
-}
-
-func filename(output, app, id string, ver uint64) string {
-   var buf []byte
-   if output != "" {
-      buf = append(buf, output...)
-      buf = append(buf, '/')
-   }
-   buf = append(buf, app...)
-   buf = append(buf, '-')
-   if id != "" {
-      buf = append(buf, id...)
-      buf = append(buf, '-')
-   }
-   buf = strconv.AppendUint(buf, ver, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
 }
 
 func newHeader(single bool) (*gp.Header, error) {

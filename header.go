@@ -1,27 +1,23 @@
 package googleplay
 
 import (
+   "fmt"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
-   "strconv"
    "strings"
 )
 
-type Delivery struct {
-   DownloadURL protobuf.String
-   SplitDeliveryData []SplitDeliveryData
-}
-
-func (d Delivery) GetURL() string {
-   return string(d.DownloadURL)
+type File struct {
+   Size Varint
+   VersionCode Varint
 }
 
 type Header struct {
    http.Header
 }
 
-func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
+func (h Header) Delivery(app string, ver Varint) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
    )
@@ -31,7 +27,7 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req.Header = h.Header
    req.URL.RawQuery = url.Values{
       "doc": {app},
-      "vc": {strconv.FormatUint(ver, 10)},
+      "vc": {fmt.Sprint(ver)},
    }.Encode()
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -120,23 +116,6 @@ func (h Header) Details(app string) (*Details, error) {
    return &det, nil
 }
 
-type File struct {
-   Size protobuf.Varint
-   VersionCode protobuf.Varint
-}
-
-type Details struct {
-   CurrencyCode protobuf.String
-   Files int
-   Micros protobuf.Varint
-   NumDownloads protobuf.Varint
-   Size protobuf.Varint
-   Title protobuf.String
-   UploadDate protobuf.String
-   VersionCode protobuf.Varint
-   VersionString protobuf.String
-}
-
 // Purchase app. Only needs to be done once per Google account.
 func (h Header) Purchase(app string) error {
    query := "doc=" + url.QueryEscape(app)
@@ -159,17 +138,4 @@ func (h Header) Purchase(app string) error {
       return errorString(res.Status)
    }
    return nil
-}
-
-type SplitDeliveryData struct {
-   ID protobuf.String
-   DownloadURL protobuf.String
-}
-
-func (s SplitDeliveryData) GetID() string {
-   return string(s.ID)
-}
-
-func (s SplitDeliveryData) GetURL() string {
-   return string(s.DownloadURL)
 }

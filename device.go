@@ -2,28 +2,29 @@ package googleplay
 
 import (
    "bytes"
+   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
 )
 
 // These can use default values, but they must all be included
 type Config struct {
-   DeviceFeature []protobuf.String
-   GLESversion protobuf.Varint
-   GLextension protobuf.String
-   HasFiveWayNavigation protobuf.Varint
-   HasHardKeyboard protobuf.Varint
-   Keyboard protobuf.Varint
-   NativePlatform []protobuf.String
-   Navigation protobuf.Varint
-   ScreenDensity protobuf.Varint
-   ScreenLayout protobuf.Varint
-   SystemSharedLibrary protobuf.String
-   TouchScreen protobuf.Varint
+   DeviceFeature []String
+   GLESversion Varint
+   GLextension String
+   HasFiveWayNavigation Varint
+   HasHardKeyboard Varint
+   Keyboard Varint
+   NativePlatform []String
+   Navigation Varint
+   ScreenDensity Varint
+   ScreenLayout Varint
+   SystemSharedLibrary String
+   TouchScreen Varint
 }
 
 var DefaultConfig = Config{
-   DeviceFeature: []protobuf.String{
+   DeviceFeature: []String{
       // com.google.android.GoogleCamera
       "android.hardware.camera.level.full",
       "com.google.android.feature.GOOGLE_EXPERIENCE",
@@ -62,7 +63,7 @@ var DefaultConfig = Config{
    GLESversion: 0x0003_0001,
    // com.instagram.android
    GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
-   NativePlatform: []protobuf.String{
+   NativePlatform: []String{
       // com.vimeo.android.videoapp
       "x86",
       // com.axis.drawingdesk.v3
@@ -78,14 +79,14 @@ var DefaultConfig = Config{
 
 // A Sleep is needed after this.
 func (c Config) Checkin() (*Device, error) {
-   checkin := protobuf.Message{
-      /* checkin */ 4: protobuf.Message{
-         /* build */ 1: protobuf.Message{
-            /* sdkVersion */ 10: protobuf.Varint(29),
+   checkin := Message{
+      /* checkin */ 4: Message{
+         /* build */ 1: Message{
+            /* sdkVersion */ 10: Varint(29),
          },
       },
-      /* version */ 14: protobuf.Varint(3),
-      /* deviceConfiguration */ 18: protobuf.Message{
+      /* version */ 14: Varint(3),
+      /* deviceConfiguration */ 18: Message{
          1: c.TouchScreen,
          2: c.Keyboard,
          3: c.Navigation,
@@ -102,7 +103,7 @@ func (c Config) Checkin() (*Device, error) {
       checkin.Get(18).AddString(11, platform)
    }
    for _, name := range c.DeviceFeature {
-      checkin.Get(18).Add(26, protobuf.Message{1: name})
+      checkin.Get(18).Add(26, Message{1: name})
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
@@ -129,6 +130,22 @@ func (c Config) Checkin() (*Device, error) {
 }
 
 type Device struct {
-   AndroidID protobuf.Fixed64
-   TimeMsec protobuf.Varint
+   AndroidID Fixed64
+   TimeMsec Varint
 }
+
+func OpenDevice(elem ...string) (*Device, error) {
+   return format.Open[Device](elem...)
+}
+
+func (d Device) Create(elem ...string) error {
+   return format.Create(d, elem...)
+}
+
+type Fixed64 = protobuf.Fixed64
+
+type Message = protobuf.Message
+
+type String = protobuf.String
+
+type Varint = protobuf.Varint
