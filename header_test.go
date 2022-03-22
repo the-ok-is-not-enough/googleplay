@@ -38,7 +38,7 @@ func TestDetails(t *testing.T) {
       if det.VersionString == "" {
          t.Fatal(det)
       }
-      time.Sleep(time.Second)
+      time.Sleep(99 * time.Millisecond)
    }
 }
 
