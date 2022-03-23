@@ -1,23 +1,18 @@
 package googleplay
 
 import (
-   "fmt"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
    "strings"
+   "strconv"
 )
-
-type File struct {
-   Size Varint
-   VersionCode Varint
-}
 
 type Header struct {
    http.Header
 }
 
-func (h Header) Delivery(app string, ver Varint) (*Delivery, error) {
+func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
    )
@@ -27,7 +22,7 @@ func (h Header) Delivery(app string, ver Varint) (*Delivery, error) {
    req.Header = h.Header
    req.URL.RawQuery = url.Values{
       "doc": {app},
-      "vc": {fmt.Sprint(ver)},
+      "vc": {strconv.FormatUint(ver, 10)},
    }.Encode()
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -90,6 +85,10 @@ func (h Header) Details(app string) (*Details, error) {
       Get(4)
    var det Details
    det.CurrencyCode = docV2.Get(/* offer */ 8).GetString(2)
+   elems := docV2.Get(/* details */ 13).
+      Get(/* appDetails */ 1).
+      GetMessages(/* file */ 17)
+   det.Files = len(elems)
    det.Micros = docV2.Get(/* offer */ 8).GetVarint(1)
    det.NumDownloads = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
@@ -110,9 +109,6 @@ func (h Header) Details(app string) (*Details, error) {
    det.VersionString = docV2.Get(/* details */ 13).
       Get(/* appDetails */ 1).
       GetString(4)
-   // file
-   file := docV2.Get(/* details */ 13).Get(/* appDetails */ 1).GetMessages(17)
-   det.Files = len(file)
    return &det, nil
 }
 

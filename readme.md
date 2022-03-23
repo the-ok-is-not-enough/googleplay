@@ -15,7 +15,7 @@ Download APK from Google Play or send API requests
 
 ## How to install?
 
-Download Go from here:
+This module works with Windows, macOS or Linux. Download Go from here:
 
 https://golang.org/dl
 

@@ -33,20 +33,22 @@ type Delivery struct {
    SplitDeliveryData []SplitDeliveryData
 }
 
-func (d Delivery) GetURL() string {
-   return string(d.DownloadURL)
+func (d Delivery) Data() []SplitDeliveryData {
+   datas := d.SplitDeliveryData
+   data := SplitDeliveryData{DownloadURL: d.DownloadURL}
+   return append(datas, data)
 }
 
 type Details struct {
-   CurrencyCode String
-   Files int
-   Micros Varint
-   NumDownloads Varint
-   Size Varint
    Title String
    UploadDate String
-   VersionCode Varint
    VersionString String
+   VersionCode Varint
+   NumDownloads Varint
+   Size Varint
+   Files int
+   Micros Varint
+   CurrencyCode String
 }
 
 func (d Details) Format(f fmt.State, verb rune) {
@@ -65,12 +67,11 @@ type SplitDeliveryData struct {
    DownloadURL String
 }
 
-func (s SplitDeliveryData) GetID() string {
-   return string(s.ID)
-}
-
-func (s SplitDeliveryData) GetURL() string {
-   return string(s.DownloadURL)
+func (s SplitDeliveryData) Name(app string, ver uint64) string {
+   if s.ID != "" {
+      return fmt.Sprint(app, "-", s.ID, "-", ver, ".apk")
+   }
+   return fmt.Sprint(app, "-", ver, ".apk")
 }
 
 type Token struct {

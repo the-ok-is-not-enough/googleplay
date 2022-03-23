@@ -5,37 +5,29 @@ import (
    "github.com/89z/format"
    "net/http"
    "os"
-   "strconv"
    "time"
    gp "github.com/89z/googleplay"
 )
 
-func filename(app, id string, ver uint64) string {
-   var buf []byte
-   buf = append(buf, app...)
-   buf = append(buf, '-')
-   if id != "" {
-      buf = append(buf, id...)
-      buf = append(buf, '-')
-   }
-   buf = strconv.AppendUint(buf, ver, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
-}
-
 func doDelivery(head *gp.Header, app string, ver uint64) error {
-   del, err := head.Delivery(app, gp.Varint(ver))
+   del, err := head.Delivery(app, ver)
    if err != nil {
       return err
    }
-   dst := filename(app, "", ver)
-   if err := download(del.GetURL(), dst); err != nil {
-      return err
-   }
-   for _, split := range del.SplitDeliveryData {
-      dst := filename(app, split.GetID(), ver)
-      err := download(split.GetURL(), dst)
+   for _, data := range del.Data() {
+      fmt.Println("GET", data.DownloadURL)
+      res, err := http.Get(string(data.DownloadURL))
       if err != nil {
+         return err
+      }
+      defer res.Body.Close()
+      file, err := os.Create(data.Name(app, ver))
+      if err != nil {
+         return err
+      }
+      defer file.Close()
+      pro := format.NewProgress(res)
+      if _, err := file.ReadFrom(pro); err != nil {
          return err
       }
    }
@@ -66,25 +58,6 @@ func doToken(email, password string) error {
       return err
    }
    return tok.Create(cache, "googleplay/token.json")
-}
-
-func download(src, dst string) error {
-   fmt.Println("GET", src)
-   res, err := http.Get(src)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   file, err := os.Create(dst)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   pro := format.NewProgress(res)
-   if _, err := file.ReadFrom(pro); err != nil {
-      return err
-   }
-   return nil
 }
 
 func newHeader(single bool) (*gp.Header, error) {

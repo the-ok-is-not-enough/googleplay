@@ -43,7 +43,8 @@ func TestDetails(t *testing.T) {
 }
 
 type app struct {
-   down, id string
+   down string
+   id string
    ver uint64
 }
 
