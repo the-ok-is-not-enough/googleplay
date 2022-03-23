@@ -34,9 +34,11 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   status := responseWrapper.Get(/* payload */ 1).
-      Get(/* deliveryResponse */ 21).
-      GetVarint(1)
+   // .payload.deliveryResponse.status
+   status, err := responseWrapper.Get(1).Get(21).GetVarint(1)
+   if err != nil {
+      return nil, err
+   }
    switch status {
    case 2:
       return nil, errorString("Geo-blocking")
@@ -45,15 +47,24 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    case 5:
       return nil, errorString("Invalid version")
    }
-   appData := responseWrapper.Get(/* payload */ 1).
-      Get(/* deliveryResponse */ 21).
-      Get(/* appDeliveryData */ 2)
+   // .payload.deliveryResponse.appDeliveryData
+   appData := responseWrapper.Get(1).Get(21).Get(2)
    var del Delivery
-   del.DownloadURL = appData.GetString(3)
-   for _, data := range appData.GetMessages(/* splitDeliveryData */ 15) {
+   del.DownloadURL, err = appData.GetString(3)
+   if err != nil {
+      return nil, err
+   }
+   // .splitDeliveryData
+   for _, data := range appData.GetMessages(15) {
       var split SplitDeliveryData
-      split.ID = data.GetString(1)
-      split.DownloadURL = data.GetString(5)
+      split.ID, err = data.GetString(1)
+      if err != nil {
+         return nil, err
+      }
+      split.DownloadURL, err = data.GetString(5)
+      if err != nil {
+         return nil, err
+      }
       del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
    return &del, nil
@@ -80,35 +91,55 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   docV2 := responseWrapper.Get(/* payload */ 1).
-      Get(/* detailsResponse */ 2).
-      Get(4)
+   // .payload.detailsResponse.docV2
+   docV2 := responseWrapper.Get(1).Get(2).Get(4)
    var det Details
-   det.CurrencyCode = docV2.Get(/* offer */ 8).GetString(2)
-   elems := docV2.Get(/* details */ 13).
-      Get(/* appDetails */ 1).
-      GetMessages(/* file */ 17)
-   det.Files = len(elems)
-   det.Micros = docV2.Get(/* offer */ 8).GetVarint(1)
-   det.NumDownloads = docV2.Get(/* details */ 13).
-      Get(/* appDetails */ 1).
-      GetVarint(70)
+   // .offer.currencyCode
+   det.CurrencyCode, err = docV2.Get(8).GetString(2)
+   if err != nil {
+      return nil, err
+   }
+   // .details.appDetails.file
+   files := docV2.Get(13).Get(1).GetMessages(17)
+   det.Files = len(files)
+   // .offer.micros
+   det.Micros, err = docV2.Get(8).GetVarint(1)
+   if err != nil {
+      return nil, err
+   }
+   // I dont know the name of field 70
+   // .details.appDetails
+   det.NumDownloads, err = docV2.Get(13).Get(1).GetVarint(70)
+   if err != nil {
+      return nil, err
+   }
    // The shorter path 13,1,9 returns wrong size for some packages:
    // com.riotgames.league.wildriftvn
-   det.Size = docV2.Get(/* details */ 13).
-      Get(/* appDetails */ 1).
-      Get(/* installDetails */ 34).
-      GetVarint(2)
-   det.Title = docV2.GetString(5)
-   det.UploadDate = docV2.Get(/* details */ 13).
-      Get(/* appDetails */ 1).
-      GetString(16)
-   det.VersionCode = docV2.Get(/* details */ 13).
-      Get(/* appDetails */ 1).
-      GetVarint(3)
-   det.VersionString = docV2.Get(/* details */ 13).
-      Get(/* appDetails */ 1).
-      GetString(4)
+   // .details.appDetails.installDetails.size
+   det.Size, err = docV2.Get(13).Get(1).Get(34).GetVarint(2)
+   if err != nil {
+      return nil, err
+   }
+   // .title
+   det.Title, err = docV2.GetString(5)
+   if err != nil {
+      return nil, err
+   }
+   // .details.appDetails.uploadDate
+   det.UploadDate, err = docV2.Get(13).Get(1).GetString(16)
+   if err != nil {
+      return nil, err
+   }
+   // .details.appDetails.versionCode
+   det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
+   if err != nil {
+      return nil, err
+   }
+   // .details.appDetails.versionString
+   det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
+   if err != nil {
+      return nil, err
+   }
    return &det, nil
 }
 

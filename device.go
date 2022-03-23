@@ -80,23 +80,23 @@ var DefaultConfig = Config{
 // A Sleep is needed after this.
 func (c Config) Checkin() (*Device, error) {
    checkin := Message{
-      /* checkin */ 4: Message{
-         /* build */ 1: Message{
-            /* sdkVersion */ 10: Varint(29),
+      4: Message{ // checkin
+         1: Message{ // build
+            10: Varint(29), // sdkVersion
          },
       },
-      /* version */ 14: Varint(3),
-      /* deviceConfiguration */ 18: Message{
-         1: c.TouchScreen,
-         2: c.Keyboard,
-         3: c.Navigation,
-         4: c.ScreenLayout,
-         5: c.HasHardKeyboard,
-         6: c.HasFiveWayNavigation,
-         7: c.ScreenDensity,
-         8: c.GLESversion,
-         9: c.SystemSharedLibrary,
-         15: c.GLextension,
+      14: Varint(3), // version
+      18: Message{ // deviceConfiguration
+         1: c.TouchScreen, // touchScreen
+         2: c.Keyboard, // keyboard
+         3: c.Navigation, // navigation
+         4: c.ScreenLayout, // screenLayout
+         5: c.HasHardKeyboard, // hasHardKeyboard
+         6: c.HasFiveWayNavigation, // hasFiveWayNavigation
+         7: c.ScreenDensity, // screenDensity
+         8: c.GLESversion, // glEsVersion
+         9: c.SystemSharedLibrary, // systemSharedLibrary
+         15: c.GLextension, // glExtension
       },
    }
    for _, platform := range c.NativePlatform {
@@ -124,8 +124,14 @@ func (c Config) Checkin() (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.AndroidID = checkinResponse.GetFixed64(7)
-   dev.TimeMsec = checkinResponse.GetVarint(3)
+   dev.AndroidID, err = checkinResponse.GetFixed64(7)
+   if err != nil {
+      return nil, err
+   }
+   dev.TimeMsec, err = checkinResponse.GetVarint(3)
+   if err != nil {
+      return nil, err
+   }
    return &dev, nil
 }
 

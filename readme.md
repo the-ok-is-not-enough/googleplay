@@ -15,25 +15,26 @@ Download APK from Google Play or send API requests
 
 ## How to install?
 
-This module works with Windows, macOS or Linux. Download Go from here:
+This module works with Windows, macOS or Linux. You can download, build and run
+in less than [one&nbsp;minute][2].
 
-https://golang.org/dl
-
-and extract archive. Then download GooglePlay:
-
-https://github.com/89z/googleplay/archive/refs/heads/master.zip
-
-and extract archive. Then navigate to `googleplay-master/cmd/googleplay`, and
+First, [download Go][3] and extract archive. Then [download GooglePlay][4] and
+extract archive. Then navigate to `googleplay-master/cmd/googleplay`, and
 enter:
 
 ~~~
 go build
 ~~~
 
+[2]://f002.backblazeb2.com/file/ql8mlh/googleplay.webm
+[3]://go.dev/dl
+[4]://github.com/89z/googleplay/archive/refs/heads/master.zip
+
+
 ## Tool examples
 
 If you are outside the United States, you might need to create an
-[App Password][2]. Create a file containing token (`aas_et`) for future
+[App Password][5]. Create a file containing token (`aas_et`) for future
 requests:
 
 ~~~
@@ -73,7 +74,7 @@ downloaded:
 googleplay -a com.google.android.youtube -v 1527109056
 ~~~
 
-[2]://support.google.com/accounts/answer/185833
+[5]://support.google.com/accounts/answer/185833
 
 ## API
 
