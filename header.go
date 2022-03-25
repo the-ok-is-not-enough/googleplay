@@ -50,6 +50,7 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    // .payload.deliveryResponse.appDeliveryData
    appData := responseWrapper.Get(1).Get(21).Get(2)
    var del Delivery
+   // downloadUrl
    del.DownloadURL, err = appData.GetString(3)
    if err != nil {
       return nil, err
