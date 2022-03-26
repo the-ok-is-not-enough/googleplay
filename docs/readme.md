@@ -1,5 +1,13 @@
 # Docs
 
+## APK to Java
+
+~~~
+jadx.bat com.pandora.android-21101001.apk
+~~~
+
+https://github.com/skylot/jadx
+
 ## App category
 
 https://github.com/89z/googleplay/tree/4ee083e441c3d183c9c1db9da006849630305ba6

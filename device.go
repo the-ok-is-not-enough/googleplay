@@ -19,7 +19,7 @@ type Config struct {
    Navigation Varint
    ScreenDensity Varint
    ScreenLayout Varint
-   SystemSharedLibrary String
+   SystemSharedLibrary []String
    TouchScreen Varint
 }
 
@@ -71,8 +71,10 @@ var DefaultConfig = Config{
       // com.exnoa.misttraingirls
       "arm64-v8a",
    },
-   // com.miui.weather2
-   SystemSharedLibrary: "global-miui11-empty.jar",
+   SystemSharedLibrary: []String{
+      // com.miui.weather2
+      "global-miui11-empty.jar",
+   },
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,
 }
@@ -95,9 +97,11 @@ func (c Config) Checkin() (*Device, error) {
          6: c.HasFiveWayNavigation, // hasFiveWayNavigation
          7: c.ScreenDensity, // screenDensity
          8: c.GLESversion, // glEsVersion
-         9: c.SystemSharedLibrary, // systemSharedLibrary
          15: c.GLextension, // glExtension
       },
+   }
+   for _, library := range c.SystemSharedLibrary {
+      checkin.Get(18).AddString(9, library)
    }
    for _, platform := range c.NativePlatform {
       checkin.Get(18).AddString(11, platform)

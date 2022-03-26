@@ -30,7 +30,6 @@ go build
 [3]://go.dev/dl
 [4]://github.com/89z/googleplay/archive/refs/heads/master.zip
 
-
 ## Tool examples
 
 If you are outside the United States, you might need to create an
