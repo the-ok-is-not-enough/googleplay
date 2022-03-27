@@ -41,6 +41,7 @@ func (d Delivery) Data() []SplitDeliveryData {
 
 type Details struct {
    Title String
+   Creator String
    UploadDate String
    VersionString String
    VersionCode Varint
@@ -53,6 +54,7 @@ type Details struct {
 
 func (d Details) Format(f fmt.State, verb rune) {
    fmt.Fprintln(f, "Title:", d.Title)
+   fmt.Fprintln(f, "Creator:", d.Creator)
    fmt.Fprintln(f, "UploadDate:", d.UploadDate)
    fmt.Fprintln(f, "VersionString:", d.VersionString)
    fmt.Fprintln(f, "VersionCode:", d.VersionCode)

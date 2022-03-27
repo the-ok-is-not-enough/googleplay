@@ -95,6 +95,11 @@ func (h Header) Details(app string) (*Details, error) {
    // .payload.detailsResponse.docV2
    docV2 := responseWrapper.Get(1).Get(2).Get(4)
    var det Details
+   // .creator
+   det.Creator, err = docV2.GetString(6)
+   if err != nil {
+      return nil, err
+   }
    // .offer.currencyCode
    det.CurrencyCode, err = docV2.Get(8).GetString(2)
    if err != nil {
