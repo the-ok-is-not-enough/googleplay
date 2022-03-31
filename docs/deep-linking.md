@@ -37,7 +37,8 @@ So only link with those host will get noticed by the app. In addition, some apps
 Finally, if you have `adb`, you can use it like this:
 
 ~~~
-adb shell am start -d https://www.pbs.org/video/american-horses-i5v309/
+adb shell am start -a android.intent.action.VIEW `
+-d https://abc.com/shows/greys-anatomy/episode-guide/season-18/12-the-makings-of-you
 ~~~
 
 1. https://github.com/skylot/jadx
