@@ -101,12 +101,15 @@ func (c Config) Checkin() (*Device, error) {
       },
    }
    for _, library := range c.SystemSharedLibrary {
+      // .deviceConfiguration.systemSharedLibrary
       checkin.Get(18).AddString(9, library)
    }
    for _, platform := range c.NativePlatform {
+      // .deviceConfiguration.nativePlatform
       checkin.Get(18).AddString(11, platform)
    }
    for _, name := range c.DeviceFeature {
+      // .deviceConfiguration.deviceFeature
       checkin.Get(18).Add(26, Message{1: name})
    }
    req, err := http.NewRequest(
@@ -128,10 +131,12 @@ func (c Config) Checkin() (*Device, error) {
       return nil, err
    }
    var dev Device
+   // .androidId
    dev.AndroidID, err = checkinResponse.GetFixed64(7)
    if err != nil {
       return nil, err
    }
+   // .timeMsec
    dev.TimeMsec, err = checkinResponse.GetVarint(3)
    if err != nil {
       return nil, err
