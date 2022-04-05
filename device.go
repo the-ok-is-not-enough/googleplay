@@ -7,23 +7,7 @@ import (
    "net/http"
 )
 
-// These can use default values, but they must all be included
-type Config struct {
-   DeviceFeature []String
-   GLESversion Varint
-   GLextension String
-   HasFiveWayNavigation Varint
-   HasHardKeyboard Varint
-   Keyboard Varint
-   NativePlatform []String
-   Navigation Varint
-   ScreenDensity Varint
-   ScreenLayout Varint
-   SystemSharedLibrary []String
-   TouchScreen Varint
-}
-
-var DefaultConfig = Config{
+var Phone = Config{
    DeviceFeature: []String{
       // com.google.android.GoogleCamera
       "android.hardware.camera.level.full",
@@ -77,6 +61,22 @@ var DefaultConfig = Config{
    },
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,
+}
+
+// These can use default values, but they must all be included
+type Config struct {
+   DeviceFeature []String
+   GLESversion Varint
+   GLextension String
+   HasFiveWayNavigation Varint
+   HasHardKeyboard Varint
+   Keyboard Varint
+   NativePlatform []String
+   Navigation Varint
+   ScreenDensity Varint
+   ScreenLayout Varint
+   SystemSharedLibrary []String
+   TouchScreen Varint
 }
 
 // A Sleep is needed after this.

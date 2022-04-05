@@ -9,6 +9,20 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doDevice() error {
+   dev, err := gp.Phone.Checkin()
+   if err != nil {
+      return err
+   }
+   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
+   time.Sleep(gp.Sleep)
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      return err
+   }
+   return dev.Create(cache, "googleplay/device.json")
+}
+
 func doDelivery(head *gp.Header, app string, ver uint64) error {
    del, err := head.Delivery(app, ver)
    if err != nil {
@@ -32,20 +46,6 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
       }
    }
    return nil
-}
-
-func doDevice() error {
-   dev, err := gp.DefaultConfig.Checkin()
-   if err != nil {
-      return err
-   }
-   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
-   time.Sleep(gp.Sleep)
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return err
-   }
-   return dev.Create(cache, "googleplay/device.json")
 }
 
 func doToken(email, password string) error {
