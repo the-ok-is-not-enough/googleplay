@@ -58,7 +58,7 @@ func (d Details) Format(f fmt.State, verb rune) {
    fmt.Fprintln(f, "UploadDate:", d.UploadDate)
    fmt.Fprintln(f, "VersionString:", d.VersionString)
    fmt.Fprintln(f, "VersionCode:", d.VersionCode)
-   fmt.Fprintln(f, "NumDownloads:", d.NumDownloads)
+   fmt.Fprintln(f, "NumDownloads:", format.LabelNumber(d.NumDownloads))
    fmt.Fprintln(f, "Size:", format.LabelSize(d.Size))
    fmt.Fprintln(f, "Files:", d.Files)
    fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)

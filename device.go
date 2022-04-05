@@ -7,13 +7,28 @@ import (
    "net/http"
 )
 
+// com.google.android.youtube.tv
+var TV = Config{
+   DeviceFeature: []String{
+      "android.software.leanback",
+      "android.hardware.screen.landscape",
+   },
+   GLESversion: 0x20000,
+   NativePlatform: []String{
+      "x86",
+   },
+}
+
 var Phone = Config{
    DeviceFeature: []String{
-      // com.google.android.GoogleCamera
-      "android.hardware.camera.level.full",
-      "com.google.android.feature.GOOGLE_EXPERIENCE",
       // com.google.android.apps.walletnfcrel
       "android.software.device_admin",
+      // com.google.android.apps.youtube.music.pwa
+      "org.chromium.arc",
+      // com.google.android.apps.youtube.vr
+      "android.hardware.sensor.gyroscope",
+      "android.hardware.vr.high_performance",
+      "android.software.vr.mode",
       // com.google.android.youtube
       "android.hardware.touchscreen",
       "android.hardware.wifi",

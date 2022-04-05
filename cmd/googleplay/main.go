@@ -31,6 +31,9 @@ func main() {
    // s
    var single bool
    flag.BoolVar(&single, "s", false, "single APK")
+   // t
+   var tv bool
+   flag.BoolVar(&tv, "t", false, "TV instead of Phone")
    // v
    var version uint64
    flag.Uint64Var(&version, "v", 0, "version")
@@ -47,12 +50,12 @@ func main() {
          panic(err)
       }
    } else if device {
-      err := doDevice()
+      err := doDevice(tv)
       if err != nil {
          panic(err)
       }
    } else if app != "" {
-      head, err := newHeader(single)
+      head, err := newHeader(tv, single)
       if err != nil {
          panic(err)
       }
