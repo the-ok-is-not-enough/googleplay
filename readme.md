@@ -51,12 +51,14 @@ Get app details:
 ~~~
 PS C:\> googleplay -a com.google.android.youtube
 Title: YouTube
-UploadDate: Jan 11, 2022
-VersionString: 17.02.34
-VersionCode: 1527109056
-NumDownloads: 11.124 B
-Size: 39.773 MB
-Offer: 0.00 USD
+Creator: Google LLC
+UploadDate: Mar 16, 2022
+VersionString: 17.11.34
+VersionCode: 1528288704
+NumDownloads: 11.562 B
+Size: 40.935 MB
+Files: 4
+Offer: 0 USD
 ~~~
 
 Purchase app. Only needs to be done once per Google account:
@@ -70,7 +72,7 @@ provided by the previous details command. If APK is split, all pieces will be
 downloaded:
 
 ~~~
-googleplay -a com.google.android.youtube -v 1527109056
+googleplay -a com.google.android.youtube -v 1528288704
 ~~~
 
 [5]://support.google.com/accounts/answer/185833

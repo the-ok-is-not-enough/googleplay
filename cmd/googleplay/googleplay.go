@@ -9,14 +9,21 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func doDevice(tv bool) error {
+func doDevice(tv, tablet bool) error {
    cache, err := os.UserCacheDir()
    if err != nil {
       return err
    }
-   config := gp.Phone
+   var (
+      config = gp.Phone
+      elem = "googleplay/phone.json"
+   )
    if tv {
       config = gp.TV
+      elem = "googleplay/tv.json"
+   } else if tablet {
+      config = gp.Tablet
+      elem = "googleplay/tablet.json"
    }
    device, err := config.Checkin()
    if err != nil {
@@ -24,10 +31,7 @@ func doDevice(tv bool) error {
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   if tv {
-      return device.Create(cache, "googleplay/tv.json")
-   }
-   return device.Create(cache, "googleplay/phone.json")
+   return device.Create(cache, elem)
 }
 
 func doDelivery(head *gp.Header, app string, ver uint64) error {
@@ -67,7 +71,7 @@ func doToken(email, password string) error {
    return tok.Create(cache, "googleplay/token.json")
 }
 
-func newHeader(tv, single bool) (*gp.Header, error) {
+func newHeader(tv, tablet, single bool) (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
       return nil, err
@@ -79,6 +83,8 @@ func newHeader(tv, single bool) (*gp.Header, error) {
    elem := "googleplay/phone.json"
    if tv {
       elem = "googleplay/tv.json"
+   } else if tablet {
+      elem = "googleplay/tablet.json"
    }
    device, err := gp.OpenDevice(cache, elem)
    if err != nil {

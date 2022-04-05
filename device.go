@@ -7,6 +7,14 @@ import (
    "net/http"
 )
 
+// com.google.android.apps.youtube.music.pwa
+var Tablet = Config{
+   DeviceFeature: []String{
+      "org.chromium.arc",
+      "android.hardware.touchscreen",
+   },
+}
+
 // com.google.android.youtube.tv
 var TV = Config{
    DeviceFeature: []String{
@@ -23,8 +31,6 @@ var Phone = Config{
    DeviceFeature: []String{
       // com.google.android.apps.walletnfcrel
       "android.software.device_admin",
-      // com.google.android.apps.youtube.music.pwa
-      "org.chromium.arc",
       // com.google.android.apps.youtube.vr
       "android.hardware.sensor.gyroscope",
       "android.hardware.vr.high_performance",

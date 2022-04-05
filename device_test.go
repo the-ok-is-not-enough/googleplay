@@ -6,6 +6,21 @@ import (
    "time"
 )
 
+func TestTabletCheckin(t *testing.T) {
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   tablet, err := Tablet.Checkin()
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := tablet.Create(cache, "googleplay/tablet.json"); err != nil {
+      t.Fatal(err)
+   }
+   time.Sleep(Sleep)
+}
+
 func TestTvCheckin(t *testing.T) {
    cache, err := os.UserCacheDir()
    if err != nil {

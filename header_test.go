@@ -7,6 +7,31 @@ import (
    "time"
 )
 
+func TestTabletDetails(t *testing.T) {
+   err := testDetails("googleplay/tablet.json", tabletApps)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+func TestTvDetails(t *testing.T) {
+   err := testDetails("googleplay/tv.json", tvApps)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+func TestPhoneDetails(t *testing.T) {
+   err := testDetails("googleplay/phone.json", phoneApps)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+var tabletApps = []app{
+   {id: "com.google.android.apps.youtube.music.pwa"},
+}
+
 var tvApps = []app{
    {id: "com.google.android.youtube.tv"},
 }
@@ -22,7 +47,6 @@ var phoneApps = []app{
    {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
    {down: "31.446 M", id: "com.xiaomi.smarthome"},
    {down: "30.702 M", id: "com.vimeo.android.videoapp"},
-   {down: "16.044 M", id: "com.google.android.apps.youtube.music.pwa"},
    {down: "13.832 M", id: "com.tgc.sky.android"},
    {down: "10.683 M", id: "com.google.android.apps.youtube.vr"},
    {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
@@ -39,20 +63,6 @@ type app struct {
    down string
    id string
    ver uint64
-}
-
-func TestTvDetails(t *testing.T) {
-   err := testDetails("googleplay/tv.json", tvApps)
-   if err != nil {
-      t.Fatal(err)
-   }
-}
-
-func TestPhoneDetails(t *testing.T) {
-   err := testDetails("googleplay/phone.json", phoneApps)
-   if err != nil {
-      t.Fatal(err)
-   }
 }
 
 func testDetails(device string, apps []app) error {
