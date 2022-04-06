@@ -15,15 +15,22 @@ var Tablet = Config{
    },
 }
 
-// com.google.android.youtube.tv
 var TV = Config{
    DeviceFeature: []String{
-      "android.software.leanback",
+      // com.google.android.youtube.googletv
+      "android.hardware.type.television",
+      "com.google.android.tv",
+      // com.google.android.youtube.tv
       "android.hardware.screen.landscape",
+      "android.software.leanback",
    },
+   // com.google.android.youtube.tv
    GLESversion: 0x20000,
    NativePlatform: []String{
+      // com.google.android.youtube.tv
       "x86",
+      //com.google.android.youtube.googletv
+      "armeabi",
    },
 }
 

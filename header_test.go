@@ -7,33 +7,13 @@ import (
    "time"
 )
 
-func TestTabletDetails(t *testing.T) {
-   err := testDetails("googleplay/tablet.json", tabletApps)
-   if err != nil {
-      t.Fatal(err)
-   }
-}
-
-func TestTvDetails(t *testing.T) {
-   err := testDetails("googleplay/tv.json", tvApps)
-   if err != nil {
-      t.Fatal(err)
-   }
-}
-
-func TestPhoneDetails(t *testing.T) {
-   err := testDetails("googleplay/phone.json", phoneApps)
-   if err != nil {
-      t.Fatal(err)
-   }
-}
-
 var tabletApps = []app{
    {id: "com.google.android.apps.youtube.music.pwa"},
 }
 
 var tvApps = []app{
-   {id: "com.google.android.youtube.tv"},
+   {down: "148.435 M", id: "com.google.android.youtube.tv"},
+   {down: "3.934 M", id: "com.google.android.youtube.googletv"},
 }
 
 var phoneApps = []app{
@@ -53,6 +33,27 @@ var phoneApps = []app{
    {down: "282.669 K", id: "com.smarty.voomvoom"},
    {down: "83.801 K", id: "com.exnoa.misttraingirls"},
    {down: "58.860 K", id: "se.pax.calima"},
+}
+
+func TestTabletDetails(t *testing.T) {
+   err := testDetails("googleplay/tablet.json", tabletApps)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+func TestTvDetails(t *testing.T) {
+   err := testDetails("googleplay/tv.json", tvApps)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+func TestPhoneDetails(t *testing.T) {
+   err := testDetails("googleplay/phone.json", phoneApps)
+   if err != nil {
+      t.Fatal(err)
+   }
 }
 
 func (a app) Error() string {
