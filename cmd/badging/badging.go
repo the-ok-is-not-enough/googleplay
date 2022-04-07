@@ -3,6 +3,7 @@ package main
 import (
    "flag"
    "fmt"
+   "os"
    "os/exec"
    "strings"
 )
@@ -16,7 +17,9 @@ func main() {
    flag.BoolVar(&verbose, "v", false, "verbose")
    flag.Parse()
    if name != "" {
-      buf, err := exec.Command("aapt", "dump", "badging", name).Output()
+      cmd := exec.Command("aapt", "dump", "badging", name)
+      cmd.Stderr = os.Stderr
+      buf, err := cmd.Output()
       if err != nil {
          panic(err)
       }

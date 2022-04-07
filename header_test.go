@@ -13,6 +13,7 @@ var tabletApps = []app{
 
 var tvApps = []app{
    {down: "148.435 M", id: "com.google.android.youtube.tv"},
+   {down: "4.755 M", id: "com.iqiyi.i18n.tv"},
    {down: "3.934 M", id: "com.google.android.youtube.googletv"},
 }
 

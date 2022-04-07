@@ -79,14 +79,6 @@ versionCode='80441400' versionName='6.1.14'
 - https://apkmirror.com/apk/google-inc/google-play-store
 - https://github.com/whyorean/GPlayApi/blob/master/src/main/proto/GooglePlay.proto
 
-## How to get TV apps?
-
-https://play.google.com/store/apps/details?id=com.iqiyi.i18n.tv
-
-In general, you can probably just get the regular app instead:
-
-https://play.google.com/store/apps/details?id=com.iqiyi.i18n
-
 ## How to install split APK?
 
 Bash:

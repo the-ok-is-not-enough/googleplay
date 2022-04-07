@@ -25,8 +25,8 @@ func main() {
       buf strings.Builder
       purchase bool
    )
-   buf.WriteString("Purchase app.")
-   buf.WriteString(" Only needs to be done once per Google account.")
+   buf.WriteString("Purchase app. ")
+   buf.WriteString("Only needs to be done once per Google account.")
    flag.BoolVar(&purchase, "purchase", false, buf.String())
    // s
    var single bool

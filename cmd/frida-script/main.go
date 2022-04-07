@@ -17,7 +17,7 @@ func main() {
       panic(err)
    }
    cache = filepath.Join(cache, "googleplay")
-   os.Mkdir(cache, os.ModeDir)
+   os.Mkdir(cache, os.ModePerm)
    cacheScript := filepath.Join(cache, filepath.Base(script))
    if len(os.Args) == 2 {
       pack := os.Args[1]
