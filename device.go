@@ -57,6 +57,8 @@ var Phone = Config{
       "arm64-v8a",
    },
    SystemSharedLibrary: []String{
+      // com.jackpocket
+      "android.test.runner",
       // com.miui.weather2
       "global-miui11-empty.jar",
    },

@@ -31,6 +31,7 @@ var phoneApps = []app{
    {down: "13.832 M", id: "com.tgc.sky.android"},
    {down: "10.683 M", id: "com.google.android.apps.youtube.vr"},
    {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
+   {down: "500.009 K", id: "com.jackpocket"},
    {down: "282.669 K", id: "com.smarty.voomvoom"},
    {down: "83.801 K", id: "com.exnoa.misttraingirls"},
    {down: "58.860 K", id: "se.pax.calima"},

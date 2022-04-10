@@ -58,10 +58,12 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    // .splitDeliveryData
    for _, data := range appData.GetMessages(15) {
       var split SplitDeliveryData
+      // .id
       split.ID, err = data.GetString(1)
       if err != nil {
          return nil, err
       }
+      // .downloadUrl
       split.DownloadURL, err = data.GetString(5)
       if err != nil {
          return nil, err
