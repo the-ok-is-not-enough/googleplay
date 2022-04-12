@@ -3,11 +3,37 @@ package main
 import (
    "fmt"
    "github.com/89z/format"
+   "io"
    "net/http"
    "os"
    "time"
    gp "github.com/89z/googleplay"
 )
+
+func doDelivery(head *gp.Header, app string, ver uint64) error {
+   del, err := head.Delivery(app, ver)
+   if err != nil {
+      return err
+   }
+   for _, data := range del.Data() {
+      fmt.Println("GET", data.DownloadURL)
+      res, err := http.Get(string(data.DownloadURL))
+      if err != nil {
+         return err
+      }
+      defer res.Body.Close()
+      file, err := os.Create(data.Name(app, ver))
+      if err != nil {
+         return err
+      }
+      defer file.Close()
+      pro := format.NewProgress(file, res.ContentLength)
+      if _, err := io.Copy(pro, res.Body); err != nil {
+         return err
+      }
+   }
+   return nil
+}
 
 func doDevice(tv, tablet bool) error {
    cache, err := os.UserCacheDir()
@@ -32,31 +58,6 @@ func doDevice(tv, tablet bool) error {
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
    return device.Create(cache, elem)
-}
-
-func doDelivery(head *gp.Header, app string, ver uint64) error {
-   del, err := head.Delivery(app, ver)
-   if err != nil {
-      return err
-   }
-   for _, data := range del.Data() {
-      fmt.Println("GET", data.DownloadURL)
-      res, err := http.Get(string(data.DownloadURL))
-      if err != nil {
-         return err
-      }
-      defer res.Body.Close()
-      file, err := os.Create(data.Name(app, ver))
-      if err != nil {
-         return err
-      }
-      defer file.Close()
-      pro := format.NewProgress(res)
-      if _, err := file.ReadFrom(pro); err != nil {
-         return err
-      }
-   }
-   return nil
 }
 
 func doToken(email, password string) error {
