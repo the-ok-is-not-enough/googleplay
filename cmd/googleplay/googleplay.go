@@ -21,14 +21,19 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
       if err != nil {
          return err
       }
-      defer res.Body.Close()
       file, err := os.Create(data.Name(app, ver))
       if err != nil {
          return err
       }
-      defer file.Close()
-      pro := format.NewProgress(file, res.ContentLength)
+      pro := format.NewProgress(file, 1)
+      pro.AddChunk(res.ContentLength)
       if _, err := io.Copy(pro, res.Body); err != nil {
+         return err
+      }
+      if err := res.Body.Close(); err != nil {
+         return err
+      }
+      if err := file.Close(); err != nil {
          return err
       }
    }
