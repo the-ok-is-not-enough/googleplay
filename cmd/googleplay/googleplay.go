@@ -25,8 +25,7 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
       if err != nil {
          return err
       }
-      pro := format.NewProgress(file, 1)
-      pro.AddChunk(res.ContentLength)
+      pro := format.ProgressBytes(file, res.ContentLength)
       if _, err := io.Copy(pro, res.Body); err != nil {
          return err
       }
