@@ -41,4 +41,7 @@ adb shell am start -a android.intent.action.VIEW `
 -d https://abc.com/shows/greys-anatomy/episode-guide/season-18/12-the-makings-of-you
 ~~~
 
+Note, in some cases you need to start the app at least once before trying a
+deep link.
+
 1. https://github.com/skylot/jadx

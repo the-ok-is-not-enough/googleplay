@@ -7,6 +7,29 @@ import (
    "time"
 )
 
+var phoneApps = []app{
+   {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
+   {down: "3.932 B", id: "com.instagram.android"},
+   {down: "975.149 M", id: "com.miui.weather2"},
+   {down: "689.574 M", id: "com.pinterest"},
+   {down: "422.289 M", id: "com.google.android.apps.walletnfcrel"},
+   {down: "282.147 M", id: "org.videolan.vlc"},
+   {down: "122.293 M", id: "br.com.rodrigokolb.realdrum"},
+   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
+   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
+   {down: "31.446 M", id: "com.xiaomi.smarthome"},
+   {down: "30.702 M", id: "com.vimeo.android.videoapp"},
+   {down: "19.079 M", id: "kr.sira.metal"},
+   {down: "13.832 M", id: "com.tgc.sky.android"},
+   {down: "10.683 M", id: "com.google.android.apps.youtube.vr"},
+   {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
+   {down: "2.244 M", id: "com.hamsterbeat.wallpapers.fx.panorama"},
+   {down: "500.009 K", id: "com.jackpocket"},
+   {down: "282.669 K", id: "com.smarty.voomvoom"},
+   {down: "83.801 K", id: "com.exnoa.misttraingirls"},
+   {down: "58.860 K", id: "se.pax.calima"},
+}
+
 var tabletApps = []app{
    {id: "com.google.android.apps.youtube.music.pwa"},
 }
@@ -15,26 +38,6 @@ var tvApps = []app{
    {down: "148.435 M", id: "com.google.android.youtube.tv"},
    {down: "4.755 M", id: "com.iqiyi.i18n.tv"},
    {down: "3.934 M", id: "com.google.android.youtube.googletv"},
-}
-
-var phoneApps = []app{
-   {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
-   {down: "3.932 B", id: "com.instagram.android"},
-   {down: "975.149 M", id: "com.miui.weather2"},
-   {down: "689.574 M", id: "com.pinterest"},
-   {down: "422.289 M", id: "com.google.android.apps.walletnfcrel"},
-   {down: "282.147 M", id: "org.videolan.vlc"},
-   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
-   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
-   {down: "31.446 M", id: "com.xiaomi.smarthome"},
-   {down: "30.702 M", id: "com.vimeo.android.videoapp"},
-   {down: "13.832 M", id: "com.tgc.sky.android"},
-   {down: "10.683 M", id: "com.google.android.apps.youtube.vr"},
-   {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
-   {down: "500.009 K", id: "com.jackpocket"},
-   {down: "282.669 K", id: "com.smarty.voomvoom"},
-   {down: "83.801 K", id: "com.exnoa.misttraingirls"},
-   {down: "58.860 K", id: "se.pax.calima"},
 }
 
 func TestTabletDetails(t *testing.T) {

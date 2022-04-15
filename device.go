@@ -9,6 +9,8 @@ import (
 
 var Phone = Config{
    DeviceFeature: []String{
+      // br.com.rodrigokolb.realdrum
+      "android.software.midi",
       // com.google.android.apps.walletnfcrel
       "android.software.device_admin",
       // com.google.android.apps.youtube.vr
@@ -18,6 +20,8 @@ var Phone = Config{
       // com.google.android.youtube
       "android.hardware.touchscreen",
       "android.hardware.wifi",
+      // com.hamsterbeat.wallpapers.fx.panorama
+      "android.software.live_wallpaper",
       // com.pinterest
       "android.hardware.camera",
       "android.hardware.location",
@@ -39,6 +43,8 @@ var Phone = Config{
       "android.hardware.bluetooth_le",
       "android.hardware.camera.autofocus",
       "android.hardware.usb.host",
+      // kr.sira.metal
+      "android.hardware.sensor.compass",
       // org.thoughtcrime.securesms
       "android.hardware.telephony",
       // se.pax.calima
