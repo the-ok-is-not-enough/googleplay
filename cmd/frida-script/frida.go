@@ -102,12 +102,11 @@ func downloadServer(server, dst string) error {
       return nil
    }
    fmt.Println("GET", server)
-   rHTTP, err := http.Get(server)
+   res, err := http.Get(server)
    if err != nil {
       return err
    }
-   defer rHTTP.Body.Close()
-   rXZ, err := xz.NewReader(rHTTP.Body, 0)
+   rXZ, err := xz.NewReader(res.Body, 0)
    if err != nil {
       return err
    }
@@ -115,11 +114,13 @@ func downloadServer(server, dst string) error {
    if err != nil {
       return err
    }
-   defer file.Close()
    if _, err := file.ReadFrom(rXZ); err != nil {
       return err
    }
-   return nil
+   if err := res.Body.Close(); err != nil {
+      return err
+   }
+   return file.Close()
 }
 
 func stem(s string) string {
