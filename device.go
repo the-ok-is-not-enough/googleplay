@@ -72,35 +72,6 @@ var Phone = Config{
    TouchScreen: 3,
 }
 
-var TV = Config{
-   DeviceFeature: []String{
-      // com.google.android.youtube.googletv
-      "android.hardware.type.television",
-      "com.google.android.tv",
-      // com.google.android.youtube.tv
-      "android.hardware.screen.landscape",
-      "android.software.leanback",
-      // com.iqiyi.i18n.tv
-      "android.hardware.wifi",
-   },
-   // com.google.android.youtube.tv
-   GLESversion: 0x20000,
-   NativePlatform: []String{
-      // com.google.android.youtube.tv
-      "x86",
-      // com.iqiyi.i18n.tv
-      "armeabi-v7a",
-   },
-}
-
-// com.google.android.apps.youtube.music.pwa
-var Tablet = Config{
-   DeviceFeature: []String{
-      "org.chromium.arc",
-      "android.hardware.touchscreen",
-   },
-}
-
 // These can use default values, but they must all be included
 type Config struct {
    DeviceFeature []String

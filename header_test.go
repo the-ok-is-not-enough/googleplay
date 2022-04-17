@@ -30,30 +30,6 @@ var phoneApps = []app{
    {down: "58.860 K", id: "se.pax.calima"},
 }
 
-var tabletApps = []app{
-   {id: "com.google.android.apps.youtube.music.pwa"},
-}
-
-var tvApps = []app{
-   {down: "148.435 M", id: "com.google.android.youtube.tv"},
-   {down: "4.755 M", id: "com.iqiyi.i18n.tv"},
-   {down: "3.934 M", id: "com.google.android.youtube.googletv"},
-}
-
-func TestTabletDetails(t *testing.T) {
-   err := testDetails("googleplay/tablet.json", tabletApps)
-   if err != nil {
-      t.Fatal(err)
-   }
-}
-
-func TestTvDetails(t *testing.T) {
-   err := testDetails("googleplay/tv.json", tvApps)
-   if err != nil {
-      t.Fatal(err)
-   }
-}
-
 func TestPhoneDetails(t *testing.T) {
    err := testDetails("googleplay/phone.json", phoneApps)
    if err != nil {
