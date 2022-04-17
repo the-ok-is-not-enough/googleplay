@@ -7,71 +7,6 @@ import (
    "net/http"
 )
 
-var Phone = Config{
-   DeviceFeature: []String{
-      // br.com.rodrigokolb.realdrum
-      "android.software.midi",
-      // com.google.android.apps.walletnfcrel
-      "android.software.device_admin",
-      // com.google.android.apps.youtube.vr
-      "android.hardware.sensor.gyroscope",
-      "android.hardware.vr.high_performance",
-      "android.software.vr.mode",
-      // com.google.android.youtube
-      "android.hardware.touchscreen",
-      "android.hardware.wifi",
-      // com.hamsterbeat.wallpapers.fx.panorama
-      "android.software.live_wallpaper",
-      // com.pinterest
-      "android.hardware.camera",
-      "android.hardware.location",
-      "android.hardware.screen.portrait",
-      // com.smarty.voomvoom
-      "android.hardware.location.gps",
-      "android.hardware.sensor.accelerometer",
-      // com.tgc.sky.android
-      "android.hardware.touchscreen.multitouch",
-      "android.hardware.touchscreen.multitouch.distinct",
-      "android.hardware.vulkan.level",
-      "android.hardware.vulkan.version",
-      // org.videolan.vlc
-      "android.hardware.screen.landscape",
-      // com.vimeo.android.videoapp
-      "android.hardware.microphone",
-      // com.xiaomi.smarthome
-      "android.hardware.bluetooth",
-      "android.hardware.bluetooth_le",
-      "android.hardware.camera.autofocus",
-      "android.hardware.usb.host",
-      // kr.sira.metal
-      "android.hardware.sensor.compass",
-      // org.thoughtcrime.securesms
-      "android.hardware.telephony",
-      // se.pax.calima
-      "android.hardware.location.network",
-   },
-   // com.axis.drawingdesk.v3
-   GLESversion: 0x0003_0001,
-   // com.instagram.android
-   GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
-   NativePlatform: []String{
-      // com.vimeo.android.videoapp
-      "x86",
-      // com.axis.drawingdesk.v3
-      "armeabi-v7a",
-      // com.exnoa.misttraingirls
-      "arm64-v8a",
-   },
-   SystemSharedLibrary: []String{
-      // com.jackpocket
-      "android.test.runner",
-      // com.miui.weather2
-      "global-miui11-empty.jar",
-   },
-   // com.valvesoftware.android.steam.community
-   TouchScreen: 3,
-}
-
 // These can use default values, but they must all be included
 type Config struct {
    DeviceFeature []String
@@ -173,3 +108,68 @@ type Message = protobuf.Message
 type String = protobuf.String
 
 type Varint = protobuf.Varint
+
+var Phone = Config{
+   DeviceFeature: []String{
+      // br.com.rodrigokolb.realdrum
+      "android.software.midi",
+      // com.google.android.apps.walletnfcrel
+      "android.software.device_admin",
+      // com.google.android.apps.youtube.vr
+      "android.hardware.sensor.gyroscope",
+      "android.hardware.vr.high_performance",
+      "android.software.vr.mode",
+      // com.google.android.youtube
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
+      // com.hamsterbeat.wallpapers.fx.panorama
+      "android.software.live_wallpaper",
+      // com.pinterest
+      "android.hardware.camera",
+      "android.hardware.location",
+      "android.hardware.screen.portrait",
+      // com.smarty.voomvoom
+      "android.hardware.location.gps",
+      "android.hardware.sensor.accelerometer",
+      // com.tgc.sky.android
+      "android.hardware.touchscreen.multitouch",
+      "android.hardware.touchscreen.multitouch.distinct",
+      "android.hardware.vulkan.level",
+      "android.hardware.vulkan.version",
+      // org.videolan.vlc
+      "android.hardware.screen.landscape",
+      // com.vimeo.android.videoapp
+      "android.hardware.microphone",
+      // com.xiaomi.smarthome
+      "android.hardware.bluetooth",
+      "android.hardware.bluetooth_le",
+      "android.hardware.camera.autofocus",
+      "android.hardware.usb.host",
+      // kr.sira.metal
+      "android.hardware.sensor.compass",
+      // org.thoughtcrime.securesms
+      "android.hardware.telephony",
+      // se.pax.calima
+      "android.hardware.location.network",
+   },
+   // com.axis.drawingdesk.v3
+   GLESversion: 0x0003_0001,
+   // com.instagram.android
+   GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
+   SystemSharedLibrary: []String{
+      // com.jackpocket
+      "android.test.runner",
+      // com.miui.weather2
+      "global-miui11-empty.jar",
+   },
+   // com.valvesoftware.android.steam.community
+   TouchScreen: 3,
+   NativePlatform: []String{
+      // com.vimeo.android.videoapp
+      "x86",
+      // com.axis.drawingdesk.v3
+      "armeabi-v7a",
+      // com.exnoa.misttraingirls
+      "arm64-v8a",
+   },
+}

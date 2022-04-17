@@ -7,27 +7,45 @@ import (
    "time"
 )
 
+type app struct {
+   id string
+   nativeCode []string
+}
+
 var phoneApps = []app{
-   {down: "10.996 B", id: "com.google.android.youtube", ver: 1524221376},
-   {down: "3.932 B", id: "com.instagram.android"},
-   {down: "975.149 M", id: "com.miui.weather2"},
-   {down: "689.574 M", id: "com.pinterest"},
-   {down: "422.289 M", id: "com.google.android.apps.walletnfcrel"},
-   {down: "282.147 M", id: "org.videolan.vlc"},
-   {down: "122.293 M", id: "br.com.rodrigokolb.realdrum"},
-   {down: "95.910 M", id: "org.thoughtcrime.securesms"},
-   {down: "77.289 M", id: "com.valvesoftware.android.steam.community"},
-   {down: "31.446 M", id: "com.xiaomi.smarthome"},
-   {down: "30.702 M", id: "com.vimeo.android.videoapp"},
-   {down: "19.079 M", id: "kr.sira.metal"},
-   {down: "13.832 M", id: "com.tgc.sky.android"},
-   {down: "10.683 M", id: "com.google.android.apps.youtube.vr"},
-   {down: "9.419 M", id: "com.axis.drawingdesk.v3"},
-   {down: "2.244 M", id: "com.hamsterbeat.wallpapers.fx.panorama"},
-   {down: "500.009 K", id: "com.jackpocket"},
-   {down: "282.669 K", id: "com.smarty.voomvoom"},
-   {down: "83.801 K", id: "com.exnoa.misttraingirls"},
-   {down: "58.860 K", id: "se.pax.calima"},
+   {"br.com.rodrigokolb.realdrum", []string{
+      "arm64-v8a", "armeabi-v7a", "x86", "x86_64",
+   }},
+   {"com.google.android.apps.walletnfcrel", nil},
+   {"com.google.android.youtube", nil},
+   {"com.instagram.android", []string{
+      "x86",
+   }},
+   {"com.miui.weather2", []string{
+      "arm64-v8a", "armeabi", "armeabi-v7a",
+   }},
+   {"com.pinterest", nil},
+   {"com.valvesoftware.android.steam.community", nil},
+   {"com.xiaomi.smarthome", []string{
+      "arm64-v8a",
+   }},
+   {"org.thoughtcrime.securesms", []string{
+      "x86",
+   }},
+   {"org.videolan.vlc", []string{
+      "arm64-v8a",
+   }},
+   /////////////////////////////////////////////////////////////////////////////
+   {"com.vimeo.android.videoapp", nil},
+   {"kr.sira.metal", nil},
+   {"com.tgc.sky.android", nil},
+   {"com.google.android.apps.youtube.vr", nil},
+   {"com.axis.drawingdesk.v3", nil},
+   {"com.hamsterbeat.wallpapers.fx.panorama", nil},
+   {"com.jackpocket", nil},
+   {"com.smarty.voomvoom", nil},
+   {"com.exnoa.misttraingirls", nil},
+   {"se.pax.calima", nil},
 }
 
 func TestPhoneDetails(t *testing.T) {
@@ -39,12 +57,6 @@ func TestPhoneDetails(t *testing.T) {
 
 func (a app) Error() string {
    return a.id
-}
-
-type app struct {
-   down string
-   id string
-   ver uint64
 }
 
 func testDetails(device string, apps []app) error {
@@ -88,7 +100,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   del, err := head.Delivery(phoneApps[0].id, phoneApps[0].ver)
+   del, err := head.Delivery("com.google.android.youtube", 1524221376)
    if err != nil {
       t.Fatal(err)
    }
