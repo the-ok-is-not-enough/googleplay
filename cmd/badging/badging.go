@@ -29,6 +29,7 @@ func main() {
       for _, line := range lines {
          if verbose ||
          strings.HasPrefix(line, "  uses-feature:") ||
+         strings.HasPrefix(line, "  uses-gl-es:") ||
          strings.HasPrefix(line, "native-code:") ||
          strings.HasPrefix(line, "uses-library-not-required:") ||
          strings.HasPrefix(line, "uses-library:") {

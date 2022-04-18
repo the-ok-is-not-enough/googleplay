@@ -11,6 +11,12 @@ func main() {
    // a
    var app string
    flag.StringVar(&app, "a", "", "app")
+   // arm64
+   var arm64 bool
+   flag.BoolVar(&arm64, "arm64", false, "arm64-v8a")
+   // armeabi
+   var armeabi bool
+   flag.BoolVar(&armeabi, "armeabi", false, "armeabi-v7a")
    // d
    var device bool
    flag.BoolVar(&device, "d", false, "create device")
@@ -47,12 +53,12 @@ func main() {
          panic(err)
       }
    } else if device {
-      err := doDevice()
+      err := doDevice(armeabi, arm64)
       if err != nil {
          panic(err)
       }
    } else if app != "" {
-      head, err := newHeader(single)
+      head, err := newHeader(armeabi, arm64, single)
       if err != nil {
          panic(err)
       }

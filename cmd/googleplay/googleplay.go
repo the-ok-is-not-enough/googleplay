@@ -39,18 +39,29 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
    return nil
 }
 
-func doDevice() error {
+func doDevice(armeabi, arm64 bool) error {
    cache, err := os.UserCacheDir()
    if err != nil {
       return err
    }
-   device, err := gp.Phone.Checkin()
+   var (
+      elem = "googleplay/x86.json"
+      platform = gp.X86
+   )
+   if armeabi {
+      elem = "googleplay/armeabi.json"
+      platform = gp.Armeabi
+   } else if arm64 {
+      elem = "googleplay/arm64.json"
+      platform = gp.Arm64
+   }
+   device, err := gp.Phone.Checkin(platform)
    if err != nil {
       return err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   return device.Create(cache, "googleplay/phone.json")
+   return device.Create(cache, elem)
 }
 
 func doToken(email, password string) error {
@@ -65,7 +76,7 @@ func doToken(email, password string) error {
    return tok.Create(cache, "googleplay/token.json")
 }
 
-func newHeader(single bool) (*gp.Header, error) {
+func newHeader(armeabi, arm64, single bool) (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
       return nil, err
@@ -74,7 +85,13 @@ func newHeader(single bool) (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   device, err := gp.OpenDevice(cache, "googleplay/phone.json")
+   elem := "googleplay/x86.json"
+   if armeabi {
+      elem = "googleplay/armeabi.json"
+   } else if arm64 {
+      elem = "googleplay/arm64.json"
+   }
+   device, err := gp.OpenDevice(cache, elem)
    if err != nil {
       return nil, err
    }

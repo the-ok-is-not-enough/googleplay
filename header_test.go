@@ -7,36 +7,55 @@ import (
    "time"
 )
 
-type app struct {
-   date string
-   id string
-   nativeCode string
+var appsX86 = []app{
+   {"Apr 11, 2022", "com.instagram.android"},
+   {"Apr 11, 2022", "com.pinterest"},
+   {"Apr 12, 2022", "br.com.rodrigokolb.realdrum"},
+   {"Apr 4, 2022", "com.vimeo.android.videoapp"},
+   {"Apr 6, 2022", "org.thoughtcrime.securesms"},
+   {"Apr 7, 2022", "com.google.android.youtube"},
+   {"Feb 14, 2022", "org.videolan.vlc"},
+   {"Jun 1, 2021", "com.valvesoftware.android.steam.community"},
+   {"Mar 1, 2022", "kr.sira.metal"},
+   {"Mar 17, 2022", "com.google.android.apps.walletnfcrel"},
+   {"Mar 21, 2022", "com.jackpocket"},
+   {"May 22, 2021", "com.smarty.voomvoom"},
 }
 
-var phoneApps = []app{
-   {"Apr 11, 2022", "com.instagram.android", "x86"},
-   {"Apr 11, 2022", "com.pinterest", "x86"},
-   {"Apr 12, 2022", "br.com.rodrigokolb.realdrum", "x86"},
-   {"Apr 4, 2022", "com.vimeo.android.videoapp", "x86"},
-   {"Apr 6, 2022", "org.thoughtcrime.securesms", "x86"},
-   {"Apr 7, 2022", "com.google.android.youtube", "x86"},
-   {"Apr 8, 2022", "com.axis.drawingdesk.v3", "armeabi-v7a"},
-   {"Feb 14, 2022", "org.videolan.vlc", "x86"},
-   {"Jun 1, 2021", "com.valvesoftware.android.steam.community", "x86"},
-   {"Mar 1, 2022", "kr.sira.metal", "x86"},
-   {"Mar 14, 2022", "com.xiaomi.smarthome", "armeabi-v7a"},
-   {"Mar 17, 2022", "com.google.android.apps.walletnfcrel", "x86"},
-   {"Mar 21, 2022", "com.jackpocket", "x86"},
-   {"Mar 24, 2022", "com.miui.weather2", "armeabi-v7a"},
-   {"Mar 30, 2022", "com.exnoa.misttraingirls", "arm64-v8a"},
-   {"May 22, 2021", "com.smarty.voomvoom", "x86"},
+var appsArmeabi = []app{
+   {"Apr 8, 2022", "com.axis.drawingdesk.v3"},
+   {"Mar 14, 2022", "com.xiaomi.smarthome"},
+   {"Mar 24, 2022", "com.miui.weather2"},
 }
 
-func TestPhoneDetails(t *testing.T) {
-   err := testDetails("googleplay/phone.json", phoneApps)
+var appsArm64 = []app{
+   {"Mar 30, 2022", "com.exnoa.misttraingirls"},
+}
+
+func TestDetailsArm64(t *testing.T) {
+   err := testDetails("googleplay/arm64.json", appsArm64)
    if err != nil {
       t.Fatal(err)
    }
+}
+
+func TestDetailsArmeabi(t *testing.T) {
+   err := testDetails("googleplay/armeabi.json", appsArmeabi)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+func TestDetailsX86(t *testing.T) {
+   err := testDetails("googleplay/x86.json", appsX86)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+type app struct {
+   date string
+   id string
 }
 
 func (a app) Error() string {

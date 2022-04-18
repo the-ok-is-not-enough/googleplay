@@ -7,46 +7,16 @@ import (
    "net/http"
 )
 
-// These can use default values, but they must all be included
-type Config struct {
-   DeviceFeature []String
-   GLESversion Varint
-   GLextension String
-   HasFiveWayNavigation Varint
-   HasHardKeyboard Varint
-   Keyboard Varint
-   NativePlatform String
-   Navigation Varint
-   ScreenDensity Varint
-   ScreenLayout Varint
-   SystemSharedLibrary String
-   TouchScreen Varint
-}
-
-// com.exnoa.misttraingirls
-var Arm64 = Config{
-   NativePlatform: "arm64-v8a",
-}
-
-var Armeabi = Config{
-   NativePlatform: "armeabi-v7a",
-   // com.axis.drawingdesk.v3
-   GLESversion: 0x0003_0001,
-   // com.xiaomi.smarthome
-   DeviceFeature: []String{
-      "android.hardware.bluetooth",
-      "android.hardware.bluetooth_le",
-      "android.hardware.camera.autofocus",
-      "android.hardware.usb.host",
-   },
+const (
+   // com.exnoa.misttraingirls
+   Arm64 String = "arm64-v8a"
    // com.miui.weather2
-   SystemSharedLibrary: "global-miui11-empty.jar",
-}
+   Armeabi String = "armeabi-v7a"
+   // com.google.android.youtube
+   X86 String = "x86"
+)
 
-var X86 = Config{
-   NativePlatform: "x86",
-   // com.instagram.android
-   GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
+var Phone = Config{
    DeviceFeature: []String{
       // com.pinterest
       "android.hardware.camera",
@@ -70,15 +40,43 @@ var X86 = Config{
       // com.smarty.voomvoom
       "android.hardware.location.gps",
       "android.hardware.sensor.accelerometer",
+      // com.xiaomi.smarthome
+      "android.hardware.bluetooth",
+      "android.hardware.bluetooth_le",
+      "android.hardware.camera.autofocus",
+      "android.hardware.usb.host",
+   },
+   // com.axis.drawingdesk.v3
+   GLESversion: 0x0003_0001,
+   // com.instagram.android
+   GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
+   SystemSharedLibrary: []String{
+      // com.jackpocket
+      "android.test.runner",
+      // com.miui.weather2
+      "global-miui11-empty.jar",
    },
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,
-   // com.jackpocket
-   SystemSharedLibrary: "android.test.runner",
+}
+
+// These can use default values, but they must all be included
+type Config struct {
+   DeviceFeature []String
+   GLESversion Varint
+   GLextension String
+   HasFiveWayNavigation Varint
+   HasHardKeyboard Varint
+   Keyboard Varint
+   Navigation Varint
+   ScreenDensity Varint
+   ScreenLayout Varint
+   SystemSharedLibrary []String
+   TouchScreen Varint
 }
 
 // A Sleep is needed after this.
-func (c Config) Checkin() (*Device, error) {
+func (c Config) Checkin(platform String) (*Device, error) {
    checkin := Message{
       4: Message{ // checkin
          1: Message{ // build
@@ -95,10 +93,12 @@ func (c Config) Checkin() (*Device, error) {
          6: c.HasFiveWayNavigation, // hasFiveWayNavigation
          7: c.ScreenDensity, // screenDensity
          8: c.GLESversion, // glEsVersion
-         9: c.SystemSharedLibrary, // systemSharedLibrary
-         11: c.NativePlatform, // nativePlatform
+         11: platform,
          15: c.GLextension, // glExtension
       },
+   }
+   for _, library := range c.SystemSharedLibrary {
+      checkin.Get(18).AddString(9, library)
    }
    for _, name := range c.DeviceFeature {
       // .deviceConfiguration.deviceFeature
