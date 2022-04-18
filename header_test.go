@@ -8,44 +8,28 @@ import (
 )
 
 type app struct {
+   date string
    id string
-   nativeCode []string
+   nativeCode string
 }
 
 var phoneApps = []app{
-   {"br.com.rodrigokolb.realdrum", []string{
-      "arm64-v8a", "armeabi-v7a", "x86", "x86_64",
-   }},
-   {"com.google.android.apps.walletnfcrel", nil},
-   {"com.google.android.youtube", nil},
-   {"com.instagram.android", []string{
-      "x86",
-   }},
-   {"com.miui.weather2", []string{
-      "arm64-v8a", "armeabi", "armeabi-v7a",
-   }},
-   {"com.pinterest", nil},
-   {"com.valvesoftware.android.steam.community", nil},
-   {"com.xiaomi.smarthome", []string{
-      "arm64-v8a",
-   }},
-   {"org.thoughtcrime.securesms", []string{
-      "x86",
-   }},
-   {"org.videolan.vlc", []string{
-      "arm64-v8a",
-   }},
-   /////////////////////////////////////////////////////////////////////////////
-   {"com.vimeo.android.videoapp", nil},
-   {"kr.sira.metal", nil},
-   {"com.tgc.sky.android", nil},
-   {"com.google.android.apps.youtube.vr", nil},
-   {"com.axis.drawingdesk.v3", nil},
-   {"com.hamsterbeat.wallpapers.fx.panorama", nil},
-   {"com.jackpocket", nil},
-   {"com.smarty.voomvoom", nil},
-   {"com.exnoa.misttraingirls", nil},
-   {"se.pax.calima", nil},
+   {"Apr 11, 2022", "com.instagram.android", "x86"},
+   {"Apr 11, 2022", "com.pinterest", "x86"},
+   {"Apr 12, 2022", "br.com.rodrigokolb.realdrum", "x86"},
+   {"Apr 4, 2022", "com.vimeo.android.videoapp", "x86"},
+   {"Apr 6, 2022", "org.thoughtcrime.securesms", "x86"},
+   {"Apr 7, 2022", "com.google.android.youtube", "x86"},
+   {"Apr 8, 2022", "com.axis.drawingdesk.v3", "armeabi-v7a"},
+   {"Feb 14, 2022", "org.videolan.vlc", "x86"},
+   {"Jun 1, 2021", "com.valvesoftware.android.steam.community", "x86"},
+   {"Mar 1, 2022", "kr.sira.metal", "x86"},
+   {"Mar 14, 2022", "com.xiaomi.smarthome", "armeabi-v7a"},
+   {"Mar 17, 2022", "com.google.android.apps.walletnfcrel", "x86"},
+   {"Mar 21, 2022", "com.jackpocket", "x86"},
+   {"Mar 24, 2022", "com.miui.weather2", "armeabi-v7a"},
+   {"Mar 30, 2022", "com.exnoa.misttraingirls", "arm64-v8a"},
+   {"May 22, 2021", "com.smarty.voomvoom", "x86"},
 }
 
 func TestPhoneDetails(t *testing.T) {
