@@ -52,34 +52,37 @@ func main() {
       if err != nil {
          panic(err)
       }
-   } else if device {
-      err := doDevice(armeabi, arm64)
-      if err != nil {
-         panic(err)
-      }
-   } else if app != "" {
-      head, err := newHeader(armeabi, arm64, single)
-      if err != nil {
-         panic(err)
-      }
-      if purchase {
-         err := head.Purchase(app)
+   } else {
+      nat := newNative(armeabi, arm64)
+      if device {
+         err := nat.device()
          if err != nil {
             panic(err)
          }
-      } else if version >= 1 {
-         err := doDelivery(head, app, version)
+      } else if app != "" {
+         head, err := nat.header(single)
          if err != nil {
             panic(err)
+         }
+         if purchase {
+            err := head.Purchase(app)
+            if err != nil {
+               panic(err)
+            }
+         } else if version >= 1 {
+            err := doDelivery(head, app, version)
+            if err != nil {
+               panic(err)
+            }
+         } else {
+            det, err := head.Details(app)
+            if err != nil {
+               panic(err)
+            }
+            fmt.Println(det)
          }
       } else {
-         det, err := head.Details(app)
-         if err != nil {
-            panic(err)
-         }
-         fmt.Println(det)
+         flag.Usage()
       }
-   } else {
-      flag.Usage()
    }
 }

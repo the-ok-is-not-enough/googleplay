@@ -10,6 +10,18 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doToken(email, password string) error {
+   tok, err := gp.NewToken(email, password)
+   if err != nil {
+      return err
+   }
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      return err
+   }
+   return tok.Create(cache, "googleplay/token.json")
+}
+
 func doDelivery(head *gp.Header, app string, ver uint64) error {
    del, err := head.Delivery(app, ver)
    if err != nil {
@@ -39,44 +51,36 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
    return nil
 }
 
-func doDevice(armeabi, arm64 bool) error {
+type native struct {
+   path string
+   platform gp.String
+}
+
+func newNative(armeabi, arm64 bool) native {
+   if armeabi {
+      return native{"googleplay/armeabi.json", gp.Armeabi}
+   }
+   if arm64 {
+      return native{"googleplay/arm64.json", gp.Arm64}
+   }
+   return native{"googleplay/x86.json", gp.X86}
+}
+
+func (n native) device() error {
    cache, err := os.UserCacheDir()
    if err != nil {
       return err
    }
-   var (
-      elem = "googleplay/x86.json"
-      platform = gp.X86
-   )
-   if armeabi {
-      elem = "googleplay/armeabi.json"
-      platform = gp.Armeabi
-   } else if arm64 {
-      elem = "googleplay/arm64.json"
-      platform = gp.Arm64
-   }
-   device, err := gp.Phone.Checkin(platform)
+   device, err := gp.Phone.Checkin(n.platform)
    if err != nil {
       return err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   return device.Create(cache, elem)
+   return device.Create(cache, n.path)
 }
 
-func doToken(email, password string) error {
-   tok, err := gp.NewToken(email, password)
-   if err != nil {
-      return err
-   }
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return err
-   }
-   return tok.Create(cache, "googleplay/token.json")
-}
-
-func newHeader(armeabi, arm64, single bool) (*gp.Header, error) {
+func (n native) header(single bool) (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
       return nil, err
@@ -85,13 +89,7 @@ func newHeader(armeabi, arm64, single bool) (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   elem := "googleplay/x86.json"
-   if armeabi {
-      elem = "googleplay/armeabi.json"
-   } else if arm64 {
-      elem = "googleplay/arm64.json"
-   }
-   device, err := gp.OpenDevice(cache, elem)
+   device, err := gp.OpenDevice(cache, n.path)
    if err != nil {
       return nil, err
    }

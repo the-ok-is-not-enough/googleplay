@@ -93,7 +93,7 @@ func (c Config) Checkin(platform String) (*Device, error) {
          6: c.HasFiveWayNavigation, // hasFiveWayNavigation
          7: c.ScreenDensity, // screenDensity
          8: c.GLESversion, // glEsVersion
-         11: platform,
+         11: platform, // nativePlatform
          15: c.GLextension, // glExtension
       },
    }
