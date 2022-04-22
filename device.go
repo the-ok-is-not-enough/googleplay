@@ -18,14 +18,14 @@ const (
 
 var Phone = Config{
    DeviceFeature: []String{
+      // com.clearchannel.iheartradio.controller
+      "android.hardware.microphone",
       // com.pinterest
       "android.hardware.camera",
       "android.hardware.location",
       "android.hardware.screen.portrait",
       // br.com.rodrigokolb.realdrum
       "android.software.midi",
-      // com.vimeo.android.videoapp
-      "android.hardware.microphone",
       // org.thoughtcrime.securesms
       "android.hardware.telephony",
       // com.google.android.youtube
