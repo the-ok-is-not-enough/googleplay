@@ -106,6 +106,10 @@ However note that this will still fail in some cases:
 
 https://issuetracker.google.com/issues/207399356
 
+## Picasso
+
+https://storage.googleapis.com/pub-tools-public-publication-data/pdf/45581.pdf
+
 ## Version history
 
 If you know the `versionCode`, you can get older APK [1]. Here is one from 2014:
