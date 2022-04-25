@@ -18,33 +18,32 @@ const (
 
 var Phone = Config{
    DeviceFeature: []String{
+      // br.com.rodrigokolb.realdrum
+      "android.software.midi",
       // com.clearchannel.iheartradio.controller
       "android.hardware.microphone",
+      // com.google.android.apps.walletnfcrel
+      "android.software.device_admin",
+      // com.google.android.youtube
+      "android.hardware.touchscreen",
+      "android.hardware.wifi",
+      // com.jackpocket
+      "android.hardware.location.gps",
       // com.pinterest
       "android.hardware.camera",
       "android.hardware.location",
       "android.hardware.screen.portrait",
-      // br.com.rodrigokolb.realdrum
-      "android.software.midi",
-      // org.thoughtcrime.securesms
-      "android.hardware.telephony",
-      // com.google.android.youtube
-      "android.hardware.touchscreen",
-      "android.hardware.wifi",
-      // org.videolan.vlc
-      "android.hardware.screen.landscape",
-      // kr.sira.metal
-      "android.hardware.sensor.compass",
-      // com.google.android.apps.walletnfcrel
-      "android.software.device_admin",
-      // com.smarty.voomvoom
-      "android.hardware.location.gps",
-      "android.hardware.sensor.accelerometer",
       // com.xiaomi.smarthome
       "android.hardware.bluetooth",
       "android.hardware.bluetooth_le",
       "android.hardware.camera.autofocus",
       "android.hardware.usb.host",
+      // kr.sira.metal
+      "android.hardware.sensor.compass",
+      // org.thoughtcrime.securesms
+      "android.hardware.telephony",
+      // org.videolan.vlc
+      "android.hardware.screen.landscape",
    },
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
