@@ -32,9 +32,9 @@ go build
 
 ## Tool examples
 
-If you are outside the United States, you might need to create an
-[App Password][5]. Create a file containing token (`aas_et`) for future
-requests:
+Make sure the Google account you use, has accepted the Google Play terms and
+conditions, before trying these examples. Create a file containing token
+(`aas_et`) for future requests:
 
 ~~~
 googleplay -e EMAIL -p PASSWORD
@@ -75,12 +75,10 @@ downloaded:
 googleplay -a com.google.android.youtube -v 1528288704
 ~~~
 
-[5]://support.google.com/accounts/answer/185833
-
 ## Sponsor
 
 I really need help financially, so if you are able, please donate using the
-sponsor link. If you cannot use Paypal, let me know, and I can see about adding
+sponsor link. If you cannot use PayPal, let me know, and I can see about adding
 other methods. Thank you!
 
 ## API
