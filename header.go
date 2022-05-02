@@ -168,8 +168,9 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
+   defer res.Body.Close()
    if res.StatusCode != http.StatusOK {
       return errorString(res.Status)
    }
-   return res.Body.Close()
+   return nil
 }

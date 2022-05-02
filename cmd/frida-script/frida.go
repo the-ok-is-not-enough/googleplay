@@ -106,6 +106,7 @@ func downloadServer(server, dst string) error {
    if err != nil {
       return err
    }
+   defer res.Body.Close()
    rXZ, err := xz.NewReader(res.Body, 0)
    if err != nil {
       return err
@@ -114,13 +115,11 @@ func downloadServer(server, dst string) error {
    if err != nil {
       return err
    }
+   defer file.Close()
    if _, err := file.ReadFrom(rXZ); err != nil {
       return err
    }
-   if err := res.Body.Close(); err != nil {
-      return err
-   }
-   return file.Close()
+   return nil
 }
 
 func stem(s string) string {
