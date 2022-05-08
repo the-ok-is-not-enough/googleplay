@@ -25,7 +25,6 @@ var testApps = map[string][]app{
       {"Apr 1, 2022", "com.clearchannel.iheartradio.controller"},
       {"Apr 6, 2022", "org.thoughtcrime.securesms"},
       {"Apr 7, 2022", "com.google.android.youtube"},
-      {"Apr 11, 2022", "com.instagram.android"},
       {"Apr 11, 2022", "com.pinterest"},
       {"Apr 12, 2022", "br.com.rodrigokolb.realdrum"},
    },

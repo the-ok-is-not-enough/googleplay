@@ -47,8 +47,6 @@ var Phone = Config{
    },
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
-   // com.instagram.android
-   GLextension: "GL_OES_compressed_ETC1_RGB8_texture",
    SystemSharedLibrary: []String{
       // com.jackpocket
       "android.test.runner",
