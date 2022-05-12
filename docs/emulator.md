@@ -10,20 +10,13 @@ to `App info`.
 
 First download the package [1]. Start the program, and click `More Actions`,
 `AVD Manager`, `Create Virtual Device`. On the `Select Hardware` screen, click
-`Next`. On the `System Image` screen, click `x86 Images`. Find this entry:
-
-Release Name | API Level | ABI | Target
--------------|-----------|-----|------------------------
-Pie          | 28        | x86 | Android 9 (Google APIs)
-
-If the APK you are using supports `x86`, then you can use lower versions down to
-API 24. If the APK you are using supports `arm64-v8a`, then you will need to use
-API 30 or higher [2]. Once you have chosen, click `Download`. Then click
-`Next`. On the `Android Virtual Device` screen, click `Finish`. On the `Your
-Virtual Devices` screen, click `Launch this AVD in the emulator`.
+`Next`. On the `System Image` screen, click `x86 Images`. If the APK you are
+using supports `x86`, then you can use lower versions down to API 24. Once you
+have chosen, click `Download`. Then click `Next`. On the `Android Virtual
+Device` screen, click `Finish`. On the `Your Virtual Devices` screen, click
+`Launch this AVD in the emulator`.
 
 1. https://developer.android.com/studio#downloads
-2. https://android.stackexchange.com/questions/222094/install-failed
 
 If you need to configure a proxy, in the emulator click `More`. On the
 `Extended Controls` screen, click `Settings`, `Proxy`. Uncheck `Use Android

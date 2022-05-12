@@ -56,12 +56,9 @@ type native struct {
    platform gp.String
 }
 
-func newNative(armeabi, arm64 bool) native {
+func newNative(armeabi bool) native {
    if armeabi {
       return native{"googleplay/armeabi.json", gp.Armeabi}
-   }
-   if arm64 {
-      return native{"googleplay/arm64.json", gp.Arm64}
    }
    return native{"googleplay/x86.json", gp.X86}
 }

@@ -8,8 +8,6 @@ import (
 )
 
 const (
-   // com.exnoa.misttraingirls
-   Arm64 String = "arm64-v8a"
    // com.miui.weather2
    Armeabi String = "armeabi-v7a"
    // com.google.android.youtube

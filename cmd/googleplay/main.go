@@ -11,9 +11,6 @@ func main() {
    // a
    var app string
    flag.StringVar(&app, "a", "", "app")
-   // arm64
-   var arm64 bool
-   flag.BoolVar(&arm64, "arm64", false, "arm64-v8a ABI")
    // armeabi
    var armeabi bool
    flag.BoolVar(&armeabi, "armeabi", false, "armeabi-v7a ABI")
@@ -53,7 +50,7 @@ func main() {
          panic(err)
       }
    } else {
-      nat := newNative(armeabi, arm64)
+      nat := newNative(armeabi)
       if device {
          err := nat.device()
          if err != nil {

@@ -109,6 +109,11 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
+   // .details.appDetails.installationSize
+   det.Size, err = docV2.Get(13).Get(1).GetVarint(9)
+   if err != nil {
+      return nil, err
+   }
    // .details.appDetails.uploadDate
    det.UploadDate, err = docV2.Get(13).Get(1).GetString(16)
    if err != nil {
@@ -117,13 +122,6 @@ func (h Header) Details(app string) (*Details, error) {
    // .details.appDetails.file
    files := docV2.Get(13).Get(1).GetMessages(17)
    det.Files = len(files)
-   // The shorter path 13,1,9 returns wrong size for some packages:
-   // com.riotgames.league.wildriftvn
-   // .details.appDetails.installDetails.size
-   det.Size, err = docV2.Get(13).Get(1).Get(34).GetVarint(2)
-   if err != nil {
-      return nil, err
-   }
    // The following fields should work with any ABI.
    // .title
    det.Title, err = docV2.GetString(5)

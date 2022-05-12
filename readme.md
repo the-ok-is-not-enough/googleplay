@@ -28,9 +28,10 @@ go build
 
 ## Tool examples
 
-Make sure the Google account you use, has accepted the Google Play terms and
-conditions, before trying these examples. Create a file containing token
-(`aas_et`) for future requests:
+Before trying these examples, make sure the Google account you are using has
+logged into the Play Store at least once before. Also you need to have accepted
+the Google Play terms and conditions. Create a file containing token (`aas_et`)
+for future requests:
 
 ~~~
 googleplay -e EMAIL -p PASSWORD

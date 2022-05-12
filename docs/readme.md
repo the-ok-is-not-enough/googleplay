@@ -100,7 +100,8 @@ This can happen when trying to install ARM app on `x86`. If the APK is
 `x86`. If the APK is `arm64-v8a`, then Android 11 (API 30) will work. Also the
 emulator should be `x86_64`.
 
-https://stackoverflow.com/questions/36414219/install-failed-no-matching-abis
+- https://android.stackexchange.com/questions/222094/install-failed
+- https://stackoverflow.com/questions/36414219/install-failed-no-matching-abis
 
 However note that this will still fail in some cases:
 

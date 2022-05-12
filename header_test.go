@@ -8,9 +8,6 @@ import (
 )
 
 var testApps = map[string][]app{
-   "googleplay/arm64.json": {
-      {"Mar 30, 2022", "com.exnoa.misttraingirls"},
-   },
    "googleplay/armeabi.json": {
       {"Mar 14, 2022", "com.xiaomi.smarthome"},
       {"Mar 24, 2022", "com.miui.weather2"},

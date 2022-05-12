@@ -6,21 +6,6 @@ import (
    "time"
 )
 
-func TestCheckinArm64(t *testing.T) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      t.Fatal(err)
-   }
-   device, err := Phone.Checkin(Arm64)
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := device.Create(cache, "googleplay/arm64.json"); err != nil {
-      t.Fatal(err)
-   }
-   time.Sleep(Sleep)
-}
-
 func TestCheckinArmeabi(t *testing.T) {
    cache, err := os.UserCacheDir()
    if err != nil {
