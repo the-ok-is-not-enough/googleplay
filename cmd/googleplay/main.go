@@ -13,10 +13,10 @@ func main() {
    flag.StringVar(&app, "a", "", "app")
    // arm64
    var arm64 bool
-   flag.BoolVar(&arm64, "arm64", false, "arm64-v8a")
+   flag.BoolVar(&arm64, "arm64", false, "arm64-v8a ABI")
    // armeabi
    var armeabi bool
-   flag.BoolVar(&armeabi, "armeabi", false, "armeabi-v7a")
+   flag.BoolVar(&armeabi, "armeabi", false, "armeabi-v7a ABI")
    // d
    var device bool
    flag.BoolVar(&device, "d", false, "create device")

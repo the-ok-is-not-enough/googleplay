@@ -97,39 +97,15 @@ func (h Header) Details(app string) (*Details, error) {
    // .payload.detailsResponse.docV2
    docV2 := responseWrapper.Get(1).Get(2).Get(4)
    var det Details
-   // .creator
-   det.Creator, err = docV2.GetString(6)
+   // The following fields will fail with wrong ABI, so try them first. If the
+   // first one passes, then use native error for the rest.
+   // .details.appDetails.versionCode
+   det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
    if err != nil {
-      return nil, err
+      return nil, errorString("wrong ABI")
    }
-   // .offer.currencyCode
-   det.CurrencyCode, err = docV2.Get(8).GetString(2)
-   if err != nil {
-      return nil, err
-   }
-   // .details.appDetails.file
-   files := docV2.Get(13).Get(1).GetMessages(17)
-   det.Files = len(files)
-   // .offer.micros
-   det.Micros, err = docV2.Get(8).GetVarint(1)
-   if err != nil {
-      return nil, err
-   }
-   // I dont know the name of field 70
-   // .details.appDetails
-   det.NumDownloads, err = docV2.Get(13).Get(1).GetVarint(70)
-   if err != nil {
-      return nil, err
-   }
-   // The shorter path 13,1,9 returns wrong size for some packages:
-   // com.riotgames.league.wildriftvn
-   // .details.appDetails.installDetails.size
-   det.Size, err = docV2.Get(13).Get(1).Get(34).GetVarint(2)
-   if err != nil {
-      return nil, err
-   }
-   // .title
-   det.Title, err = docV2.GetString(5)
+   // .details.appDetails.versionString
+   det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
    if err != nil {
       return nil, err
    }
@@ -138,13 +114,40 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   // .details.appDetails.versionCode
-   det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
+   // .details.appDetails.file
+   files := docV2.Get(13).Get(1).GetMessages(17)
+   det.Files = len(files)
+   // The shorter path 13,1,9 returns wrong size for some packages:
+   // com.riotgames.league.wildriftvn
+   // .details.appDetails.installDetails.size
+   det.Size, err = docV2.Get(13).Get(1).Get(34).GetVarint(2)
    if err != nil {
       return nil, err
    }
-   // .details.appDetails.versionString
-   det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
+   // The following fields should work with any ABI.
+   // .title
+   det.Title, err = docV2.GetString(5)
+   if err != nil {
+      return nil, err
+   }
+   // .creator
+   det.Creator, err = docV2.GetString(6)
+   if err != nil {
+      return nil, err
+   }
+   // .offer.micros
+   det.Micros, err = docV2.Get(8).GetVarint(1)
+   if err != nil {
+      return nil, err
+   }
+   // .offer.currencyCode
+   det.CurrencyCode, err = docV2.Get(8).GetString(2)
+   if err != nil {
+      return nil, err
+   }
+   // I dont know the name of field 70
+   // .details.appDetails
+   det.NumDownloads, err = docV2.Get(13).Get(1).GetVarint(70)
    if err != nil {
       return nil, err
    }
