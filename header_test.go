@@ -15,6 +15,7 @@ var testApps = map[string][]app{
    },
    "googleplay/x86.json": {
       {"Jun 1, 2021", "com.valvesoftware.android.steam.community"},
+      {"Dec 8, 2021", "com.amctve.amcfullepisodes"},
       {"Feb 14, 2022", "org.videolan.vlc"},
       {"Mar 1, 2022", "kr.sira.metal"},
       {"Mar 17, 2022", "com.google.android.apps.walletnfcrel"},

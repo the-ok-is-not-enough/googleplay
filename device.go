@@ -46,6 +46,8 @@ var Phone = Config{
    // com.axis.drawingdesk.v3
    GLESversion: 0x0003_0001,
    SystemSharedLibrary: []String{
+      // com.amctve.amcfullepisodes
+      "org.apache.http.legacy",
       // com.jackpocket
       "android.test.runner",
       // com.miui.weather2
