@@ -29,6 +29,7 @@ func parseQuery(query io.Reader) url.Values {
 }
 
 type Delivery struct {
+   AdditionalFile String
    DownloadURL String
    SplitDeliveryData []SplitDeliveryData
 }

@@ -8,14 +8,28 @@ import (
 )
 
 const (
+   // com.kakaogames.twodin
+   Arm64 String = "arm64-v8a"
    // com.miui.weather2
    Armeabi String = "armeabi-v7a"
    // com.google.android.youtube
    X86 String = "x86"
-   
-   Arm64 String = "arm64-v8a"
-   
 )
+
+// These can use default values, but they must all be included
+type Config struct {
+   DeviceFeature []String
+   GlEsVersion Varint
+   GlExtension String
+   HasFiveWayNavigation Varint
+   HasHardKeyboard Varint
+   Keyboard Varint
+   Navigation Varint
+   ScreenDensity Varint
+   ScreenLayout Varint
+   SystemSharedLibrary []String
+   TouchScreen Varint
+}
 
 var Phone = Config{
    DeviceFeature: []String{
@@ -28,8 +42,6 @@ var Phone = Config{
       // com.google.android.youtube
       "android.hardware.touchscreen",
       "android.hardware.wifi",
-      // com.jackpocket
-      "android.hardware.location.gps",
       // com.pinterest
       "android.hardware.camera",
       "android.hardware.location",
@@ -53,28 +65,11 @@ var Phone = Config{
    SystemSharedLibrary: []String{
       // com.amctve.amcfullepisodes
       "org.apache.http.legacy",
-      // com.jackpocket
-      "android.test.runner",
       // com.miui.weather2
       "global-miui11-empty.jar",
    },
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,
-}
-
-// These can use default values, but they must all be included
-type Config struct {
-   DeviceFeature []String
-   HasFiveWayNavigation Varint
-   HasHardKeyboard Varint
-   Keyboard Varint
-   Navigation Varint
-   ScreenDensity Varint
-   ScreenLayout Varint
-   SystemSharedLibrary []String
-   TouchScreen Varint
-   GlEsVersion Varint
-   GlExtension String
 }
 
 // A Sleep is needed after this.

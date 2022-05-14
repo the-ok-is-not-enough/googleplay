@@ -9,7 +9,7 @@ import (
 
 var testApps = map[string][]app{
    "googleplay/arm64.json": {
-      {"", "com.kakaogames.twodin"},
+      {"May 9, 2022", "com.kakaogames.twodin"},
    },
    "googleplay/armeabi.json": {
       {"Mar 14, 2022", "com.xiaomi.smarthome"},
