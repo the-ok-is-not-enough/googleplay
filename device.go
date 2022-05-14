@@ -12,6 +12,9 @@ const (
    Armeabi String = "armeabi-v7a"
    // com.google.android.youtube
    X86 String = "x86"
+   
+   Arm64 String = "arm64-v8a"
+   
 )
 
 var Phone = Config{
@@ -44,7 +47,9 @@ var Phone = Config{
       "android.hardware.screen.landscape",
    },
    // com.axis.drawingdesk.v3
-   GLESversion: 0x0003_0001,
+   GlEsVersion: 0x0003_0001,
+   // com.kakaogames.twodin
+   GlExtension: "GL_KHR_texture_compression_astc_ldr",
    SystemSharedLibrary: []String{
       // com.amctve.amcfullepisodes
       "org.apache.http.legacy",
@@ -60,8 +65,6 @@ var Phone = Config{
 // These can use default values, but they must all be included
 type Config struct {
    DeviceFeature []String
-   GLESversion Varint
-   GLextension String
    HasFiveWayNavigation Varint
    HasHardKeyboard Varint
    Keyboard Varint
@@ -70,6 +73,8 @@ type Config struct {
    ScreenLayout Varint
    SystemSharedLibrary []String
    TouchScreen Varint
+   GlEsVersion Varint
+   GlExtension String
 }
 
 // A Sleep is needed after this.
@@ -89,9 +94,9 @@ func (c Config) Checkin(platform String) (*Device, error) {
          5: c.HasHardKeyboard, // hasHardKeyboard
          6: c.HasFiveWayNavigation, // hasFiveWayNavigation
          7: c.ScreenDensity, // screenDensity
-         8: c.GLESversion, // glEsVersion
+         8: c.GlEsVersion, // glEsVersion
          11: platform, // nativePlatform
-         15: c.GLextension, // glExtension
+         15: c.GlExtension, // glExtension
       },
    }
    for _, library := range c.SystemSharedLibrary {
