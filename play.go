@@ -5,6 +5,7 @@ import (
    "fmt"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
+   "github.com/89z/format/protobuf"
    "io"
    "net/http"
    "net/url"
@@ -26,55 +27,6 @@ func parseQuery(query io.Reader) url.Values {
       }
    }
    return vals
-}
-
-type Delivery struct {
-   AdditionalFile String
-   DownloadURL String
-   SplitDeliveryData []SplitDeliveryData
-}
-
-func (d Delivery) Data() []SplitDeliveryData {
-   datas := d.SplitDeliveryData
-   data := SplitDeliveryData{DownloadURL: d.DownloadURL}
-   return append(datas, data)
-}
-
-type Details struct {
-   Title String
-   Creator String
-   UploadDate String
-   VersionString String
-   VersionCode Varint
-   NumDownloads Varint
-   Size Varint
-   Files int
-   Micros Varint
-   CurrencyCode String
-}
-
-func (d Details) Format(f fmt.State, verb rune) {
-   fmt.Fprintln(f, "Title:", d.Title)
-   fmt.Fprintln(f, "Creator:", d.Creator)
-   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
-   fmt.Fprintln(f, "VersionString:", d.VersionString)
-   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
-   fmt.Fprintln(f, "NumDownloads:", format.LabelNumber(d.NumDownloads))
-   fmt.Fprintln(f, "Size:", format.LabelSize(d.Size))
-   fmt.Fprintln(f, "Files:", d.Files)
-   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
-}
-
-type SplitDeliveryData struct {
-   ID String
-   DownloadURL String
-}
-
-func (s SplitDeliveryData) Name(app string, ver uint64) string {
-   if s.ID != "" {
-      return fmt.Sprint(app, "-", s.ID, "-", ver, ".apk")
-   }
-   return fmt.Sprint(app, "-", ver, ".apk")
 }
 
 type Token struct {
@@ -179,4 +131,62 @@ type errorString string
 
 func (e errorString) Error() string {
    return string(e)
+}
+
+const (
+   // com.kakaogames.twodin
+   Arm64 String = "arm64-v8a"
+   // com.miui.weather2
+   Armeabi String = "armeabi-v7a"
+   // com.google.android.youtube
+   X86 String = "x86"
+)
+
+type Device struct {
+   AndroidID Fixed64
+   TimeMsec Varint
+}
+
+func OpenDevice(elem ...string) (*Device, error) {
+   return format.Open[Device](elem...)
+}
+
+func (d Device) Create(elem ...string) error {
+   return format.Create(d, elem...)
+}
+
+type Fixed64 = protobuf.Fixed64
+
+type Message = protobuf.Message
+
+type String = protobuf.String
+
+type Varint = protobuf.Varint
+
+type Header struct {
+   http.Header
+}
+
+// Purchase app. Only needs to be done once per Google account.
+func (h Header) Purchase(app string) error {
+   query := "doc=" + url.QueryEscape(app)
+   req, err := http.NewRequest(
+      "POST", "https://android.clients.google.com/fdfe/purchase",
+      strings.NewReader(query),
+   )
+   if err != nil {
+      return err
+   }
+   h.Set("Content-Type", "application/x-www-form-urlencoded")
+   req.Header = h.Header
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return errorString(res.Status)
+   }
+   return nil
 }
