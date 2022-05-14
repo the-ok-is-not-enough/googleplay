@@ -5,7 +5,6 @@ import (
    "fmt"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
-   "github.com/89z/format/protobuf"
    "io"
    "net/http"
    "net/url"
@@ -86,7 +85,7 @@ func (t Token) SingleAPK(dev *Device) (*Header, error) {
    return t.headerVersion(dev, 8091_9999)
 }
 
-func (t Token) headerVersion(dev *Device, version int64) (*Header, error) {
+func (t Token) headerVersion(dev *Device, version int) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -132,36 +131,6 @@ type errorString string
 func (e errorString) Error() string {
    return string(e)
 }
-
-const (
-   // com.kakaogames.twodin
-   Arm64 String = "arm64-v8a"
-   // com.miui.weather2
-   Armeabi String = "armeabi-v7a"
-   // com.google.android.youtube
-   X86 String = "x86"
-)
-
-type Device struct {
-   AndroidID Fixed64
-   TimeMsec Varint
-}
-
-func OpenDevice(elem ...string) (*Device, error) {
-   return format.Open[Device](elem...)
-}
-
-func (d Device) Create(elem ...string) error {
-   return format.Create(d, elem...)
-}
-
-type Fixed64 = protobuf.Fixed64
-
-type Message = protobuf.Message
-
-type String = protobuf.String
-
-type Varint = protobuf.Varint
 
 type Header struct {
    http.Header

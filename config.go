@@ -2,8 +2,18 @@ package googleplay
 
 import (
    "bytes"
+   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
+)
+
+const (
+   // com.kakaogames.twodin
+   Arm64 String = "arm64-v8a"
+   // com.miui.weather2
+   Armeabi String = "armeabi-v7a"
+   // com.google.android.youtube
+   X86 String = "x86"
 )
 
 // These can use default values, but they must all be included
@@ -121,4 +131,17 @@ func (c Config) Checkin(platform String) (*Device, error) {
       return nil, err
    }
    return &dev, nil
+}
+
+type Device struct {
+   AndroidID Fixed64
+   TimeMsec Varint
+}
+
+func OpenDevice(elem ...string) (*Device, error) {
+   return format.Open[Device](elem...)
+}
+
+func (d Device) Create(elem ...string) error {
+   return format.Create(d, elem...)
 }

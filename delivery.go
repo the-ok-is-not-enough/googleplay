@@ -8,31 +8,6 @@ import (
    "strconv"
 )
 
-
-type Delivery struct {
-   AdditionalFile String
-   DownloadURL String
-   SplitDeliveryData []SplitDeliveryData
-}
-
-func (d Delivery) Data() []SplitDeliveryData {
-   datas := d.SplitDeliveryData
-   data := SplitDeliveryData{DownloadURL: d.DownloadURL}
-   return append(datas, data)
-}
-
-type SplitDeliveryData struct {
-   ID String
-   DownloadURL String
-}
-
-func (s SplitDeliveryData) Name(app string, ver uint64) string {
-   if s.ID != "" {
-      return fmt.Sprint(app, "-", s.ID, "-", ver, ".apk")
-   }
-   return fmt.Sprint(app, "-", ver, ".apk")
-}
-
 func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -71,10 +46,18 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    // .payload.deliveryResponse.appDeliveryData
    appData := responseWrapper.Get(1).Get(21).Get(2)
    var del Delivery
-   // downloadUrl
+   // .downloadUrl
    del.DownloadURL, err = appData.GetString(3)
    if err != nil {
       return nil, err
+   }
+   // .additionalFile
+   if file := appData.Get(4); file != nil {
+      // .downloadUrl
+      del.AdditionalFile, err = file.GetString(4)
+      if err != nil {
+         return nil, err
+      }
    }
    // .splitDeliveryData
    for _, data := range appData.GetMessages(15) {
@@ -92,4 +75,36 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
    return &del, nil
+}
+
+type SplitDeliveryData struct {
+   ID String
+   DownloadURL String
+}
+
+func (s SplitDeliveryData) Name(app string, ver uint64) string {
+   if s.ID != "" {
+      return fmt.Sprint(app, "-", s.ID, "-", ver, ".apk")
+   }
+   return fmt.Sprint(app, "-", ver, ".apk")
+}
+
+type Fixed64 = protobuf.Fixed64
+
+type Message = protobuf.Message
+
+type String = protobuf.String
+
+type Varint = protobuf.Varint
+
+type Delivery struct {
+   AdditionalFile String
+   DownloadURL String
+   SplitDeliveryData []SplitDeliveryData
+}
+
+func (d Delivery) Data() []SplitDeliveryData {
+   datas := d.SplitDeliveryData
+   data := SplitDeliveryData{DownloadURL: d.DownloadURL}
+   return append(datas, data)
 }
