@@ -39,10 +39,13 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
          return err
       }
    }
-   if err := download(del.DownloadURL, del.Download()); err != nil {
-      return err
+   for _, file := range del.AdditionalFile {
+      err := download(file.DownloadURL, del.Additional(file.FileType))
+      if err != nil {
+         return err
+      }
    }
-   return download(del.AdditionalFile, del.Additional())
+   return download(del.DownloadURL, del.Download())
 }
 
 func doToken(email, password string) error {

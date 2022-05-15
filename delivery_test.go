@@ -6,8 +6,21 @@ import (
    "testing"
 )
 
+/*
+1 APK:
+kr.sira.metal
+
+4 APK:
+com.pinterest
+
+1 OBB:
+com.PirateBayGames.ZombieDefense2
+
+2 OBB:
+com.sigmateam.alienshootermobile.free
+*/
 func TestDelivery(t *testing.T) {
-   head, err := newHeader("googleplay/phone.json")
+   head, err := newHeader("googleplay/x86.json")
    if err != nil {
       t.Fatal(err)
    }
@@ -23,13 +36,13 @@ func newHeader(device string) (*Header, error) {
    if err != nil {
       return nil, err
    }
-   tok, err := OpenToken(cache, "googleplay/token.json")
+   token, err := OpenToken(cache, "googleplay/token.json")
    if err != nil {
       return nil, err
    }
-   phone, err := OpenDevice(cache, device)
+   dev, err := OpenDevice(cache, device)
    if err != nil {
       return nil, err
    }
-   return tok.Header(phone)
+   return token.Header(dev)
 }

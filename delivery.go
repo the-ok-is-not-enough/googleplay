@@ -8,33 +8,11 @@ import (
    "strconv"
 )
 
-type Delivery struct {
-   AdditionalFile String
-   DownloadURL String
-   PackageName string
-   SplitDeliveryData []SplitDeliveryData
-   VersionCode uint64
-}
+type Message = protobuf.Message
 
-type SplitDeliveryData struct {
-   ID String
-   DownloadURL String
-}
+type String = protobuf.String
 
-// main.41.com.PirateBayGames.ZombieDefense2.obb
-func (d Delivery) Additional() string {
-   return fmt.Sprint("main.", d.VersionCode, ".", d.PackageName, ".obb")
-}
-
-// com.google.android.youtube-1529210304.apk
-func (d Delivery) Download() string {
-   return fmt.Sprint(d.PackageName, "-", d.VersionCode, ".apk")
-}
-
-// com.google.android.youtube-config.en-1529210304.apk
-func (d Delivery) Split(id String) string {
-   return fmt.Sprint(d.PackageName, "-", id, "-", d.VersionCode, ".apk")
-}
+type Varint = protobuf.Varint
 
 type Fixed64 = protobuf.Fixed64
 
@@ -81,14 +59,8 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   // .additionalFile
-   if file := appData.Get(4); file != nil {
-      // .downloadUrl
-      del.AdditionalFile, err = file.GetString(4)
-      if err != nil {
-         return nil, err
-      }
-   }
+   del.PackageName = app
+   del.VersionCode = ver
    // .splitDeliveryData
    for _, data := range appData.GetMessages(15) {
       var split SplitDeliveryData
@@ -104,13 +76,57 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       }
       del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
-   del.PackageName = app
-   del.VersionCode = ver
+   // .additionalFile
+   for _, file := range appData.GetMessages(4) {
+      var app AppFileMetadata
+      // .fileType
+      app.FileType, err = file.GetVarint(1)
+      if err != nil {
+         return nil, err
+      }
+      // .downloadUrl
+      app.DownloadURL, err = file.GetString(4)
+      if err != nil {
+         return nil, err
+      }
+      del.AdditionalFile = append(del.AdditionalFile, app)
+   }
    return &del, nil
 }
 
-type Message = protobuf.Message
+type AppFileMetadata struct {
+   FileType Varint
+   DownloadURL String
+}
 
-type String = protobuf.String
+type SplitDeliveryData struct {
+   ID String
+   DownloadURL String
+}
 
-type Varint = protobuf.Varint
+type Delivery struct {
+   DownloadURL String
+   PackageName string
+   SplitDeliveryData []SplitDeliveryData
+   VersionCode uint64
+   AdditionalFile []AppFileMetadata
+}
+
+// com.google.android.youtube-1529210304.apk
+func (d Delivery) Download() string {
+   return fmt.Sprint(d.PackageName, "-", d.VersionCode, ".apk")
+}
+
+// com.google.android.youtube-config.en-1529210304.apk
+func (d Delivery) Split(id String) string {
+   return fmt.Sprint(d.PackageName, "-", id, "-", d.VersionCode, ".apk")
+}
+
+// main.41.com.PirateBayGames.ZombieDefense2.obb
+// patch.41.com.PirateBayGames.ZombieDefense2.obb
+func (d Delivery) Additional(typ Varint) string {
+   if typ == 0 {
+      return fmt.Sprint("main.", d.VersionCode, ".", d.PackageName, ".obb")
+   }
+   return fmt.Sprint("patch.", d.VersionCode, ".", d.PackageName, ".obb")
+}
