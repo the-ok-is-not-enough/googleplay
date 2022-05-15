@@ -8,6 +8,36 @@ import (
    "strconv"
 )
 
+type Delivery struct {
+   AdditionalFile String
+   DownloadURL String
+   PackageName string
+   SplitDeliveryData []SplitDeliveryData
+   VersionCode uint64
+}
+
+type SplitDeliveryData struct {
+   ID String
+   DownloadURL String
+}
+
+// main.41.com.PirateBayGames.ZombieDefense2.obb
+func (d Delivery) Additional() string {
+   return fmt.Sprint("main.", d.VersionCode, ".", d.PackageName, ".obb")
+}
+
+// com.google.android.youtube-1529210304.apk
+func (d Delivery) Download() string {
+   return fmt.Sprint(d.PackageName, "-", d.VersionCode, ".apk")
+}
+
+// com.google.android.youtube-config.en-1529210304.apk
+func (d Delivery) Split(id String) string {
+   return fmt.Sprint(d.PackageName, "-", id, "-", d.VersionCode, ".apk")
+}
+
+type Fixed64 = protobuf.Fixed64
+
 func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -74,37 +104,13 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       }
       del.SplitDeliveryData = append(del.SplitDeliveryData, split)
    }
+   del.PackageName = app
+   del.VersionCode = ver
    return &del, nil
 }
-
-type SplitDeliveryData struct {
-   ID String
-   DownloadURL String
-}
-
-func (s SplitDeliveryData) Name(app string, ver uint64) string {
-   if s.ID != "" {
-      return fmt.Sprint(app, "-", s.ID, "-", ver, ".apk")
-   }
-   return fmt.Sprint(app, "-", ver, ".apk")
-}
-
-type Fixed64 = protobuf.Fixed64
 
 type Message = protobuf.Message
 
 type String = protobuf.String
 
 type Varint = protobuf.Varint
-
-type Delivery struct {
-   AdditionalFile String
-   DownloadURL String
-   SplitDeliveryData []SplitDeliveryData
-}
-
-func (d Delivery) Data() []SplitDeliveryData {
-   datas := d.SplitDeliveryData
-   data := SplitDeliveryData{DownloadURL: d.DownloadURL}
-   return append(datas, data)
-}

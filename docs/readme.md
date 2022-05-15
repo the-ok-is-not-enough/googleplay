@@ -79,7 +79,7 @@ versionCode='80441400' versionName='6.1.14'
 - https://apkmirror.com/apk/google-inc/google-play-store
 - https://github.com/whyorean/GPlayApi/blob/master/src/main/proto/GooglePlay.proto
 
-## How to install split APK?
+## How to install Android App Bundle?
 
 Bash:
 
@@ -92,6 +92,19 @@ PowerShell:
 ~~~
 adb install-multiple (Get-ChildItem *.apk)
 ~~~
+
+https://developer.android.com/guide/app-bundle/app-bundle-format
+
+## How to install expansion file?
+
+~~~
+adb shell mkdir -p /sdcard/Android/obb/com.PirateBayGames.ZombieDefense2
+
+adb push main.41.com.PirateBayGames.ZombieDefense2.obb `
+/sdcard/Android/obb/com.PirateBayGames.ZombieDefense2/
+~~~
+
+https://developer.android.com/google/play/expansion-files
 
 ## INSTALL\_FAILED\_NO\_MATCHING\_ABIS
 

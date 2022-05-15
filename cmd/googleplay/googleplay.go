@@ -10,6 +10,41 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doDelivery(head *gp.Header, app string, ver uint64) error {
+   download := func(addr gp.String, name string) error {
+      fmt.Println("GET", addr)
+      res, err := http.Get(string(addr))
+      if err != nil {
+         return err
+      }
+      defer res.Body.Close()
+      file, err := os.Create(name)
+      if err != nil {
+         return err
+      }
+      defer file.Close()
+      pro := format.ProgressBytes(file, res.ContentLength)
+      if _, err := io.Copy(pro, res.Body); err != nil {
+         return err
+      }
+      return nil
+   }
+   del, err := head.Delivery(app, ver)
+   if err != nil {
+      return err
+   }
+   for _, split := range del.SplitDeliveryData {
+      err := download(split.DownloadURL, del.Split(split.ID))
+      if err != nil {
+         return err
+      }
+   }
+   if err := download(del.DownloadURL, del.Download()); err != nil {
+      return err
+   }
+   return download(del.AdditionalFile, del.Additional())
+}
+
 func doToken(email, password string) error {
    tok, err := gp.NewToken(email, password)
    if err != nil {
@@ -20,35 +55,6 @@ func doToken(email, password string) error {
       return err
    }
    return tok.Create(cache, "googleplay/token.json")
-}
-
-func doDelivery(head *gp.Header, app string, ver uint64) error {
-   del, err := head.Delivery(app, ver)
-   if err != nil {
-      return err
-   }
-   for _, data := range del.Data() {
-      fmt.Println("GET", data.DownloadURL)
-      res, err := http.Get(string(data.DownloadURL))
-      if err != nil {
-         return err
-      }
-      file, err := os.Create(data.Name(app, ver))
-      if err != nil {
-         return err
-      }
-      pro := format.ProgressBytes(file, res.ContentLength)
-      if _, err := io.Copy(pro, res.Body); err != nil {
-         return err
-      }
-      if err := res.Body.Close(); err != nil {
-         return err
-      }
-      if err := file.Close(); err != nil {
-         return err
-      }
-   }
-   return nil
 }
 
 type native struct {
