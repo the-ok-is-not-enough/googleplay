@@ -3,7 +3,7 @@ module github.com/89z/googleplay
 go 1.18
 
 require (
-	github.com/89z/format v1.33.9
+	github.com/89z/format v1.34.1
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 )
 
