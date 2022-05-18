@@ -1,6 +1,7 @@
 package googleplay
 
 import (
+   "errors"
    "fmt"
    "github.com/89z/format/protobuf"
    "net/http"
@@ -45,11 +46,11 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    }
    switch status {
    case 2:
-      return nil, errorString("Geo-blocking")
+      return nil, errors.New("geo-blocking")
    case 3:
-      return nil, errorString("Purchase required")
+      return nil, errors.New("purchase required")
    case 5:
-      return nil, errorString("Invalid version")
+      return nil, errors.New("invalid version")
    }
    // .payload.deliveryResponse.appDeliveryData
    appData := responseWrapper.Get(1).Get(21).Get(2)

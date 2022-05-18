@@ -1,13 +1,13 @@
 package googleplay
 
 import (
+   "errors"
    "fmt"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
 )
-
 
 type Details struct {
    Title String
@@ -49,7 +49,7 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    if res.StatusCode != http.StatusOK {
-      return nil, errorString(res.Status)
+      return nil, errors.New(res.Status)
    }
    responseWrapper, err := protobuf.Decode(res.Body)
    if err != nil {
@@ -63,7 +63,7 @@ func (h Header) Details(app string) (*Details, error) {
    // .details.appDetails.versionCode
    det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
    if err != nil {
-      return nil, errorString("wrong ABI")
+      return nil, errors.New("wrong ABI")
    }
    // .details.appDetails.versionString
    det.VersionString, err = docV2.Get(13).Get(1).GetString(4)

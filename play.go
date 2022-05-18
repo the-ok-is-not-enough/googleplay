@@ -2,6 +2,7 @@ package googleplay
 
 import (
    "bufio"
+   "errors"
    "fmt"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
@@ -60,7 +61,7 @@ func NewToken(email, password string) (*Token, error) {
    }
    defer res.Body.Close()
    if res.StatusCode != http.StatusOK {
-      return nil, errorString(res.Status)
+      return nil, errors.New(res.Status)
    }
    val := parseQuery(res.Body)
    var tok Token
@@ -104,7 +105,7 @@ func (t Token) headerVersion(dev *Device, version int) (*Header, error) {
    }
    defer res.Body.Close()
    if res.StatusCode != http.StatusOK {
-      return nil, errorString(res.Status)
+      return nil, errors.New(res.Status)
    }
    var head Header
    head.Header = make(http.Header)
@@ -124,12 +125,6 @@ func (t Token) headerVersion(dev *Device, version int) (*Header, error) {
       fmt.Sprintf("%x", dev.AndroidID),
    )
    return &head, nil
-}
-
-type errorString string
-
-func (e errorString) Error() string {
-   return string(e)
 }
 
 type Header struct {
@@ -155,7 +150,7 @@ func (h Header) Purchase(app string) error {
    }
    defer res.Body.Close()
    if res.StatusCode != http.StatusOK {
-      return errorString(res.Status)
+      return errors.New(res.Status)
    }
    return nil
 }

@@ -42,6 +42,8 @@ var Phone = Config{
       // com.google.android.youtube
       "android.hardware.touchscreen",
       "android.hardware.wifi",
+      // com.madhead.tos.zh
+      "android.hardware.sensor.accelerometer",
       // com.pinterest
       "android.hardware.camera",
       "android.hardware.location",

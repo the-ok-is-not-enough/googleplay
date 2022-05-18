@@ -10,9 +10,10 @@ var testApps = map[string][]app{
       {"May 9, 2022", "com.kakaogames.twodin"},
    },
    "googleplay/armeabi.json": {
+      {"Apr 8, 2022", "com.axis.drawingdesk.v3"},
       {"Mar 14, 2022", "com.xiaomi.smarthome"},
       {"Mar 24, 2022", "com.miui.weather2"},
-      {"Apr 8, 2022", "com.axis.drawingdesk.v3"},
+      {"May 12, 2022", "com.madhead.tos.zh"},
    },
    "googleplay/x86.json": {
       {"Mar 1, 2022", "kr.sira.metal"},
