@@ -7,11 +7,9 @@
 > It's funny, isn't it, we take a day a year to dress up in costume and
 > celebrate fear?
 >
-> [Spooked (The Office) (2011)][1]
+> [Spooked (The Office) (2011)](//youtube.com/watch?v=9Ex4UcLaYNc)
 
 Download APK from Google Play or send API requests
-
-[1]://f002.backblazeb2.com/file/ql8mlh/Spooked+%28The+Office%29.mp4
 
 ## How to install?
 
