@@ -3,29 +3,26 @@ package main
 import (
    "flag"
    "fmt"
+   "github.com/89z/googleplay"
    "strings"
-   gp "github.com/89z/googleplay"
 )
 
 func main() {
    // a
    var app string
    flag.StringVar(&app, "a", "", "app")
-   // arm64
-   var arm64 bool
-   flag.BoolVar(&arm64, "arm64", false, "arm64-v8a ABI")
-   // armeabi
-   var armeabi bool
-   flag.BoolVar(&armeabi, "armeabi", false, "armeabi-v7a ABI")
    // d
    var device bool
    flag.BoolVar(&device, "d", false, "create device")
-   // e
+   // email
    var email string
-   flag.StringVar(&email, "e", "", "email")
+   flag.StringVar(&email, "email", "", "your email")
    // p
+   var id int64
+   flag.Int64Var(&id, "p", 0, googleplay.Platforms.String())
+   // password
    var password string
-   flag.StringVar(&password, "p", "", "password")
+   flag.StringVar(&password, "password", "", "your password")
    // purchase
    var (
       buf strings.Builder
@@ -45,7 +42,7 @@ func main() {
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
-      gp.LogLevel = 1
+      googleplay.LogLevel = 1
    }
    if email != "" {
       err := doToken(email, password)
@@ -53,14 +50,14 @@ func main() {
          panic(err)
       }
    } else {
-      nat := newNative(armeabi, arm64)
+      platform := googleplay.Platforms[id]
       if device {
-         err := nat.device()
+         err := doDevice(platform)
          if err != nil {
             panic(err)
          }
       } else if app != "" {
-         head, err := nat.header(single)
+         head, err := doHeader(platform, single)
          if err != nil {
             panic(err)
          }

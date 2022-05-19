@@ -32,7 +32,7 @@ accepted the Google Play terms and conditions. Create a file containing token
 (`aas_et`) for future requests:
 
 ~~~
-googleplay -e EMAIL -p PASSWORD
+googleplay -email EMAIL -password PASSWORD
 ~~~
 
 Create a file containing `Android_ID` (GSF ID) for future requests:

@@ -6,47 +6,41 @@ import (
    "time"
 )
 
-func TestCheckinArm64(t *testing.T) {
-   cache, err := os.UserCacheDir()
+func TestCheckinArmeabi(t *testing.T) {
+   err := checkin(1)
    if err != nil {
       t.Fatal(err)
    }
-   device, err := Phone.Checkin(Arm64)
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := device.Create(cache, "googleplay/arm64.json"); err != nil {
-      t.Fatal(err)
-   }
-   time.Sleep(Sleep)
 }
 
-func TestCheckinArmeabi(t *testing.T) {
+func TestCheckinArm64(t *testing.T) {
+   err := checkin(2)
+   if err != nil {
+      t.Fatal(err)
+   }
+}
+
+func checkin(id int64) error {
+   platform := Platforms[id]
    cache, err := os.UserCacheDir()
    if err != nil {
-      t.Fatal(err)
+      return err
    }
-   device, err := Phone.Checkin(Armeabi)
+   device, err := Phone.Checkin(platform)
    if err != nil {
-      t.Fatal(err)
+      return err
    }
-   if err := device.Create(cache, "googleplay/armeabi.json"); err != nil {
-      t.Fatal(err)
+   platform += ".json"
+   if err := device.Create(cache, "googleplay", platform); err != nil {
+      return err
    }
    time.Sleep(Sleep)
+   return nil
 }
 
 func TestCheckinX86(t *testing.T) {
-   cache, err := os.UserCacheDir()
+   err := checkin(0)
    if err != nil {
       t.Fatal(err)
    }
-   device, err := Phone.Checkin(X86)
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := device.Create(cache, "googleplay/x86.json"); err != nil {
-      t.Fatal(err)
-   }
-   time.Sleep(Sleep)
 }

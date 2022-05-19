@@ -60,36 +60,21 @@ func doToken(email, password string) error {
    return tok.Create(cache, "googleplay/token.json")
 }
 
-type native struct {
-   path string
-   platform gp.String
-}
-
-func newNative(armeabi, arm64 bool) native {
-   if armeabi {
-      return native{"googleplay/armeabi.json", gp.Armeabi}
-   }
-   if arm64 {
-      return native{"googleplay/arm64.json", gp.Arm64}
-   }
-   return native{"googleplay/x86.json", gp.X86}
-}
-
-func (n native) device() error {
+func doDevice(platform string) error {
    cache, err := os.UserCacheDir()
    if err != nil {
       return err
    }
-   device, err := gp.Phone.Checkin(n.platform)
+   device, err := gp.Phone.Checkin(platform)
    if err != nil {
       return err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   return device.Create(cache, n.path)
+   return device.Create(cache, "googleplay", platform + ".json")
 }
 
-func (n native) header(single bool) (*gp.Header, error) {
+func doHeader(platform string, single bool) (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
       return nil, err
@@ -98,7 +83,7 @@ func (n native) header(single bool) (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   device, err := gp.OpenDevice(cache, n.path)
+   device, err := gp.OpenDevice(cache, "googleplay", platform + ".json")
    if err != nil {
       return nil, err
    }

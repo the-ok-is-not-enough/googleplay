@@ -6,26 +6,30 @@ import (
 )
 
 var testApps = map[string][]app{
-   "googleplay/arm64.json": {
-      {"May 9, 2022", "com.kakaogames.twodin"},
-   },
-   "googleplay/armeabi.json": {
-      {"Apr 8, 2022", "com.axis.drawingdesk.v3"},
-      {"Mar 14, 2022", "com.xiaomi.smarthome"},
-      {"Mar 24, 2022", "com.miui.weather2"},
-      {"May 12, 2022", "com.madhead.tos.zh"},
-   },
    "googleplay/x86.json": {
+      {"Jun 1, 2021", "com.valvesoftware.android.steam.community"},
+      {"Dec 8, 2021", "com.amctve.amcfullepisodes"},
       {"Mar 1, 2022", "kr.sira.metal"},
       {"Apr 11, 2022", "com.pinterest"},
       {"Feb 14, 2022", "org.videolan.vlc"},
-      {"Dec 8, 2021", "com.amctve.amcfullepisodes"},
       {"Apr 6, 2022", "org.thoughtcrime.securesms"},
       {"Apr 7, 2022", "com.google.android.youtube"},
       {"Apr 12, 2022", "br.com.rodrigokolb.realdrum"},
       {"Mar 17, 2022", "com.google.android.apps.walletnfcrel"},
       {"Apr 1, 2022", "com.clearchannel.iheartradio.controller"},
-      {"Jun 1, 2021", "com.valvesoftware.android.steam.community"},
+      {"May 16, 2022", "com.instagram.android"},
+      {"Mar 24, 2022", "app.source.getcontact"},
+   },
+   "googleplay/armeabi-v7a.json": {
+      {"Apr 8, 2022", "com.axis.drawingdesk.v3"},
+      {"Mar 14, 2022", "com.xiaomi.smarthome"},
+      {"Mar 24, 2022", "com.miui.weather2"},
+      {"May 12, 2022", "com.madhead.tos.zh"},
+      {"Apr 27, 2022", "com.sygic.aura"},
+   },
+   "googleplay/arm64-v8a.json": {
+      {"May 9, 2022", "com.kakaogames.twodin"},
+      {"Feb 2, 2022", "com.illumix.fnafar"},
    },
 }
 
