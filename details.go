@@ -63,7 +63,7 @@ func (h Header) Details(app string) (*Details, error) {
    // .details.appDetails.versionCode
    det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
    if err != nil {
-      return nil, errors.New("wrong platform")
+      return nil, fmt.Errorf("bad DeviceConfiguration for %q", app)
    }
    // .details.appDetails.versionString
    det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
