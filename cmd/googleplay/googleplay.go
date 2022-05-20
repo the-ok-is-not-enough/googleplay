@@ -10,6 +10,20 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doDetails(head *gp.Header, app string) error {
+   detail, err := head.Details(app)
+   if err != nil {
+      return err
+   }
+   date, err := time.Parse(gp.DateInput, string(detail.UploadDate))
+   if err != nil {
+      return err
+   }
+   detail.UploadDate = gp.String(date.Format(gp.DateOutput))
+   fmt.Println(detail)
+   return nil
+}
+
 func doDelivery(head *gp.Header, app string, ver uint64) error {
    download := func(addr gp.String, name string) error {
       fmt.Println("GET", addr)

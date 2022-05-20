@@ -2,7 +2,6 @@ package main
 
 import (
    "flag"
-   "fmt"
    "github.com/89z/googleplay"
    "strings"
 )
@@ -72,11 +71,10 @@ func main() {
                panic(err)
             }
          } else {
-            det, err := head.Details(app)
+            err := doDetails(head, app)
             if err != nil {
                panic(err)
             }
-            fmt.Println(det)
          }
       } else {
          flag.Usage()

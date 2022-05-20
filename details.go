@@ -2,36 +2,60 @@ package googleplay
 
 import (
    "errors"
-   "fmt"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
    "net/url"
+   "strconv"
+)
+
+const (
+   DateInput = "Jan 2, 2006"
+   DateOutput = "2006-01-02"
 )
 
 type Details struct {
    Title String
    Creator String
-   UploadDate String
+   UploadDate String // Jun 1, 2021
    VersionString String
    VersionCode Varint
    NumDownloads Varint
    Size Varint
-   Files int
+   File []Varint
    Micros Varint
    CurrencyCode String
 }
 
-func (d Details) Format(f fmt.State, verb rune) {
-   fmt.Fprintln(f, "Title:", d.Title)
-   fmt.Fprintln(f, "Creator:", d.Creator)
-   fmt.Fprintln(f, "UploadDate:", d.UploadDate)
-   fmt.Fprintln(f, "VersionString:", d.VersionString)
-   fmt.Fprintln(f, "VersionCode:", d.VersionCode)
-   fmt.Fprintln(f, "NumDownloads:", format.LabelNumber(d.NumDownloads))
-   fmt.Fprintln(f, "Size:", format.LabelSize(d.Size))
-   fmt.Fprintln(f, "Files:", d.Files)
-   fmt.Fprint(f, "Offer: ", d.Micros, " ", d.CurrencyCode)
+func (d Details) String() string {
+   var buf []byte
+   buf = append(buf, "Title: "...)
+   buf = append(buf, d.Title...)
+   buf = append(buf, "\nCreator: "...)
+   buf = append(buf, d.Creator...)
+   buf = append(buf, "\nUploadDate: "...)
+   buf = append(buf, d.UploadDate...)
+   buf = append(buf, "\nVersionString: "...)
+   buf = append(buf, d.VersionString...)
+   buf = append(buf, "\nVersionCode: "...)
+   buf = strconv.AppendUint(buf, uint64(d.VersionCode), 10)
+   buf = append(buf, "\nNumDownloads: "...)
+   buf = append(buf, format.LabelNumber(d.NumDownloads)...)
+   buf = append(buf, "\nSize: "...)
+   buf = append(buf, format.LabelSize(d.Size)...)
+   buf = append(buf, "\nFile:"...)
+   for _, file := range d.File {
+      if file == 0 {
+         buf = append(buf, " APK"...)
+      } else {
+         buf = append(buf, " OBB"...)
+      }
+   }
+   buf = append(buf, "\nOffer: "...)
+   buf = strconv.AppendUint(buf, uint64(d.Micros), 10)
+   buf = append(buf, ' ')
+   buf = append(buf, d.CurrencyCode...)
+   return string(buf)
 }
 
 func (h Header) Details(app string) (*Details, error) {
@@ -63,7 +87,7 @@ func (h Header) Details(app string) (*Details, error) {
    // .details.appDetails.versionCode
    det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
    if err != nil {
-      return nil, fmt.Errorf("bad DeviceConfiguration for %q", app)
+      return nil, deviceConfiguration{app}
    }
    // .details.appDetails.versionString
    det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
@@ -81,8 +105,14 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    // .details.appDetails.file
-   files := docV2.Get(13).Get(1).GetMessages(17)
-   det.Files = len(files)
+   for _, file := range docV2.Get(13).Get(1).GetMessages(17) {
+      // .fileType
+      typ, err := file.GetVarint(1)
+      if err != nil {
+         return nil, err
+      }
+      det.File = append(det.File, typ)
+   }
    // The following fields should work with any ABI.
    // .title
    det.Title, err = docV2.GetString(5)
@@ -111,4 +141,15 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    return &det, nil
+}
+
+type deviceConfiguration struct {
+   app string
+}
+
+func (d deviceConfiguration) Error() string {
+   var buf []byte
+   buf = append(buf, "bad DeviceConfiguration for "...)
+   buf = strconv.AppendQuote(buf, d.app)
+   return string(buf)
 }

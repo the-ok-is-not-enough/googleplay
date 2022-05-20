@@ -9,6 +9,33 @@ import (
    "strconv"
 )
 
+type Delivery struct {
+   DownloadURL String
+   PackageName string
+   SplitDeliveryData []SplitDeliveryData
+   VersionCode uint64
+   AdditionalFile []AppFileMetadata
+}
+
+// com.google.android.youtube-1529210304.apk
+func (d Delivery) Download() string {
+   return fmt.Sprint(d.PackageName, "-", d.VersionCode, ".apk")
+}
+
+// com.google.android.youtube-config.en-1529210304.apk
+func (d Delivery) Split(id String) string {
+   return fmt.Sprint(d.PackageName, "-", id, "-", d.VersionCode, ".apk")
+}
+
+// main.41.com.PirateBayGames.ZombieDefense2.obb
+// patch.41.com.PirateBayGames.ZombieDefense2.obb
+func (d Delivery) Additional(typ Varint) string {
+   if typ == 0 {
+      return fmt.Sprint("main.", d.VersionCode, ".", d.PackageName, ".obb")
+   }
+   return fmt.Sprint("patch.", d.VersionCode, ".", d.PackageName, ".obb")
+}
+
 type Message = protobuf.Message
 
 type String = protobuf.String
@@ -103,31 +130,4 @@ type AppFileMetadata struct {
 type SplitDeliveryData struct {
    ID String
    DownloadURL String
-}
-
-type Delivery struct {
-   DownloadURL String
-   PackageName string
-   SplitDeliveryData []SplitDeliveryData
-   VersionCode uint64
-   AdditionalFile []AppFileMetadata
-}
-
-// com.google.android.youtube-1529210304.apk
-func (d Delivery) Download() string {
-   return fmt.Sprint(d.PackageName, "-", d.VersionCode, ".apk")
-}
-
-// com.google.android.youtube-config.en-1529210304.apk
-func (d Delivery) Split(id String) string {
-   return fmt.Sprint(d.PackageName, "-", id, "-", d.VersionCode, ".apk")
-}
-
-// main.41.com.PirateBayGames.ZombieDefense2.obb
-// patch.41.com.PirateBayGames.ZombieDefense2.obb
-func (d Delivery) Additional(typ Varint) string {
-   if typ == 0 {
-      return fmt.Sprint("main.", d.VersionCode, ".", d.PackageName, ".obb")
-   }
-   return fmt.Sprint("patch.", d.VersionCode, ".", d.PackageName, ".obb")
 }
