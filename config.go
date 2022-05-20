@@ -69,6 +69,8 @@ var Phone = Config{
       "android.hardware.location.gps",
       // br.com.rodrigokolb.realdrum
       "android.software.midi",
+      // com.app.xt
+      "android.hardware.camera.front",
       // com.clearchannel.iheartradio.controller
       "android.hardware.microphone",
       // com.google.android.apps.walletnfcrel
@@ -80,6 +82,8 @@ var Phone = Config{
       "android.hardware.sensor.gyroscope",
       // com.madhead.tos.zh
       "android.hardware.sensor.accelerometer",
+      // com.miHoYo.GenshinImpact
+      "android.hardware.opengles.aep",
       // com.pinterest
       "android.hardware.camera",
       "android.hardware.location",
@@ -98,6 +102,14 @@ var Phone = Config{
       // org.videolan.vlc
       "android.hardware.screen.landscape",
    },
+   SystemSharedLibrary: []String{
+      // com.amctve.amcfullepisodes
+      "org.apache.http.legacy",
+      // com.binance.dev
+      "android.test.runner",
+      // com.miui.weather2
+      "global-miui11-empty.jar",
+   },
    // com.axis.drawingdesk.v3
    GlEsVersion: 0x9_9999,
    GlExtension: []String{
@@ -105,12 +117,6 @@ var Phone = Config{
       "GL_OES_compressed_ETC1_RGB8_texture",
       // com.kakaogames.twodin
       "GL_KHR_texture_compression_astc_ldr",
-   },
-   SystemSharedLibrary: []String{
-      // com.amctve.amcfullepisodes
-      "org.apache.http.legacy",
-      // com.miui.weather2
-      "global-miui11-empty.jar",
    },
    // com.valvesoftware.android.steam.community
    TouchScreen: 3,

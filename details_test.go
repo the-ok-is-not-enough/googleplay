@@ -19,6 +19,8 @@ var testApps = map[string][]app{
       {"Apr 1, 2022", "com.clearchannel.iheartradio.controller"},
       {"May 16, 2022", "com.instagram.android"},
       {"Mar 24, 2022", "app.source.getcontact"},
+      {"May 16, 2022", "com.binance.dev"},
+      {"May 13, 2022", "com.app.xt"},
    },
    "googleplay/armeabi-v7a.json": {
       {"Apr 8, 2022", "com.axis.drawingdesk.v3"},
@@ -30,6 +32,7 @@ var testApps = map[string][]app{
    "googleplay/arm64-v8a.json": {
       {"May 9, 2022", "com.kakaogames.twodin"},
       {"Feb 2, 2022", "com.illumix.fnafar"},
+      {"Mar 16, 2022", "com.miHoYo.GenshinImpact"},
    },
 }
 
