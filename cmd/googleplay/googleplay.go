@@ -10,6 +10,22 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doHeader(platform string, agent int64) (*gp.Header, error) {
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      return nil, err
+   }
+   token, err := gp.OpenToken(cache, "googleplay/token.json")
+   if err != nil {
+      return nil, err
+   }
+   device, err := gp.OpenDevice(cache, "googleplay", platform + ".json")
+   if err != nil {
+      return nil, err
+   }
+   return token.Header(device.AndroidID, gp.Agents[agent])
+}
+
 func doDetails(head *gp.Header, app string) error {
    detail, err := head.Details(app)
    if err != nil {
@@ -86,23 +102,4 @@ func doDevice(platform string) error {
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
    return device.Create(cache, "googleplay", platform + ".json")
-}
-
-func doHeader(platform string, single bool) (*gp.Header, error) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return nil, err
-   }
-   token, err := gp.OpenToken(cache, "googleplay/token.json")
-   if err != nil {
-      return nil, err
-   }
-   device, err := gp.OpenDevice(cache, "googleplay", platform + ".json")
-   if err != nil {
-      return nil, err
-   }
-   if single {
-      return token.SingleAPK(device)
-   }
-   return token.Header(device)
 }

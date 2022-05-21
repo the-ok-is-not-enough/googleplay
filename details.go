@@ -7,7 +7,20 @@ import (
    "net/http"
    "net/url"
    "strconv"
+   "strings"
 )
+
+type errVersionCode struct {
+   app string
+}
+
+func (e errVersionCode) Error() string {
+   var buf strings.Builder
+   buf.WriteString(e.app)
+   buf.WriteString(" versionCode missing\n")
+   buf.WriteString("Check nativePlatform")
+   return buf.String()
+}
 
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
@@ -16,7 +29,9 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   h.SetAgent(req.Header) // app.source.getcontact
+   // half of the apps I test require User-Agent,
+   // so just set it for all of them
+   h.SetAgent(req.Header)
    h.SetAuth(req.Header)
    h.SetDevice(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
@@ -40,7 +55,7 @@ func (h Header) Details(app string) (*Details, error) {
    // .details.appDetails.versionCode
    det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
    if err != nil {
-      return nil, deviceConfiguration{app}
+      return nil, errVersionCode{app}
    }
    // .details.appDetails.versionString
    det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
@@ -142,16 +157,5 @@ func (d Details) String() string {
    buf = strconv.AppendUint(buf, uint64(d.Micros), 10)
    buf = append(buf, ' ')
    buf = append(buf, d.CurrencyCode...)
-   return string(buf)
-}
-
-type deviceConfiguration struct {
-   app string
-}
-
-func (d deviceConfiguration) Error() string {
-   var buf []byte
-   buf = append(buf, "bad DeviceConfiguration for "...)
-   buf = strconv.AppendQuote(buf, d.app)
    return string(buf)
 }

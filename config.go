@@ -20,16 +20,12 @@ var Platforms = NativePlatform{
 }
 
 func (n NativePlatform) String() string {
-   first := true
    var buf []byte
+   buf = append(buf, "deviceConfiguration.nativePlatform"...)
    for key, val := range n {
-      if first {
-         first = false
-      } else {
-         buf = append(buf, '\n')
-      }
+      buf = append(buf, '\n')
       buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ' ')
+      buf = append(buf, ": "...)
       buf = append(buf, val...)
    }
    return string(buf)

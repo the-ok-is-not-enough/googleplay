@@ -20,7 +20,19 @@ com.PirateBayGames.ZombieDefense2
 com.sigmateam.alienshootermobile.free
 */
 func TestDelivery(t *testing.T) {
-   head, err := newHeader("googleplay/x86.json")
+   cache, err := os.UserCacheDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   token, err := OpenToken(cache, "googleplay/token.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   device, err := OpenDevice(cache, "googleplay/x86.json")
+   if err != nil {
+      t.Fatal(err)
+   }
+   head, err := token.Header(device.AndroidID, Agents[1])
    if err != nil {
       t.Fatal(err)
    }
@@ -30,20 +42,3 @@ func TestDelivery(t *testing.T) {
    }
    fmt.Printf("%+v\n", del)
 }
-
-func newHeader(device string) (*Header, error) {
-   cache, err := os.UserCacheDir()
-   if err != nil {
-      return nil, err
-   }
-   token, err := OpenToken(cache, "googleplay/token.json")
-   if err != nil {
-      return nil, err
-   }
-   dev, err := OpenDevice(cache, device)
-   if err != nil {
-      return nil, err
-   }
-   return token.Header(dev.AndroidID)
-}
-

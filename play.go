@@ -14,23 +14,7 @@ import (
    "time"
 )
 
-func (h Header) SetAuth(head http.Header) {
-   head.Set("Authorization", "Bearer " + h.Auth)
-}
-
-func (h Header) SetDevice(head http.Header) {
-   device := strconv.FormatUint(h.AndroidID, 16)
-   head.Set("X-DFE-Device-ID", device)
-}
-
-type Header struct {
-   AndroidID uint64
-   SDK int64
-   VersionCode uint64
-   Auth string
-}
-
-func (t Token) headerVersion(androidID, agent Fixed64) (*Header, error) {
+func (t Token) Header(androidID Fixed64, agent int64) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -52,19 +36,18 @@ func (t Token) headerVersion(androidID, agent Fixed64) (*Header, error) {
       return nil, errors.New(res.Status)
    }
    var head Header
-   head.AndroidID = uint64(androidID)
    head.Auth = parseQuery(res.Body).Get("Auth")
    head.SDK = 9
-   head.VersionCode = uint64(agent)
+   head.AndroidID = uint64(androidID)
+   head.VersionCode = agent
    return &head, nil
 }
 
-func (t Token) Header(androidID Fixed64) (*Header, error) {
-   return t.headerVersion(androidID, 9999_9999)
-}
-
-func (t Token) SingleAPK(androidID Fixed64) (*Header, error) {
-   return t.headerVersion(androidID, 8091_9999)
+type Header struct {
+   Auth string // Authorization
+   SDK int64 // User-Agent
+   VersionCode int64 // User-Agent
+   AndroidID uint64 // X-DFE-Device-ID
 }
 
 func (h Header) SetAgent(head http.Header) {
@@ -72,8 +55,17 @@ func (h Header) SetAgent(head http.Header) {
    buf = append(buf, "Android-Finsky (sdk="...)
    buf = strconv.AppendInt(buf, h.SDK, 10)
    buf = append(buf, ",versionCode="...)
-   buf = strconv.AppendUint(buf, h.VersionCode, 10)
+   buf = strconv.AppendInt(buf, h.VersionCode, 10)
    head.Set("User-Agent", string(buf))
+}
+
+func (h Header) SetAuth(head http.Header) {
+   head.Set("Authorization", "Bearer " + h.Auth)
+}
+
+func (h Header) SetDevice(head http.Header) {
+   device := strconv.FormatUint(h.AndroidID, 16)
+   head.Set("X-DFE-Device-ID", device)
 }
 
 // Purchase app. Only needs to be done once per Google account.
@@ -99,6 +91,25 @@ func (h Header) Purchase(app string) error {
       return errors.New(res.Status)
    }
    return nil
+}
+
+type UserAgent map[int64]int64
+
+var Agents = UserAgent{
+   0: 9999_9999,
+   1: 8091_9999, // single APK
+}
+
+func (u UserAgent) String() string {
+   var buf []byte
+   buf = append(buf, "User-Agent"...)
+   for key, val := range u {
+      buf = append(buf, '\n')
+      buf = strconv.AppendInt(buf, key, 10)
+      buf = append(buf, ": "...)
+      buf = strconv.AppendInt(buf, val, 10)
+   }
+   return string(buf)
 }
 
 type Message = protobuf.Message

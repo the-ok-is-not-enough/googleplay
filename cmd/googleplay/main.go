@@ -2,8 +2,8 @@ package main
 
 import (
    "flag"
-   "github.com/89z/googleplay"
    "strings"
+   gp "github.com/89z/googleplay"
 )
 
 func main() {
@@ -17,8 +17,8 @@ func main() {
    var email string
    flag.StringVar(&email, "email", "", "your email")
    // p
-   var id int64
-   flag.Int64Var(&id, "p", 0, googleplay.Platforms.String())
+   var platformID int64
+   flag.Int64Var(&platformID, "p", 0, gp.Platforms.String())
    // password
    var password string
    flag.StringVar(&password, "password", "", "your password")
@@ -30,9 +30,9 @@ func main() {
    buf.WriteString("Purchase app. ")
    buf.WriteString("Only needs to be done once per Google account.")
    flag.BoolVar(&purchase, "purchase", false, buf.String())
-   // s
-   var single bool
-   flag.BoolVar(&single, "s", false, "single APK")
+   // u
+   var agentID int64
+   flag.Int64Var(&agentID, "u", 0, gp.Agents.String())
    // v
    var version uint64
    flag.Uint64Var(&version, "v", 0, "version")
@@ -41,7 +41,7 @@ func main() {
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
    if verbose {
-      googleplay.LogLevel = 1
+      gp.LogLevel = 1
    }
    if email != "" {
       err := doToken(email, password)
@@ -49,14 +49,14 @@ func main() {
          panic(err)
       }
    } else {
-      platform := googleplay.Platforms[id]
+      platform := gp.Platforms[platformID]
       if device {
          err := doDevice(platform)
          if err != nil {
             panic(err)
          }
       } else if app != "" {
-         head, err := doHeader(platform, single)
+         head, err := doHeader(platform, agentID)
          if err != nil {
             panic(err)
          }
