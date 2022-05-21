@@ -10,6 +10,19 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doDetails(head *gp.Header, app string) error {
+   detail, err := head.Details(app)
+   if err != nil {
+      return err
+   }
+   date, err := time.Parse(gp.DateInput, string(detail.UploadDate))
+   if err == nil {
+      detail.UploadDate = gp.String(date.Format(gp.DateOutput))
+   }
+   fmt.Println(detail)
+   return nil
+}
+
 func doHeader(platform string, agent int64) (*gp.Header, error) {
    cache, err := os.UserCacheDir()
    if err != nil {
@@ -24,20 +37,6 @@ func doHeader(platform string, agent int64) (*gp.Header, error) {
       return nil, err
    }
    return token.Header(device.AndroidID, gp.Agents[agent])
-}
-
-func doDetails(head *gp.Header, app string) error {
-   detail, err := head.Details(app)
-   if err != nil {
-      return err
-   }
-   date, err := time.Parse(gp.DateInput, string(detail.UploadDate))
-   if err != nil {
-      return err
-   }
-   detail.UploadDate = gp.String(date.Format(gp.DateOutput))
-   fmt.Println(detail)
-   return nil
 }
 
 func doDelivery(head *gp.Header, app string, ver uint64) error {

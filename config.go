@@ -21,7 +21,7 @@ var Platforms = NativePlatform{
 
 func (n NativePlatform) String() string {
    var buf []byte
-   buf = append(buf, "deviceConfiguration.nativePlatform"...)
+   buf = append(buf, "nativePlatform"...)
    for key, val := range n {
       buf = append(buf, '\n')
       buf = strconv.AppendInt(buf, key, 10)

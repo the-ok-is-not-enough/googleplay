@@ -35,7 +35,7 @@ func main() {
    flag.Int64Var(&agentID, "u", 0, gp.Agents.String())
    // v
    var version uint64
-   flag.Uint64Var(&version, "v", 0, "version")
+   flag.Uint64Var(&version, "v", 0, "app version")
    // verbose
    var verbose bool
    flag.BoolVar(&verbose, "verbose", false, "dump requests")
