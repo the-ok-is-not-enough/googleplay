@@ -9,6 +9,101 @@ import (
    "strings"
 )
 
+func (h Header) SetAuth(head http.Header) {
+   head.Set("Authorization", "Bearer " + h.Auth)
+}
+
+func (h Header) SetDevice(head http.Header) {
+   device := strconv.FormatUint(h.AndroidID, 16)
+   head.Set("X-DFE-Device-ID", device)
+}
+
+func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
+   req, err := http.NewRequest(
+      "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
+   )
+   if err != nil {
+      return nil, err
+   }
+   h.SetAgent(req.Header)
+   h.SetDevice(req.Header)
+   req.URL.RawQuery = url.Values{
+      "doc": {app},
+      "vc": {strconv.FormatUint(ver, 10)},
+   }.Encode()
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   responseWrapper, err := protobuf.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   // .payload.deliveryResponse.status
+   status, err := responseWrapper.Get(1).Get(21).GetVarint(1)
+   if err != nil {
+      return nil, err
+   }
+   switch status {
+   case 2:
+      return nil, errors.New("geo-blocking")
+   case 3:
+      return nil, errors.New("purchase required")
+   case 5:
+      return nil, errors.New("invalid version")
+   }
+   // .payload.deliveryResponse.appDeliveryData
+   appData := responseWrapper.Get(1).Get(21).Get(2)
+   var del Delivery
+   // .downloadUrl
+   del.DownloadURL, err = appData.GetString(3)
+   if err != nil {
+      return nil, err
+   }
+   del.PackageName = app
+   del.VersionCode = ver
+   // .splitDeliveryData
+   for _, data := range appData.GetMessages(15) {
+      var split SplitDeliveryData
+      // .id
+      split.ID, err = data.GetString(1)
+      if err != nil {
+         return nil, err
+      }
+      // .downloadUrl
+      split.DownloadURL, err = data.GetString(5)
+      if err != nil {
+         return nil, err
+      }
+      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
+   }
+   // .additionalFile
+   for _, file := range appData.GetMessages(4) {
+      var app AppFileMetadata
+      // .fileType
+      app.FileType, err = file.GetVarint(1)
+      if err != nil {
+         return nil, err
+      }
+      // .downloadUrl
+      app.DownloadURL, err = file.GetString(4)
+      if err != nil {
+         return nil, err
+      }
+      del.AdditionalFile = append(del.AdditionalFile, app)
+   }
+   return &del, nil
+}
+
+type Header struct {
+   AndroidID uint64
+   SDK int64
+   VersionCode uint64
+   Auth string
+}
+
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
@@ -16,7 +111,9 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   req.Header = h.Header
+   h.SetAgent(req.Header) // app.source.getcontact
+   h.SetAuth(req.Header)
+   h.SetDevice(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -94,85 +191,7 @@ func (h Header) Details(app string) (*Details, error) {
    return &det, nil
 }
 
-func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
-   req, err := http.NewRequest(
-      "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header = h.Header
-   req.URL.RawQuery = url.Values{
-      "doc": {app},
-      "vc": {strconv.FormatUint(ver, 10)},
-   }.Encode()
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   // .payload.deliveryResponse.status
-   status, err := responseWrapper.Get(1).Get(21).GetVarint(1)
-   if err != nil {
-      return nil, err
-   }
-   switch status {
-   case 2:
-      return nil, errors.New("geo-blocking")
-   case 3:
-      return nil, errors.New("purchase required")
-   case 5:
-      return nil, errors.New("invalid version")
-   }
-   // .payload.deliveryResponse.appDeliveryData
-   appData := responseWrapper.Get(1).Get(21).Get(2)
-   var del Delivery
-   // .downloadUrl
-   del.DownloadURL, err = appData.GetString(3)
-   if err != nil {
-      return nil, err
-   }
-   del.PackageName = app
-   del.VersionCode = ver
-   // .splitDeliveryData
-   for _, data := range appData.GetMessages(15) {
-      var split SplitDeliveryData
-      // .id
-      split.ID, err = data.GetString(1)
-      if err != nil {
-         return nil, err
-      }
-      // .downloadUrl
-      split.DownloadURL, err = data.GetString(5)
-      if err != nil {
-         return nil, err
-      }
-      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
-   }
-   // .additionalFile
-   for _, file := range appData.GetMessages(4) {
-      var app AppFileMetadata
-      // .fileType
-      app.FileType, err = file.GetVarint(1)
-      if err != nil {
-         return nil, err
-      }
-      // .downloadUrl
-      app.DownloadURL, err = file.GetString(4)
-      if err != nil {
-         return nil, err
-      }
-      del.AdditionalFile = append(del.AdditionalFile, app)
-   }
-   return &del, nil
-}
-
-func (t Token) headerVersion(dev *Device, version int) (*Header, error) {
+func (t Token) headerVersion(androidID, agent Fixed64) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -194,35 +213,28 @@ func (t Token) headerVersion(dev *Device, version int) (*Header, error) {
       return nil, errors.New(res.Status)
    }
    var head Header
-   head.Header = make(http.Header)
-   // Authorization
-   head.Set(
-      "Authorization",
-      "Bearer " + parseQuery(res.Body).Get("Auth"),
-   )
-   // User-Agent
-   head.Set(
-      "User-Agent",
-      "Android-Finsky (sdk=9,versionCode=" + strconv.Itoa(version),
-   )
-   // X-DFE-Device-ID
-   head.Set(
-      "X-DFE-Device-ID",
-      strconv.FormatUint(uint64(dev.AndroidID), 16),
-   )
+   head.AndroidID = uint64(androidID)
+   head.Auth = parseQuery(res.Body).Get("Auth")
+   head.SDK = 9
+   head.VersionCode = uint64(agent)
    return &head, nil
 }
 
-func (t Token) Header(dev *Device) (*Header, error) {
-   return t.headerVersion(dev, 9999_9999)
+func (t Token) Header(androidID Fixed64) (*Header, error) {
+   return t.headerVersion(androidID, 9999_9999)
 }
 
-func (t Token) SingleAPK(dev *Device) (*Header, error) {
-   return t.headerVersion(dev, 8091_9999)
+func (t Token) SingleAPK(androidID Fixed64) (*Header, error) {
+   return t.headerVersion(androidID, 8091_9999)
 }
 
-type Header struct {
-   http.Header
+func (h Header) SetAgent(head http.Header) {
+   var buf []byte
+   buf = append(buf, "Android-Finsky (sdk="...)
+   buf = strconv.AppendInt(buf, h.SDK, 10)
+   buf = append(buf, ",versionCode="...)
+   buf = strconv.AppendUint(buf, h.VersionCode, 10)
+   head.Set("User-Agent", string(buf))
 }
 
 // Purchase app. Only needs to be done once per Google account.
@@ -235,8 +247,9 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   h.Set("Content-Type", "application/x-www-form-urlencoded")
-   req.Header = h.Header
+   h.SetAuth(req.Header)
+   h.SetDevice(req.Header)
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
