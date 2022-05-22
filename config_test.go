@@ -22,7 +22,7 @@ func TestCheckinArm64(t *testing.T) {
 
 func checkin(id int64) error {
    platform := Platforms[id]
-   cache, err := os.UserCacheDir()
+   cache, err := os.UserHomeDir()
    if err != nil {
       return err
    }

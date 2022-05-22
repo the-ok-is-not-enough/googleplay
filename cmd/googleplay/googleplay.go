@@ -10,21 +10,8 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func doDetails(head *gp.Header, app string) error {
-   detail, err := head.Details(app)
-   if err != nil {
-      return err
-   }
-   date, err := time.Parse(gp.DateInput, string(detail.UploadDate))
-   if err == nil {
-      detail.UploadDate = gp.String(date.Format(gp.DateOutput))
-   }
-   fmt.Println(detail)
-   return nil
-}
-
-func doHeader(platform string, agent int64) (*gp.Header, error) {
-   cache, err := os.UserCacheDir()
+func doHeader(platform string, agentID int64) (*gp.Header, error) {
+   cache, err := os.UserHomeDir()
    if err != nil {
       return nil, err
    }
@@ -36,7 +23,20 @@ func doHeader(platform string, agent int64) (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   return token.Header(device.AndroidID, gp.Agents[agent])
+   return token.Header(device.AndroidID, agentID)
+}
+
+func doDetails(head *gp.Header, app string) error {
+   detail, err := head.Details(app)
+   if err != nil {
+      return err
+   }
+   date, err := time.Parse(gp.DateInput, string(detail.UploadDate))
+   if err == nil {
+      detail.UploadDate = gp.String(date.Format(gp.DateOutput))
+   }
+   fmt.Println(detail)
+   return nil
 }
 
 func doDelivery(head *gp.Header, app string, ver uint64) error {
@@ -82,7 +82,7 @@ func doToken(email, password string) error {
    if err != nil {
       return err
    }
-   cache, err := os.UserCacheDir()
+   cache, err := os.UserHomeDir()
    if err != nil {
       return err
    }
@@ -90,7 +90,7 @@ func doToken(email, password string) error {
 }
 
 func doDevice(platform string) error {
-   cache, err := os.UserCacheDir()
+   cache, err := os.UserHomeDir()
    if err != nil {
       return err
    }

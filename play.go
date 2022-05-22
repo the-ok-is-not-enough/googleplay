@@ -14,7 +14,9 @@ import (
    "time"
 )
 
-func (t Token) Header(androidID Fixed64, agent int64) (*Header, error) {
+type UserAgent map[int64]int64
+
+func (t Token) Header(androidID Fixed64, agentID int64) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -39,8 +41,13 @@ func (t Token) Header(androidID Fixed64, agent int64) (*Header, error) {
    head.Auth = parseQuery(res.Body).Get("Auth")
    head.SDK = 9
    head.AndroidID = uint64(androidID)
-   head.VersionCode = agent
+   head.VersionCode = Agents[agentID]
    return &head, nil
+}
+
+var Agents = UserAgent{
+   0: 9999_9999,
+   1: 8091_9999, // single APK
 }
 
 type Header struct {
@@ -91,13 +98,6 @@ func (h Header) Purchase(app string) error {
       return errors.New(res.Status)
    }
    return nil
-}
-
-type UserAgent map[int64]int64
-
-var Agents = UserAgent{
-   0: 9999_9999,
-   1: 8091_9999, // single APK
 }
 
 func (u UserAgent) String() string {
