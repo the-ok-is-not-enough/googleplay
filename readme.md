@@ -38,7 +38,7 @@ googleplay -email EMAIL -password PASSWORD
 Create a file containing `Android_ID` (GSF ID) for future requests:
 
 ~~~
-googleplay -d
+googleplay -device
 ~~~
 
 Get app details:

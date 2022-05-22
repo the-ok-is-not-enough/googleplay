@@ -32,7 +32,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   head, err := token.Header(device.AndroidID, Agents[1])
+   head, err := token.Header(device.AndroidID, false)
    if err != nil {
       t.Fatal(err)
    }

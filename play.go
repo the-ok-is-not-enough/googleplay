@@ -14,58 +14,6 @@ import (
    "time"
 )
 
-type UserAgent map[int64]int64
-
-func (t Token) Header(androidID Fixed64, agentID int64) (*Header, error) {
-   val := url.Values{
-      "Token": {t.Token},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errors.New(res.Status)
-   }
-   var head Header
-   head.Auth = parseQuery(res.Body).Get("Auth")
-   head.SDK = 9
-   head.AndroidID = uint64(androidID)
-   head.VersionCode = Agents[agentID]
-   return &head, nil
-}
-
-var Agents = UserAgent{
-   0: 9999_9999,
-   1: 8091_9999, // single APK
-}
-
-type Header struct {
-   Auth string // Authorization
-   SDK int64 // User-Agent
-   VersionCode int64 // User-Agent
-   AndroidID uint64 // X-DFE-Device-ID
-}
-
-func (h Header) SetAgent(head http.Header) {
-   var buf []byte
-   buf = append(buf, "Android-Finsky (sdk="...)
-   buf = strconv.AppendInt(buf, h.SDK, 10)
-   buf = append(buf, ",versionCode="...)
-   buf = strconv.AppendInt(buf, h.VersionCode, 10)
-   head.Set("User-Agent", string(buf))
-}
-
 func (h Header) SetAuth(head http.Header) {
    head.Set("Authorization", "Bearer " + h.Auth)
 }
@@ -98,18 +46,6 @@ func (h Header) Purchase(app string) error {
       return errors.New(res.Status)
    }
    return nil
-}
-
-func (u UserAgent) String() string {
-   var buf []byte
-   buf = append(buf, "User-Agent"...)
-   for key, val := range u {
-      buf = append(buf, '\n')
-      buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ": "...)
-      buf = strconv.AppendInt(buf, val, 10)
-   }
-   return string(buf)
 }
 
 type Message = protobuf.Message
@@ -183,4 +119,53 @@ func OpenToken(elem ...string) (*Token, error) {
 
 func (t Token) Create(elem ...string) error {
    return format.Create(t, elem...)
+}
+
+type Header struct {
+   Auth string // Authorization
+   SDK int64 // User-Agent
+   VersionCode int64 // User-Agent
+   AndroidID uint64 // X-DFE-Device-ID
+}
+
+func (t Token) Header(androidID Fixed64, single bool) (*Header, error) {
+   val := url.Values{
+      "Token": {t.Token},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return nil, errors.New(res.Status)
+   }
+   var head Header
+   head.Auth = parseQuery(res.Body).Get("Auth")
+   head.SDK = 9
+   head.AndroidID = uint64(androidID)
+   if single {
+      head.VersionCode = 8091_9999 // single APK
+   } else {
+      head.VersionCode = 9999_9999
+   }
+   return &head, nil
+}
+
+func (h Header) SetAgent(head http.Header) {
+   var buf []byte
+   buf = append(buf, "Android-Finsky (sdk="...)
+   buf = strconv.AppendInt(buf, h.SDK, 10)
+   buf = append(buf, ",versionCode="...)
+   buf = strconv.AppendInt(buf, h.VersionCode, 10)
+   head.Set("User-Agent", string(buf))
 }

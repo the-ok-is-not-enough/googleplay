@@ -11,8 +11,11 @@ func main() {
    var app string
    flag.StringVar(&app, "a", "", "app")
    // d
+   var parse bool
+   flag.BoolVar(&parse, "d", false, "parse date")
+   // device
    var device bool
-   flag.BoolVar(&device, "d", false, "create device")
+   flag.BoolVar(&device, "device", false, "create device")
    // email
    var email string
    flag.StringVar(&email, "email", "", "your email")
@@ -30,9 +33,9 @@ func main() {
    buf.WriteString("Purchase app. ")
    buf.WriteString("Only needs to be done once per Google account.")
    flag.BoolVar(&purchase, "purchase", false, buf.String())
-   // u
-   var agentID int64
-   flag.Int64Var(&agentID, "u", 0, gp.Agents.String())
+   // s
+   var single bool
+   flag.BoolVar(&single, "s", false, "single APK")
    // v
    var version uint64
    flag.Uint64Var(&version, "v", 0, "app version")
@@ -56,7 +59,7 @@ func main() {
             panic(err)
          }
       } else if app != "" {
-         head, err := doHeader(platform, agentID)
+         head, err := doHeader(platform, single)
          if err != nil {
             panic(err)
          }
@@ -71,7 +74,7 @@ func main() {
                panic(err)
             }
          } else {
-            err := doDetails(head, app)
+            err := doDetails(head, app, parse)
             if err != nil {
                panic(err)
             }

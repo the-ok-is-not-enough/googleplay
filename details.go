@@ -8,7 +8,28 @@ import (
    "net/url"
    "strconv"
    "strings"
+   "time"
 )
+
+// This only works with English. You can force English with:
+// Accept-Language: en
+func (d Details) Time() (time.Time, error) {
+   value := string(d.UploadDate)
+   return time.Parse("Jan 2, 2006", value)
+}
+
+type Details struct {
+   Title String
+   Creator String
+   UploadDate String // Jun 1, 2021
+   VersionString String
+   VersionCode Varint
+   NumDownloads Varint
+   Size Varint
+   File []Varint
+   Micros Varint
+   CurrencyCode String
+}
 
 type errVersionCode struct {
    app string
@@ -109,24 +130,6 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    return &det, nil
-}
-
-const (
-   DateInput = "Jan 2, 2006"
-   DateOutput = "2006-01-02"
-)
-
-type Details struct {
-   Title String
-   Creator String
-   UploadDate String // Jun 1, 2021
-   VersionString String
-   VersionCode Varint
-   NumDownloads Varint
-   Size Varint
-   File []Varint
-   Micros Varint
-   CurrencyCode String
 }
 
 func (d Details) String() string {
