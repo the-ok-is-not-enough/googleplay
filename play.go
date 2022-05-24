@@ -5,7 +5,6 @@ import (
    "errors"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
-   "github.com/89z/format/protobuf"
    "io"
    "net/http"
    "net/url"
@@ -47,14 +46,6 @@ func (h Header) Purchase(app string) error {
    }
    return nil
 }
-
-type Message = protobuf.Message
-
-type String = protobuf.String
-
-type Varint = protobuf.Varint
-
-type Fixed64 = protobuf.Fixed64
 
 const Sleep = 4 * time.Second
 
@@ -128,7 +119,7 @@ type Header struct {
    AndroidID uint64 // X-DFE-Device-ID
 }
 
-func (t Token) Header(androidID Fixed64, single bool) (*Header, error) {
+func (t Token) Header(androidID uint64, single bool) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -152,7 +143,7 @@ func (t Token) Header(androidID Fixed64, single bool) (*Header, error) {
    var head Header
    head.Auth = parseQuery(res.Body).Get("Auth")
    head.SDK = 9
-   head.AndroidID = uint64(androidID)
+   head.AndroidID = androidID
    if single {
       head.VersionCode = 8091_9999 // single APK
    } else {

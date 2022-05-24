@@ -32,7 +32,7 @@ func (n NativePlatform) String() string {
 }
 
 type Device struct {
-   AndroidID Fixed64
+   AndroidID uint64
 }
 
 func OpenDevice(elem ...string) (*Device, error) {
@@ -45,21 +45,21 @@ func (d Device) Create(elem ...string) error {
 
 // These can use default values, but they must all be included
 type Config struct {
-   DeviceFeature []String
-   GlEsVersion Varint
-   GlExtension []String
-   HasFiveWayNavigation Varint
-   HasHardKeyboard Varint
-   Keyboard Varint
-   Navigation Varint
-   ScreenDensity Varint
-   ScreenLayout Varint
-   SystemSharedLibrary []String
-   TouchScreen Varint
+   DeviceFeature []string
+   GlEsVersion uint64
+   GlExtension []string
+   HasFiveWayNavigation uint64
+   HasHardKeyboard uint64
+   Keyboard uint64
+   Navigation uint64
+   ScreenDensity uint64
+   ScreenLayout uint64
+   SystemSharedLibrary []string
+   TouchScreen uint64
 }
 
 var Phone = Config{
-   DeviceFeature: []String{
+   DeviceFeature: []string{
       // app.source.getcontact
       "android.hardware.location.gps",
       // br.com.rodrigokolb.realdrum
@@ -97,7 +97,7 @@ var Phone = Config{
       // org.videolan.vlc
       "android.hardware.screen.landscape",
    },
-   SystemSharedLibrary: []String{
+   SystemSharedLibrary: []string{
       // com.amctve.amcfullepisodes
       "org.apache.http.legacy",
       // com.binance.dev
@@ -107,7 +107,7 @@ var Phone = Config{
    },
    // com.axis.drawingdesk.v3
    GlEsVersion: 0x9_9999,
-   GlExtension: []String{
+   GlExtension: []string{
       // com.instagram.android
       "GL_OES_compressed_ETC1_RGB8_texture",
       // com.kakaogames.twodin
@@ -119,23 +119,23 @@ var Phone = Config{
 
 // A Sleep is needed after this.
 func (c Config) Checkin(platform string) (*Device, error) {
-   checkin := Message{
-      4: Message{ // checkin
-         1: Message{ // build
-            10: Varint(29), // sdkVersion
+   checkin := protobuf.Message{
+      4: protobuf.Message{ // checkin
+         1: protobuf.Message{ // build
+            10: protobuf.Varint(29), // sdkVersion
          },
       },
-      14: Varint(3), // version
-      18: Message{ // deviceConfiguration
-         1: c.TouchScreen, // touchScreen
-         2: c.Keyboard, // keyboard
-         3: c.Navigation, // navigation
-         4: c.ScreenLayout, // screenLayout
-         5: c.HasHardKeyboard, // hasHardKeyboard
-         6: c.HasFiveWayNavigation, // hasFiveWayNavigation
-         7: c.ScreenDensity, // screenDensity
-         8: c.GlEsVersion, // glEsVersion
-         11: String(platform), // nativePlatform
+      14: protobuf.Varint(3), // version
+      18: protobuf.Message{ // deviceConfiguration
+         1: protobuf.Varint(c.TouchScreen),
+         2: protobuf.Varint(c.Keyboard),
+         3: protobuf.Varint(c.Navigation),
+         4: protobuf.Varint(c.ScreenLayout),
+         5: protobuf.Varint(c.HasHardKeyboard),
+         6: protobuf.Varint(c.HasFiveWayNavigation),
+         7: protobuf.Varint(c.ScreenDensity),
+         8: protobuf.Varint(c.GlEsVersion),
+         11: protobuf.String(platform), // nativePlatform
       },
    }
    for _, library := range c.SystemSharedLibrary {
@@ -146,7 +146,9 @@ func (c Config) Checkin(platform string) (*Device, error) {
    }
    for _, name := range c.DeviceFeature {
       // .deviceConfiguration.deviceFeature
-      checkin.Get(18).Add(26, Message{1: name})
+      checkin.Get(18).Add(26, protobuf.Message{
+         1: protobuf.String(name),
+      })
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",

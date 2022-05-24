@@ -20,7 +20,7 @@ func doDetails(head *gp.Header, app string, parse bool) error {
       if err != nil {
          return err
       }
-      detail.UploadDate = gp.String(date.String())
+      detail.UploadDate = date.String()
    }
    fmt.Println(detail)
    return nil
@@ -43,9 +43,9 @@ func doHeader(platform string, single bool) (*gp.Header, error) {
 }
 
 func doDelivery(head *gp.Header, app string, ver uint64) error {
-   download := func(addr gp.String, name string) error {
+   download := func(addr, name string) error {
       fmt.Println("GET", addr)
-      res, err := http.Get(string(addr))
+      res, err := http.Get(addr)
       if err != nil {
          return err
       }

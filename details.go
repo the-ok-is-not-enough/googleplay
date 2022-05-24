@@ -14,21 +14,20 @@ import (
 // This only works with English. You can force English with:
 // Accept-Language: en
 func (d Details) Time() (time.Time, error) {
-   value := string(d.UploadDate)
-   return time.Parse("Jan 2, 2006", value)
+   return time.Parse("Jan 2, 2006", d.UploadDate)
 }
 
 type Details struct {
-   Title String
-   Creator String
-   UploadDate String // Jun 1, 2021
-   VersionString String
-   VersionCode Varint
-   NumDownloads Varint
-   Size Varint
-   File []Varint
-   Micros Varint
-   CurrencyCode String
+   Title string
+   Creator string
+   UploadDate string // Jun 1, 2021
+   VersionString string
+   VersionCode uint64
+   NumDownloads uint64
+   Size uint64
+   File []uint64
+   Micros uint64
+   CurrencyCode string
 }
 
 type errVersionCode struct {
@@ -143,7 +142,7 @@ func (d Details) String() string {
    buf = append(buf, "\nVersionString: "...)
    buf = append(buf, d.VersionString...)
    buf = append(buf, "\nVersionCode: "...)
-   buf = strconv.AppendUint(buf, uint64(d.VersionCode), 10)
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
    buf = append(buf, "\nNumDownloads: "...)
    buf = append(buf, format.LabelNumber(d.NumDownloads)...)
    buf = append(buf, "\nSize: "...)
@@ -157,7 +156,7 @@ func (d Details) String() string {
       }
    }
    buf = append(buf, "\nOffer: "...)
-   buf = strconv.AppendUint(buf, uint64(d.Micros), 10)
+   buf = strconv.AppendUint(buf, d.Micros, 10)
    buf = append(buf, ' ')
    buf = append(buf, d.CurrencyCode...)
    return string(buf)
