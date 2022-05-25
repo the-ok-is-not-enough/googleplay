@@ -2,6 +2,8 @@ package main
 
 import (
    "flag"
+   "os"
+   "path/filepath"
    "strings"
    gp "github.com/89z/googleplay"
 )
@@ -11,8 +13,15 @@ func main() {
    var app string
    flag.StringVar(&app, "a", "", "app")
    // d
+   dir, err := os.UserHomeDir()
+   if err != nil {
+      panic(err)
+   }
+   dir = filepath.Join(dir, "googleplay")
+   flag.StringVar(&dir, "d", dir, "user dir")
+   // date
    var parse bool
-   flag.BoolVar(&parse, "d", false, "parse date")
+   flag.BoolVar(&parse, "date", false, "parse date")
    // device
    var device bool
    flag.BoolVar(&device, "device", false, "create device")
@@ -47,19 +56,19 @@ func main() {
       gp.LogLevel = 1
    }
    if email != "" {
-      err := doToken(email, password)
+      err := doToken(dir, email, password)
       if err != nil {
          panic(err)
       }
    } else {
       platform := gp.Platforms[platformID]
       if device {
-         err := doDevice(platform)
+         err := doDevice(dir, platform)
          if err != nil {
             panic(err)
          }
       } else if app != "" {
-         head, err := doHeader(platform, single)
+         head, err := doHeader(dir, platform, single)
          if err != nil {
             panic(err)
          }

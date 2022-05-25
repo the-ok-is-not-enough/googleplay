@@ -10,11 +10,11 @@ func TestToken(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   cache, err := os.UserHomeDir()
+   home, err := os.UserHomeDir()
    if err != nil {
       t.Fatal(err)
    }
-   if err := tok.Create(cache, "googleplay/token.json"); err != nil {
+   if err := tok.Create(home, "googleplay/token.json"); err != nil {
       t.Fatal(err)
    }
 }

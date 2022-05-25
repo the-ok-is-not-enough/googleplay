@@ -26,22 +26,6 @@ func doDetails(head *gp.Header, app string, parse bool) error {
    return nil
 }
 
-func doHeader(platform string, single bool) (*gp.Header, error) {
-   cache, err := os.UserHomeDir()
-   if err != nil {
-      return nil, err
-   }
-   token, err := gp.OpenToken(cache, "googleplay/token.json")
-   if err != nil {
-      return nil, err
-   }
-   device, err := gp.OpenDevice(cache, "googleplay", platform + ".json")
-   if err != nil {
-      return nil, err
-   }
-   return token.Header(device.AndroidID, single)
-}
-
 func doDelivery(head *gp.Header, app string, ver uint64) error {
    download := func(addr, name string) error {
       fmt.Println("GET", addr)
@@ -80,28 +64,32 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
    return download(del.DownloadURL, del.Download())
 }
 
-func doToken(email, password string) error {
+func doToken(dir, email, password string) error {
    tok, err := gp.NewToken(email, password)
    if err != nil {
       return err
    }
-   cache, err := os.UserHomeDir()
-   if err != nil {
-      return err
-   }
-   return tok.Create(cache, "googleplay/token.json")
+   return tok.Create(dir, "token.json")
 }
 
-func doDevice(platform string) error {
-   cache, err := os.UserHomeDir()
-   if err != nil {
-      return err
-   }
+func doDevice(dir, platform string) error {
    device, err := gp.Phone.Checkin(platform)
    if err != nil {
       return err
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   return device.Create(cache, "googleplay", platform + ".json")
+   return device.Create(dir, platform + ".json")
+}
+
+func doHeader(dir, platform string, single bool) (*gp.Header, error) {
+   token, err := gp.OpenToken(dir, "token.json")
+   if err != nil {
+      return nil, err
+   }
+   device, err := gp.OpenDevice(dir, platform + ".json")
+   if err != nil {
+      return nil, err
+   }
+   return token.Header(device.AndroidID, single)
 }

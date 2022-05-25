@@ -22,7 +22,7 @@ func TestCheckinArm64(t *testing.T) {
 
 func checkin(id int64) error {
    platform := Platforms[id]
-   cache, err := os.UserHomeDir()
+   home, err := os.UserHomeDir()
    if err != nil {
       return err
    }
@@ -31,7 +31,7 @@ func checkin(id int64) error {
       return err
    }
    platform += ".json"
-   if err := device.Create(cache, "googleplay", platform); err != nil {
+   if err := device.Create(home, "googleplay", platform); err != nil {
       return err
    }
    time.Sleep(Sleep)
