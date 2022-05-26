@@ -65,11 +65,11 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
 }
 
 func doToken(dir, email, password string) error {
-   tok, err := gp.NewToken(email, password)
+   token, err := gp.NewToken(email, password)
    if err != nil {
       return err
    }
-   return tok.Create(dir, "token.json")
+   return token.Create(dir, "token.json")
 }
 
 func doDevice(dir, platform string) error {
