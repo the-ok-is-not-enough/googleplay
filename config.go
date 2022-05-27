@@ -1,3 +1,4 @@
+// github.com/89z
 package googleplay
 
 import (
@@ -83,6 +84,8 @@ var Phone = Config{
       "android.hardware.camera",
       "android.hardware.location",
       "android.hardware.screen.portrait",
+      // com.supercell.brawlstars
+      "android.hardware.touchscreen.multitouch",
       // com.sygic.aura
       "android.hardware.location.network",
       // com.xiaomi.smarthome
