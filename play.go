@@ -14,6 +14,38 @@ import (
    "time"
 )
 
+const Sleep = 4 * time.Second
+
+var LogLevel format.LogLevel
+
+func parseQuery(query io.Reader) url.Values {
+   vals := make(url.Values)
+   buf := bufio.NewScanner(query)
+   for buf.Scan() {
+      key, val, ok := strings.Cut(buf.Text(), "=")
+      if ok {
+         vals.Add(key, val)
+      }
+   }
+   return vals
+}
+
+type Header struct {
+   Auth string // Authorization
+   SDK int64 // User-Agent
+   VersionCode int64 // User-Agent
+   AndroidID uint64 // X-DFE-Device-ID
+}
+
+func (h Header) SetAgent(head http.Header) {
+   var buf []byte
+   buf = append(buf, "Android-Finsky (sdk="...)
+   buf = strconv.AppendInt(buf, h.SDK, 10)
+   buf = append(buf, ",versionCode="...)
+   buf = strconv.AppendInt(buf, h.VersionCode, 10)
+   head.Set("User-Agent", string(buf))
+}
+
 func (h Header) SetAuth(head http.Header) {
    head.Set("Authorization", "Bearer " + h.Auth)
 }
@@ -46,22 +78,6 @@ func (h Header) Purchase(app string) error {
       return errors.New(res.Status)
    }
    return nil
-}
-
-const Sleep = 4 * time.Second
-
-var LogLevel format.LogLevel
-
-func parseQuery(query io.Reader) url.Values {
-   vals := make(url.Values)
-   buf := bufio.NewScanner(query)
-   for buf.Scan() {
-      key, val, ok := strings.Cut(buf.Text(), "=")
-      if ok {
-         vals.Add(key, val)
-      }
-   }
-   return vals
 }
 
 type Token struct {
@@ -113,13 +129,6 @@ func (t Token) Create(elem ...string) error {
    return format.Create(t, elem...)
 }
 
-type Header struct {
-   Auth string // Authorization
-   SDK int64 // User-Agent
-   VersionCode int64 // User-Agent
-   AndroidID uint64 // X-DFE-Device-ID
-}
-
 func (t Token) Header(androidID uint64, single bool) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
@@ -151,13 +160,4 @@ func (t Token) Header(androidID uint64, single bool) (*Header, error) {
       head.VersionCode = 9999_9999
    }
    return &head, nil
-}
-
-func (h Header) SetAgent(head http.Header) {
-   var buf []byte
-   buf = append(buf, "Android-Finsky (sdk="...)
-   buf = strconv.AppendInt(buf, h.SDK, 10)
-   buf = append(buf, ",versionCode="...)
-   buf = strconv.AppendInt(buf, h.VersionCode, 10)
-   head.Set("User-Agent", string(buf))
 }

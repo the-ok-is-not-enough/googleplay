@@ -9,41 +9,6 @@ import (
    "strconv"
 )
 
-type NativePlatform map[int64]string
-
-var Platforms = NativePlatform{
-   // com.google.android.youtube
-   0: "x86",
-   // com.miui.weather2
-   1: "armeabi-v7a",
-   // com.kakaogames.twodin
-   2: "arm64-v8a",
-}
-
-func (n NativePlatform) String() string {
-   var buf []byte
-   buf = append(buf, "nativePlatform"...)
-   for key, val := range n {
-      buf = append(buf, '\n')
-      buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ": "...)
-      buf = append(buf, val...)
-   }
-   return string(buf)
-}
-
-type Device struct {
-   AndroidID uint64
-}
-
-func OpenDevice(elem ...string) (*Device, error) {
-   return format.Open[Device](elem...)
-}
-
-func (d Device) Create(elem ...string) error {
-   return format.Create(d, elem...)
-}
-
 // These can use default values, but they must all be included
 type Config struct {
    DeviceFeature []string
@@ -178,4 +143,39 @@ func (c Config) Checkin(platform string) (*Device, error) {
       return nil, err
    }
    return &dev, nil
+}
+
+type Device struct {
+   AndroidID uint64
+}
+
+func OpenDevice(elem ...string) (*Device, error) {
+   return format.Open[Device](elem...)
+}
+
+func (d Device) Create(elem ...string) error {
+   return format.Create(d, elem...)
+}
+
+type NativePlatform map[int64]string
+
+var Platforms = NativePlatform{
+   // com.google.android.youtube
+   0: "x86",
+   // com.miui.weather2
+   1: "armeabi-v7a",
+   // com.kakaogames.twodin
+   2: "arm64-v8a",
+}
+
+func (n NativePlatform) String() string {
+   var buf []byte
+   buf = append(buf, "nativePlatform"...)
+   for key, val := range n {
+      buf = append(buf, '\n')
+      buf = strconv.AppendInt(buf, key, 10)
+      buf = append(buf, ": "...)
+      buf = append(buf, val...)
+   }
+   return string(buf)
 }
