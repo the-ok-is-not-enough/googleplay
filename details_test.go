@@ -57,7 +57,7 @@ func TestDetails(t *testing.T) {
       if err != nil {
          t.Fatal(err)
       }
-      head.AndroidID = uint64(device.AndroidID)
+      head.AndroidID = device.AndroidID
       det, err := head.Details(app.id)
       if err != nil {
          t.Fatal(err)
@@ -86,4 +86,3 @@ func TestDetails(t *testing.T) {
       time.Sleep(99 * time.Millisecond)
    }
 }
-

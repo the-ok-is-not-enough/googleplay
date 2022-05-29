@@ -82,6 +82,7 @@ var Phone = Config{
       "GL_KHR_texture_compression_astc_ldr",
    },
    // com.valvesoftware.android.steam.community
+   // developer.android.com/reference/android/content/res/Configuration
    TouchScreen: 3,
 }
 
