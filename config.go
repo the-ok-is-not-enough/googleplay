@@ -108,9 +108,11 @@ func (c Config) Checkin(platform string) (*Device, error) {
       },
    }
    for _, library := range c.SystemSharedLibrary {
+      // .deviceConfiguration.systemSharedLibrary
       checkin.Get(18).AddString(9, library)
    }
    for _, extension := range c.GlExtension {
+      // .deviceConfiguration.glExtension
       checkin.Get(18).AddString(15, extension)
    }
    for _, name := range c.DeviceFeature {
