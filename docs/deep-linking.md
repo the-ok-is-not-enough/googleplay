@@ -25,16 +25,8 @@ and check the `Androidmanifest.xml` file:
 </intent-filter>
 ~~~
 
-So only link with those host will get noticed by the app. In addition, some apps also filter on the path:
-
-~~~xml
-<intent-filter android:label="@string/app_name" android:autoVerify="true">
-   <data android:scheme="https" android:host="www.pbs.org"/>
-   <data android:pathPattern="/video/.*/"/>
-</intent-filter>
-~~~
-
-Finally, if you have `adb`, you can use it like this:
+So only link with those host will get noticed by the app. Finally, if you have
+`adb`, you can use it like this:
 
 ~~~
 adb shell am start -a android.intent.action.VIEW `
