@@ -7,7 +7,6 @@ import (
 )
 
 var apps = []appType{
-   {"2021-06-01", 0, "com.valvesoftware.android.steam.community"},
    {"2021-12-08", 0, "com.amctve.amcfullepisodes"},
    {"2022-02-02", 2, "com.illumix.fnafar"},
    {"2022-02-14", 0, "org.videolan.vlc"},

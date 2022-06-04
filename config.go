@@ -81,9 +81,6 @@ var Phone = Config{
       // com.kakaogames.twodin
       "GL_KHR_texture_compression_astc_ldr",
    },
-   // com.valvesoftware.android.steam.community
-   // developer.android.com/reference/android/content/res/Configuration
-   TouchScreen: 3,
 }
 
 // A Sleep is needed after this.
