@@ -1,5 +1,5 @@
-// github.com/89z
 package googleplay
+// github.com/89z
 
 import (
    "bytes"
