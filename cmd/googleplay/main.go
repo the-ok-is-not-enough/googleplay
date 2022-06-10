@@ -2,10 +2,11 @@ package main
 
 import (
    "flag"
+   "github.com/89z/format"
+   "github.com/89z/googleplay"
    "os"
    "path/filepath"
    "strings"
-   gp "github.com/89z/googleplay"
 )
 
 func main() {
@@ -28,9 +29,12 @@ func main() {
    // email
    var email string
    flag.StringVar(&email, "email", "", "your email")
+   // log
+   var level int
+   flag.IntVar(&level, "log", 0, "log level")
    // p
    var platformID int64
-   flag.Int64Var(&platformID, "p", 0, gp.Platforms.String())
+   flag.Int64Var(&platformID, "p", 0, googleplay.Platforms.String())
    // password
    var password string
    flag.StringVar(&password, "password", "", "your password")
@@ -48,20 +52,15 @@ func main() {
    // v
    var version uint64
    flag.Uint64Var(&version, "v", 0, "app version")
-   // verbose
-   var verbose bool
-   flag.BoolVar(&verbose, "verbose", false, "dump requests")
    flag.Parse()
-   if verbose {
-      gp.LogLevel = 1
-   }
+   googleplay.LogLevel = format.LogLevel(level)
    if email != "" {
       err := doToken(dir, email, password)
       if err != nil {
          panic(err)
       }
    } else {
-      platform := gp.Platforms[platformID]
+      platform := googleplay.Platforms[platformID]
       if device {
          err := doDevice(dir, platform)
          if err != nil {
