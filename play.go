@@ -14,6 +14,39 @@ import (
    "time"
 )
 
+func (t Token) Header(androidID uint64, single bool) (*Header, error) {
+   val := url.Values{
+      "Token": {t.Token},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
+   )
+   if err != nil {
+      return nil, err
+   }
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   LogLevel.Dump(req)
+   res, err := new(http.Transport).RoundTrip(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   if res.StatusCode != http.StatusOK {
+      return nil, errors.New(res.Status)
+   }
+   var head Header
+   head.Auth = parseQuery(res.Body).Get("Auth")
+   head.SDK = 9
+   head.AndroidID = androidID
+   if single {
+      head.VersionCode = 8091_9999 // single APK
+   } else {
+      head.VersionCode = 9999_9999
+   }
+   return &head, nil
+}
+
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
@@ -81,7 +114,6 @@ func (h Header) Purchase(app string) error {
 }
 
 type Token struct {
-   Services string
    Token string
 }
 
@@ -116,7 +148,6 @@ func NewToken(email, password string) (*Token, error) {
    }
    val := parseQuery(res.Body)
    var tok Token
-   tok.Services = val.Get("services")
    tok.Token = val.Get("Token")
    return &tok, nil
 }
@@ -127,37 +158,4 @@ func OpenToken(elem ...string) (*Token, error) {
 
 func (t Token) Create(elem ...string) error {
    return format.Create(t, elem...)
-}
-
-func (t Token) Header(androidID uint64, single bool) (*Header, error) {
-   val := url.Values{
-      "Token": {t.Token},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(val),
-   )
-   if err != nil {
-      return nil, err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errors.New(res.Status)
-   }
-   var head Header
-   head.Auth = parseQuery(res.Body).Get("Auth")
-   head.SDK = 9
-   head.AndroidID = androidID
-   if single {
-      head.VersionCode = 8091_9999 // single APK
-   } else {
-      head.VersionCode = 9999_9999
-   }
-   return &head, nil
 }
