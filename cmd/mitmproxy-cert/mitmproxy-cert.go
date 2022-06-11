@@ -33,13 +33,8 @@ func main() {
    if err != nil {
       panic(err)
    }
-   var cert string
-   flag.StringVar(
-      &cert,
-      "c",
-      filepath.Join(home, "/.mitmproxy/mitmproxy-ca-cert.cer"),
-      "certificate",
-   )
+   cert := filepath.Join(home, "/.mitmproxy/mitmproxy-ca-cert.cer")
+   flag.StringVar(&cert, "c", cert, "certificate")
    flag.Parse()
    buf, err := os.ReadFile(cert)
    if err != nil {
