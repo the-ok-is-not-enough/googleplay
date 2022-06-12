@@ -1,9 +1,13 @@
 package googleplay
 
 import (
+   "fmt"
    "os"
    "testing"
+   "time"
 )
+
+const sleep = time.Minute
 
 func TestHeader(t *testing.T) {
    home, err := os.UserHomeDir()
@@ -14,9 +18,16 @@ func TestHeader(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   LogLevel = 1
-   if _, err := token.Header(0, false); err != nil {
-      t.Fatal(err)
+   fmt.Println(sleep)
+   for i := 9; i >= 1; i-- {
+      time.Sleep(sleep)
+      head, err := token.Header(0, false)
+      if err != nil {
+         t.Fatal(err)
+      }
+      if head.Auth == "" {
+         t.Fatalf("%+v", head)
+      }
    }
 }
 

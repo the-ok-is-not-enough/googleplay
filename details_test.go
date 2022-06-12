@@ -46,6 +46,7 @@ func TestDetails(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
+   LogLevel = 1
    head, err := token.Header(0, false)
    if err != nil {
       t.Fatal(err)

@@ -47,6 +47,13 @@ func (t Token) Header(androidID uint64, single bool) (*Header, error) {
    return &head, nil
 }
 
+type Header struct {
+   AndroidID uint64 // X-DFE-Device-ID
+   SDK int64 // User-Agent
+   VersionCode int64 // User-Agent
+   Auth string // Authorization
+}
+
 const Sleep = 4 * time.Second
 
 var LogLevel format.LogLevel
@@ -61,13 +68,6 @@ func parseQuery(query io.Reader) url.Values {
       }
    }
    return vals
-}
-
-type Header struct {
-   Auth string // Authorization
-   SDK int64 // User-Agent
-   VersionCode int64 // User-Agent
-   AndroidID uint64 // X-DFE-Device-ID
 }
 
 func (h Header) SetAgent(head http.Header) {
