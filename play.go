@@ -17,6 +17,9 @@ import (
 func (t Token) Header(androidID uint64, single bool) (*Header, error) {
    val := url.Values{
       "Token": {t.Token},
+      "app": {"com.android.vending"},
+      "client_sig": {"38918a453d07199354f8b19af05ec6562ced5788"},
+      // this service taken from Android API 28
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
    }.Encode()
    req, err := http.NewRequest(
