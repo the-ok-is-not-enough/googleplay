@@ -9,54 +9,6 @@ import (
    "strconv"
 )
 
-type AppFileMetadata struct {
-   FileType uint64
-   DownloadURL string
-}
-
-type Delivery struct {
-   DownloadURL string
-   PackageName string
-   SplitDeliveryData []SplitDeliveryData
-   VersionCode uint64
-   AdditionalFile []AppFileMetadata
-}
-
-func (d Delivery) Additional(typ uint64) string {
-   var buf []byte
-   if typ == 0 {
-      buf = append(buf, "main"...)
-   } else {
-      buf = append(buf, "patch"...)
-   }
-   buf = append(buf, '.')
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
-   buf = append(buf, '.')
-   buf = append(buf, d.PackageName...)
-   buf = append(buf, ".obb"...)
-   return string(buf)
-}
-
-func (d Delivery) Download() string {
-   var buf []byte
-   buf = append(buf, d.PackageName...)
-   buf = append(buf, '-')
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
-}
-
-func (d Delivery) Split(id string) string {
-   var buf []byte
-   buf = append(buf, d.PackageName...)
-   buf = append(buf, '-')
-   buf = append(buf, id...)
-   buf = append(buf, '-')
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
-}
-
 func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -80,10 +32,8 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errors.New(res.Status)
    }
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
+   responseWrapper := make(protobuf.Message)
+   responseWrapper.ReadFrom(res.Body)
    // .payload.deliveryResponse.status
    status, err := responseWrapper.Get(1).Get(21).GetVarint(1)
    if err != nil {
@@ -143,4 +93,51 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
 type SplitDeliveryData struct {
    ID string
    DownloadURL string
+}
+type AppFileMetadata struct {
+   FileType uint64
+   DownloadURL string
+}
+
+type Delivery struct {
+   DownloadURL string
+   PackageName string
+   SplitDeliveryData []SplitDeliveryData
+   VersionCode uint64
+   AdditionalFile []AppFileMetadata
+}
+
+func (d Delivery) Additional(typ uint64) string {
+   var buf []byte
+   if typ == 0 {
+      buf = append(buf, "main"...)
+   } else {
+      buf = append(buf, "patch"...)
+   }
+   buf = append(buf, '.')
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = append(buf, '.')
+   buf = append(buf, d.PackageName...)
+   buf = append(buf, ".obb"...)
+   return string(buf)
+}
+
+func (d Delivery) Download() string {
+   var buf []byte
+   buf = append(buf, d.PackageName...)
+   buf = append(buf, '-')
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = append(buf, ".apk"...)
+   return string(buf)
+}
+
+func (d Delivery) Split(id string) string {
+   var buf []byte
+   buf = append(buf, d.PackageName...)
+   buf = append(buf, '-')
+   buf = append(buf, id...)
+   buf = append(buf, '-')
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = append(buf, ".apk"...)
+   return string(buf)
 }

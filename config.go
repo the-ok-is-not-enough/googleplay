@@ -1,5 +1,4 @@
 package googleplay
-// github.com/89z
 
 import (
    "bytes"
@@ -8,6 +7,29 @@ import (
    "net/http"
    "strconv"
 )
+
+type NativePlatform map[int64]string
+
+var Platforms = NativePlatform{
+   // com.google.android.youtube
+   0: "x86",
+   // com.miui.weather2
+   1: "armeabi-v7a",
+   // com.kakaogames.twodin
+   2: "arm64-v8a",
+}
+
+func (n NativePlatform) String() string {
+   var buf []byte
+   buf = append(buf, "nativePlatform"...)
+   for key, val := range n {
+      buf = append(buf, '\n')
+      buf = strconv.AppendInt(buf, key, 10)
+      buf = append(buf, ": "...)
+      buf = append(buf, val...)
+   }
+   return string(buf)
+}
 
 // These can use default values, but they must all be included
 type Config struct {
@@ -83,6 +105,36 @@ var Phone = Config{
    },
 }
 
+func (d Device) AndroidID() (uint64, error) {
+   return d.GetFixed64(7)
+}
+
+func (d Device) Create(elem ...string) error {
+   file, err := format.Create(elem...)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   if _, err := d.WriteTo(file); err != nil {
+      return err
+   }
+   return nil
+}
+
+func OpenDevice(elem ...string) (*Device, error) {
+   file, err := format.Open(elem...)
+   if err != nil {
+      return nil, err
+   }
+   defer file.Close()
+   var dev Device
+   dev.Message = make(protobuf.Message)
+   if _, err := dev.ReadFrom(file); err != nil {
+      return nil, err
+   }
+   return &dev, nil
+}
+
 // A Sleep is needed after this.
 func (c Config) Checkin(platform string) (*Device, error) {
    checkin := protobuf.Message{
@@ -118,9 +170,10 @@ func (c Config) Checkin(platform string) (*Device, error) {
          1: protobuf.String(name),
       })
    }
+   buf := new(bytes.Buffer)
+   checkin.WriteTo(buf)
    req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/checkin",
-      bytes.NewReader(checkin.Marshal()),
+      "POST", "https://android.googleapis.com/checkin", buf,
    )
    if err != nil {
       return nil, err
@@ -132,50 +185,12 @@ func (c Config) Checkin(platform string) (*Device, error) {
       return nil, err
    }
    defer res.Body.Close()
-   checkinResponse, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
    var dev Device
-   // .androidId
-   dev.AndroidID, err = checkinResponse.GetFixed64(7)
-   if err != nil {
-      return nil, err
-   }
+   dev.Message = make(protobuf.Message)
+   dev.ReadFrom(res.Body)
    return &dev, nil
 }
 
 type Device struct {
-   AndroidID uint64
-}
-
-func OpenDevice(elem ...string) (*Device, error) {
-   return format.Open[Device](elem...)
-}
-
-func (d Device) Create(elem ...string) error {
-   return format.Create(d, elem...)
-}
-
-type NativePlatform map[int64]string
-
-var Platforms = NativePlatform{
-   // com.google.android.youtube
-   0: "x86",
-   // com.miui.weather2
-   1: "armeabi-v7a",
-   // com.kakaogames.twodin
-   2: "arm64-v8a",
-}
-
-func (n NativePlatform) String() string {
-   var buf []byte
-   buf = append(buf, "nativePlatform"...)
-   for key, val := range n {
-      buf = append(buf, '\n')
-      buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ": "...)
-      buf = append(buf, val...)
-   }
-   return string(buf)
+   protobuf.Message
 }

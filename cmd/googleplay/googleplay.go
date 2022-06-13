@@ -10,6 +10,56 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func doHeader(dir, platform string, single bool) (*gp.Header, error) {
+   token, err := gp.OpenToken(dir, "token.txt")
+   if err != nil {
+      return nil, err
+   }
+   device, err := gp.OpenDevice(dir, platform + ".txt")
+   if err != nil {
+      return nil, err
+   }
+   id, err := device.AndroidID()
+   if err != nil {
+      return nil, err
+   }
+   return token.Header(id, single)
+}
+
+func doDevice(dir, platform string) error {
+   device, err := gp.Phone.Checkin(platform)
+   if err != nil {
+      return err
+   }
+   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
+   time.Sleep(gp.Sleep)
+   file, err := format.Create(dir, platform + ".txt")
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   if _, err := device.WriteTo(file); err != nil {
+      return err
+   }
+   return nil
+}
+
+func doToken(dir, email, password string) error {
+   token, err := gp.NewToken(email, password)
+   if err != nil {
+      return err
+   }
+   file, err := format.Create(dir, "token.txt")
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   if _, err := token.WriteTo(file); err != nil {
+      return err
+   }
+   return nil
+}
+
 func doDetails(head *gp.Header, app string, parse bool) error {
    detail, err := head.Details(app)
    if err != nil {
@@ -62,34 +112,4 @@ func doDelivery(head *gp.Header, app string, ver uint64) error {
       }
    }
    return download(del.DownloadURL, del.Download())
-}
-
-func doToken(dir, email, password string) error {
-   token, err := gp.NewToken(email, password)
-   if err != nil {
-      return err
-   }
-   return token.Create(dir, "token.json")
-}
-
-func doDevice(dir, platform string) error {
-   device, err := gp.Phone.Checkin(platform)
-   if err != nil {
-      return err
-   }
-   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
-   time.Sleep(gp.Sleep)
-   return device.Create(dir, platform + ".json")
-}
-
-func doHeader(dir, platform string, single bool) (*gp.Header, error) {
-   token, err := gp.OpenToken(dir, "token.json")
-   if err != nil {
-      return nil, err
-   }
-   device, err := gp.OpenDevice(dir, platform + ".json")
-   if err != nil {
-      return nil, err
-   }
-   return token.Header(device.AndroidID, single)
 }

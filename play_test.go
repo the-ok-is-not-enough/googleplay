@@ -6,12 +6,26 @@ import (
    "time"
 )
 
+func TestToken(t *testing.T) {
+   token, err := NewToken(email, password)
+   if err != nil {
+      t.Fatal(err)
+   }
+   home, err := os.UserHomeDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   if err := token.Create(home, "googleplay/token.txt"); err != nil {
+      t.Fatal(err)
+   }
+}
+
 func TestHeader(t *testing.T) {
    home, err := os.UserHomeDir()
    if err != nil {
       t.Fatal(err)
    }
-   token, err := OpenToken(home, "googleplay/token.json")
+   token, err := OpenToken(home, "googleplay/token.txt")
    if err != nil {
       t.Fatal(err)
    }
@@ -24,19 +38,5 @@ func TestHeader(t *testing.T) {
          t.Fatalf("%+v", head)
       }
       time.Sleep(time.Second)
-   }
-}
-
-func TestToken(t *testing.T) {
-   token, err := NewToken(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
-   home, err := os.UserHomeDir()
-   if err != nil {
-      t.Fatal(err)
-   }
-   if err := token.Create(home, "googleplay/token.json"); err != nil {
-      t.Fatal(err)
    }
 }

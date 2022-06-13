@@ -12,56 +12,6 @@ import (
    "time"
 )
 
-type Details struct {
-   Title string
-   Creator string
-   UploadDate string // Jun 1, 2021
-   VersionString string
-   VersionCode uint64
-   NumDownloads uint64
-   Size uint64
-   File []uint64
-   Micros uint64
-   CurrencyCode string
-}
-
-func (d Details) String() string {
-   var buf []byte
-   buf = append(buf, "Title: "...)
-   buf = append(buf, d.Title...)
-   buf = append(buf, "\nCreator: "...)
-   buf = append(buf, d.Creator...)
-   buf = append(buf, "\nUploadDate: "...)
-   buf = append(buf, d.UploadDate...)
-   buf = append(buf, "\nVersionString: "...)
-   buf = append(buf, d.VersionString...)
-   buf = append(buf, "\nVersionCode: "...)
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
-   buf = append(buf, "\nNumDownloads: "...)
-   buf = append(buf, format.LabelNumber(d.NumDownloads)...)
-   buf = append(buf, "\nSize: "...)
-   buf = append(buf, format.LabelSize(d.Size)...)
-   buf = append(buf, "\nFile:"...)
-   for _, file := range d.File {
-      if file == 0 {
-         buf = append(buf, " APK"...)
-      } else {
-         buf = append(buf, " OBB"...)
-      }
-   }
-   buf = append(buf, "\nOffer: "...)
-   buf = strconv.AppendUint(buf, d.Micros, 10)
-   buf = append(buf, ' ')
-   buf = append(buf, d.CurrencyCode...)
-   return string(buf)
-}
-
-// This only works with English. You can force English with:
-// Accept-Language: en
-func (d Details) Time() (time.Time, error) {
-   return time.Parse("Jan 2, 2006", d.UploadDate)
-}
-
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
@@ -83,10 +33,8 @@ func (h Header) Details(app string) (*Details, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errors.New(res.Status)
    }
-   responseWrapper, err := protobuf.Decode(res.Body)
-   if err != nil {
-      return nil, err
-   }
+   responseWrapper := make(protobuf.Message)
+   responseWrapper.ReadFrom(res.Body)
    // .payload.detailsResponse.docV2
    docV2 := responseWrapper.Get(1).Get(2).Get(4)
    var det Details
@@ -161,4 +109,53 @@ func (e errVersionCode) Error() string {
    buf.WriteString(" versionCode missing\n")
    buf.WriteString("Check nativePlatform")
    return buf.String()
+}
+type Details struct {
+   Title string
+   Creator string
+   UploadDate string // Jun 1, 2021
+   VersionString string
+   VersionCode uint64
+   NumDownloads uint64
+   Size uint64
+   File []uint64
+   Micros uint64
+   CurrencyCode string
+}
+
+func (d Details) String() string {
+   var buf []byte
+   buf = append(buf, "Title: "...)
+   buf = append(buf, d.Title...)
+   buf = append(buf, "\nCreator: "...)
+   buf = append(buf, d.Creator...)
+   buf = append(buf, "\nUploadDate: "...)
+   buf = append(buf, d.UploadDate...)
+   buf = append(buf, "\nVersionString: "...)
+   buf = append(buf, d.VersionString...)
+   buf = append(buf, "\nVersionCode: "...)
+   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = append(buf, "\nNumDownloads: "...)
+   buf = append(buf, format.LabelNumber(d.NumDownloads)...)
+   buf = append(buf, "\nSize: "...)
+   buf = append(buf, format.LabelSize(d.Size)...)
+   buf = append(buf, "\nFile:"...)
+   for _, file := range d.File {
+      if file == 0 {
+         buf = append(buf, " APK"...)
+      } else {
+         buf = append(buf, " OBB"...)
+      }
+   }
+   buf = append(buf, "\nOffer: "...)
+   buf = strconv.AppendUint(buf, d.Micros, 10)
+   buf = append(buf, ' ')
+   buf = append(buf, d.CurrencyCode...)
+   return string(buf)
+}
+
+// This only works with English. You can force English with:
+// Accept-Language: en
+func (d Details) Time() (time.Time, error) {
+   return time.Parse("Jan 2, 2006", d.UploadDate)
 }

@@ -6,6 +6,57 @@ import (
    "time"
 )
 
+func TestDetails(t *testing.T) {
+   home, err := os.UserHomeDir()
+   if err != nil {
+      t.Fatal(err)
+   }
+   token, err := OpenToken(home, "googleplay/token.txt")
+   if err != nil {
+      t.Fatal(err)
+   }
+   head, err := token.Header(0, false)
+   if err != nil {
+      t.Fatal(err)
+   }
+   for _, app := range apps {
+      platform := Platforms[app.platform]
+      device, err := OpenDevice(home, "googleplay", platform + ".txt")
+      if err != nil {
+         t.Fatal(err)
+      }
+      head.AndroidID, err = device.AndroidID()
+      if err != nil {
+         t.Fatal(err)
+      }
+      det, err := head.Details(app.id)
+      if err != nil {
+         t.Fatal(err)
+      }
+      if det.CurrencyCode == "" {
+         t.Fatal(det)
+      }
+      if det.NumDownloads == 0 {
+         t.Fatal(det)
+      }
+      if det.Size == 0 {
+         t.Fatal(det)
+      }
+      if det.Title == "" {
+         t.Fatal(det)
+      }
+      if det.UploadDate == "" {
+         t.Fatal(det)
+      }
+      if det.VersionCode == 0 {
+         t.Fatal(det)
+      }
+      if det.VersionString == "" {
+         t.Fatal(det)
+      }
+      time.Sleep(99 * time.Millisecond)
+   }
+}
 var apps = []appType{
    {"2021-12-08", 0, "com.amctve.amcfullepisodes"},
    {"2022-02-02", 2, "com.illumix.fnafar"},
@@ -35,54 +86,4 @@ type appType struct {
    date string
    platform int64 // X-DFE-Device-ID
    id string
-}
-
-func TestDetails(t *testing.T) {
-   home, err := os.UserHomeDir()
-   if err != nil {
-      t.Fatal(err)
-   }
-   token, err := OpenToken(home, "googleplay/token.json")
-   if err != nil {
-      t.Fatal(err)
-   }
-   LogLevel = 1
-   head, err := token.Header(0, false)
-   if err != nil {
-      t.Fatal(err)
-   }
-   for _, app := range apps {
-      platform := Platforms[app.platform]
-      device, err := OpenDevice(home, "googleplay", platform + ".json")
-      if err != nil {
-         t.Fatal(err)
-      }
-      head.AndroidID = device.AndroidID
-      det, err := head.Details(app.id)
-      if err != nil {
-         t.Fatal(err)
-      }
-      if det.CurrencyCode == "" {
-         t.Fatal(det)
-      }
-      if det.NumDownloads == 0 {
-         t.Fatal(det)
-      }
-      if det.Size == 0 {
-         t.Fatal(det)
-      }
-      if det.Title == "" {
-         t.Fatal(det)
-      }
-      if det.UploadDate == "" {
-         t.Fatal(det)
-      }
-      if det.VersionCode == 0 {
-         t.Fatal(det)
-      }
-      if det.VersionString == "" {
-         t.Fatal(det)
-      }
-      time.Sleep(99 * time.Millisecond)
-   }
 }
