@@ -172,5 +172,5 @@ func NewToken(email, password string) (*Token, error) {
 }
 
 type Token struct {
-   *net.Values
+   net.Values
 }
