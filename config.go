@@ -2,11 +2,25 @@ package googleplay
 
 import (
    "bytes"
-   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "net/http"
+   "os"
    "strconv"
 )
+
+func OpenDevice(name string) (*Device, error) {
+   file, err := os.Open(name)
+   if err != nil {
+      return nil, err
+   }
+   defer file.Close()
+   var dev Device
+   dev.Message = make(protobuf.Message)
+   if _, err := dev.ReadFrom(file); err != nil {
+      return nil, err
+   }
+   return &dev, nil
+}
 
 type NativePlatform map[int64]string
 
@@ -107,32 +121,6 @@ var Phone = Config{
 
 func (d Device) AndroidID() (uint64, error) {
    return d.GetFixed64(7)
-}
-
-func (d Device) Create(elem ...string) error {
-   file, err := format.Create(elem...)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   if _, err := d.WriteTo(file); err != nil {
-      return err
-   }
-   return nil
-}
-
-func OpenDevice(elem ...string) (*Device, error) {
-   file, err := format.Open(elem...)
-   if err != nil {
-      return nil, err
-   }
-   defer file.Close()
-   var dev Device
-   dev.Message = make(protobuf.Message)
-   if _, err := dev.ReadFrom(file); err != nil {
-      return nil, err
-   }
-   return &dev, nil
 }
 
 // A Sleep is needed after this.

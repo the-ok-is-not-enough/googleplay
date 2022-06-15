@@ -11,11 +11,11 @@ import (
 )
 
 func doHeader(dir, platform string, single bool) (*gp.Header, error) {
-   token, err := gp.OpenToken(dir, "token.txt")
+   token, err := gp.OpenToken(dir + "/token.txt")
    if err != nil {
       return nil, err
    }
-   device, err := gp.OpenDevice(dir, platform + ".txt")
+   device, err := gp.OpenDevice(dir + "/" + platform + ".txt")
    if err != nil {
       return nil, err
    }
@@ -33,7 +33,7 @@ func doDevice(dir, platform string) error {
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   file, err := format.Create(dir, platform + ".txt")
+   file, err := format.Create(dir + "/" + platform + ".txt")
    if err != nil {
       return err
    }
@@ -49,7 +49,7 @@ func doToken(dir, email, password string) error {
    if err != nil {
       return err
    }
-   file, err := format.Create(dir, "token.txt")
+   file, err := format.Create(dir + "/token.txt")
    if err != nil {
       return err
    }

@@ -7,25 +7,14 @@ import (
    "github.com/89z/format/net"
    "net/http"
    "net/url"
+   "os"
    "strconv"
    "strings"
    "time"
 )
 
-func (t Token) Create(elem ...string) error {
-   file, err := format.Create(elem...)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   if _, err := t.WriteTo(file); err != nil {
-      return err
-   }
-   return nil
-}
-
-func OpenToken(elem ...string) (*Token, error) {
-   file, err := format.Open(elem...)
+func OpenToken(name string) (*Token, error) {
+   file, err := os.Open(name)
    if err != nil {
       return nil, err
    }
