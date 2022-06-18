@@ -19,7 +19,7 @@ func TestDelivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   id, err := device.AndroidID()
+   id, err := device.ID()
    if err != nil {
       t.Fatal(err)
    }

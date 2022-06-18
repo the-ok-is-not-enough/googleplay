@@ -46,7 +46,7 @@ accepted the Google Play terms and conditions. Create a file containing token
 googleplay -email EMAIL -password PASSWORD
 ~~~
 
-Create a file containing `Android_ID` (GSF ID) for future requests:
+Create a file containing `X-DFE-Device-ID` (GSF ID) for future requests:
 
 ~~~
 googleplay -device

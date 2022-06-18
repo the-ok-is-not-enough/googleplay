@@ -68,7 +68,7 @@ var Phone = Config{
    },
 }
 
-func (d Device) AndroidID() (uint64, error) {
+func (d Device) ID() (uint64, error) {
    return d.GetFixed64(7)
 }
 

@@ -19,7 +19,7 @@ func doHeader(dir, platform string, single bool) (*gp.Header, error) {
    if err != nil {
       return nil, err
    }
-   id, err := device.AndroidID()
+   id, err := device.ID()
    if err != nil {
       return nil, err
    }

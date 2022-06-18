@@ -52,7 +52,7 @@ func TestDetails(t *testing.T) {
       if err != nil {
          t.Fatal(err)
       }
-      head.AndroidID, err = device.AndroidID()
+      head.DeviceID, err = device.ID()
       if err != nil {
          t.Fatal(err)
       }

@@ -39,7 +39,7 @@ func OpenToken(name string) (*Token, error) {
    return &tok, nil
 }
 
-func (t Token) Header(androidID uint64, single bool) (*Header, error) {
+func (t Token) Header(deviceID uint64, single bool) (*Header, error) {
    // these values take from Android API 28
    body := url.Values{
       "Token": {t.Token()},
@@ -65,7 +65,7 @@ func (t Token) Header(androidID uint64, single bool) (*Header, error) {
    }
    var head Header
    head.SDK = 9
-   head.AndroidID = androidID
+   head.DeviceID = deviceID
    if single {
       head.VersionCode = 8091_9999 // single APK
    } else {
@@ -82,7 +82,7 @@ const Sleep = 4 * time.Second
 var LogLevel format.LogLevel
 
 type Header struct {
-   AndroidID uint64 // X-DFE-Device-ID
+   DeviceID uint64 // X-DFE-Device-ID
    SDK int64 // User-Agent
    VersionCode int64 // User-Agent
    Auth string // Authorization
@@ -102,7 +102,7 @@ func (h Header) SetAuth(head http.Header) {
 }
 
 func (h Header) SetDevice(head http.Header) {
-   device := strconv.FormatUint(h.AndroidID, 16)
+   device := strconv.FormatUint(h.DeviceID, 16)
    head.Set("X-DFE-Device-ID", device)
 }
 
