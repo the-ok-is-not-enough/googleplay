@@ -25,7 +25,7 @@ func (t Token) Create(name string) error {
    return nil
 }
 
-func OpenToken(name string) (*Token, error) {
+func Open_Token(name string) (*Token, error) {
    file, err := os.Open(name)
    if err != nil {
       return nil, err
@@ -39,7 +39,7 @@ func OpenToken(name string) (*Token, error) {
    return &tok, nil
 }
 
-func (t Token) Header(deviceID uint64, single bool) (*Header, error) {
+func (t Token) Header(device_ID uint64, single bool) (*Header, error) {
    // these values take from Android API 28
    body := url.Values{
       "Token": {t.Token()},
@@ -65,11 +65,11 @@ func (t Token) Header(deviceID uint64, single bool) (*Header, error) {
    }
    var head Header
    head.SDK = 9
-   head.DeviceID = deviceID
+   head.Device_ID = device_ID
    if single {
-      head.VersionCode = 8091_9999 // single APK
+      head.Version_Code = 8091_9999 // single APK
    } else {
-      head.VersionCode = 9999_9999
+      head.Version_Code = 9999_9999
    }
    val := net.NewValues()
    val.ReadFrom(res.Body)
@@ -82,28 +82,28 @@ const Sleep = 4 * time.Second
 var Log_Level format.Log_Level
 
 type Header struct {
-   DeviceID uint64 // X-DFE-Device-ID
+   Device_ID uint64 // X-DFE-Device-ID
    SDK int64 // User-Agent
-   VersionCode int64 // User-Agent
+   Version_Code int64 // User-Agent
    Auth string // Authorization
 }
 
-func (h Header) SetAgent(head http.Header) {
+func (h Header) Set_Agent(head http.Header) {
    var buf []byte
    buf = append(buf, "Android-Finsky (sdk="...)
    buf = strconv.AppendInt(buf, h.SDK, 10)
    buf = append(buf, ",versionCode="...)
-   buf = strconv.AppendInt(buf, h.VersionCode, 10)
+   buf = strconv.AppendInt(buf, h.Version_Code, 10)
    buf = append(buf, ')')
    head.Set("User-Agent", string(buf))
 }
 
-func (h Header) SetAuth(head http.Header) {
+func (h Header) Set_Auth(head http.Header) {
    head.Set("Authorization", "Bearer " + h.Auth)
 }
 
-func (h Header) SetDevice(head http.Header) {
-   device := strconv.FormatUint(h.DeviceID, 16)
+func (h Header) Set_Device(head http.Header) {
+   device := strconv.FormatUint(h.Device_ID, 16)
    head.Set("X-DFE-Device-ID", device)
 }
 
@@ -138,7 +138,7 @@ func (t Token) Token() string {
 
 // You can also use host "android.clients.google.com", but it also uses
 // TLS fingerprinting.
-func NewToken(email, password string) (*Token, error) {
+func New_Token(email, password string) (*Token, error) {
    body := url.Values{
       "Email": {email},
       "Passwd": {password},

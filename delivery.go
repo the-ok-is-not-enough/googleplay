@@ -3,6 +3,7 @@ package googleplay
 import (
    "errors"
    "github.com/89z/format/protobuf"
+   "io"
    "net/http"
    "net/url"
    "strconv"
@@ -15,9 +16,9 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   h.SetAgent(req.Header)
-   h.SetAuth(req.Header) // needed for single APK
-   h.SetDevice(req.Header)
+   h.Set_Agent(req.Header)
+   h.Set_Auth(req.Header) // needed for single APK
+   h.Set_Device(req.Header)
    req.URL.RawQuery = url.Values{
       "doc": {app},
       "vc": {strconv.FormatUint(ver, 10)},
@@ -31,8 +32,14 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errors.New(res.Status)
    }
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
    response_wrapper := make(protobuf.Message)
-   response_wrapper.ReadFrom(res.Body)
+   if err := response_wrapper.UnmarshalBinary(buf); err != nil {
+      return nil, err
+   }
    // .payload.deliveryResponse.status
    status, err := response_wrapper.Get(1).Get(21).Get_Varint(1)
    if err != nil {
@@ -57,10 +64,10 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    del.Package_Name = app
    del.Version_Code = ver
    // .splitDeliveryData
-   for _, data := range app_data.GetMessages(15) {
+   for _, data := range app_data.Get_Messages(15) {
       var split Split_Data
       // .id
-      split.ID, err = data.GetString(1)
+      split.ID, err = data.Get_String(1)
       if err != nil {
          return nil, err
       }

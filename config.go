@@ -4,11 +4,75 @@ import (
    "bytes"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
+   "io"
    "net/http"
    "os"
+   "path/filepath"
    "strconv"
 )
 
+func (d Device) Create(name string) error {
+   buf, err := d.MarshalBinary()
+   if err != nil {
+      return err
+   }
+   os.Stderr.WriteString("Create " + filepath.FromSlash(name) + "\n")
+   if err := os.MkdirAll(filepath.Dir(name), os.ModePerm); err != nil {
+      return err
+   }
+   return os.WriteFile(name, buf, os.ModePerm)
+}
+
+func Open_Device(name string) (*Device, error) {
+   buf, err := os.ReadFile(name)
+   if err != nil {
+      return nil, err
+   }
+   var dev Device
+   dev.Message = make(protobuf.Message)
+   if err := dev.UnmarshalBinary(buf); err != nil {
+      return nil, err
+   }
+   return &dev, nil
+}
+
+type Native_Platform map[int64]string
+
+var Platforms = Native_Platform{
+   // com.google.android.youtube
+   0: "x86",
+   // com.miui.weather2
+   1: "armeabi-v7a",
+   // com.kakaogames.twodin
+   2: "arm64-v8a",
+}
+
+func (n Native_Platform) String() string {
+   var buf []byte
+   buf = append(buf, "nativePlatform"...)
+   for key, val := range n {
+      buf = append(buf, '\n')
+      buf = strconv.AppendInt(buf, key, 10)
+      buf = append(buf, ": "...)
+      buf = append(buf, val...)
+   }
+   return string(buf)
+}
+
+// These can use default values, but they must all be included
+type Config struct {
+   Device_Feature []string
+   Five_Way_Navigation uint64
+   GL_ES_Version uint64
+   GL_Extension []string
+   Hard_Keyboard uint64
+   Keyboard uint64
+   Navigation uint64
+   Screen_Density uint64
+   Screen_Layout uint64
+   Shared_Library []string
+   Touch_Screen uint64
+}
 var Phone = Config{
    Device_Feature: []string{
       // app.source.getcontact
@@ -107,90 +171,35 @@ func (c Config) Checkin(platform string) (*Device, error) {
          1: protobuf.String(name),
       })
    }
-   buf := new(bytes.Buffer)
-   checkin.WriteTo(buf)
+   in, err := checkin.MarshalBinary()
+   if err != nil {
+      return nil, err
+   }
    req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/checkin", buf,
+      "POST", "https://android.googleapis.com/checkin", bytes.NewReader(in),
    )
    if err != nil {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-protobuffer")
-   LogLevel.Dump(req)
+   Log_Level.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
+   out, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
    var dev Device
    dev.Message = make(protobuf.Message)
-   dev.ReadFrom(res.Body)
+   if err := dev.UnmarshalBinary(out); err != nil {
+      return nil, err
+   }
    return &dev, nil
 }
 
 type Device struct {
    protobuf.Message
-}
-func (d Device) Create(name string) error {
-   file, err := format.Create(name)
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   if _, err := d.WriteTo(file); err != nil {
-      return err
-   }
-   return nil
-}
-
-func OpenDevice(name string) (*Device, error) {
-   file, err := os.Open(name)
-   if err != nil {
-      return nil, err
-   }
-   defer file.Close()
-   var dev Device
-   dev.Message = make(protobuf.Message)
-   if _, err := dev.ReadFrom(file); err != nil {
-      return nil, err
-   }
-   return &dev, nil
-}
-
-type Native_Platform map[int64]string
-
-var Platforms = Native_Platform{
-   // com.google.android.youtube
-   0: "x86",
-   // com.miui.weather2
-   1: "armeabi-v7a",
-   // com.kakaogames.twodin
-   2: "arm64-v8a",
-}
-
-func (n Native_Platform) String() string {
-   var buf []byte
-   buf = append(buf, "nativePlatform"...)
-   for key, val := range n {
-      buf = append(buf, '\n')
-      buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ": "...)
-      buf = append(buf, val...)
-   }
-   return string(buf)
-}
-
-// These can use default values, but they must all be included
-type Config struct {
-   Device_Feature []string
-   Five_Way_Navigation uint64
-   GL_ES_Version uint64
-   GL_Extension []string
-   Hard_Keyboard uint64
-   Keyboard uint64
-   Navigation uint64
-   Screen_Density uint64
-   Screen_Layout uint64
-   Shared_Library []string
-   Touch_Screen uint64
 }
