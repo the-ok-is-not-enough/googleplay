@@ -54,7 +54,7 @@ func (t Token) Header(deviceID uint64, single bool) (*Header, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
+   Log_Level.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -79,7 +79,7 @@ func (t Token) Header(deviceID uint64, single bool) (*Header, error) {
 
 const Sleep = 4 * time.Second
 
-var LogLevel format.LogLevel
+var Log_Level format.Log_Level
 
 type Header struct {
    DeviceID uint64 // X-DFE-Device-ID
@@ -120,7 +120,7 @@ func (h Header) Purchase(app string) error {
    h.SetAuth(req.Header)
    h.SetDevice(req.Header)
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   LogLevel.Dump(req)
+   Log_Level.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -156,7 +156,7 @@ func NewToken(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   LogLevel.Dump(req)
+   Log_Level.Dump(req)
    res, err := crypto.Transport(hello).RoundTrip(req)
    if err != nil {
       return nil, err

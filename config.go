@@ -10,7 +10,7 @@ import (
 )
 
 var Phone = Config{
-   DeviceFeature: []string{
+   Device_Feature: []string{
       // app.source.getcontact
       "android.hardware.location.gps",
       // br.com.rodrigokolb.realdrum
@@ -50,7 +50,7 @@ var Phone = Config{
       // org.videolan.vlc
       "android.hardware.screen.landscape",
    },
-   SystemSharedLibrary: []string{
+   Shared_Library: []string{
       // com.amctve.amcfullepisodes
       "org.apache.http.legacy",
       // com.binance.dev
@@ -59,8 +59,8 @@ var Phone = Config{
       "global-miui11-empty.jar",
    },
    // com.axis.drawingdesk.v3
-   GlEsVersion: 0x9_9999,
-   GlExtension: []string{
+   GL_ES_Version: 0x9_9999,
+   GL_Extension: []string{
       // com.instagram.android
       "GL_OES_compressed_ETC1_RGB8_texture",
       // com.kakaogames.twodin
@@ -69,7 +69,7 @@ var Phone = Config{
 }
 
 func (d Device) ID() (uint64, error) {
-   return d.GetFixed64(7)
+   return d.Get_Fixed64(7)
 }
 
 // A Sleep is needed after this.
@@ -82,26 +82,26 @@ func (c Config) Checkin(platform string) (*Device, error) {
       },
       14: protobuf.Varint(3), // version
       18: protobuf.Message{ // deviceConfiguration
-         1: protobuf.Varint(c.TouchScreen),
+         1: protobuf.Varint(c.Touch_Screen), // touchScreen
          2: protobuf.Varint(c.Keyboard),
          3: protobuf.Varint(c.Navigation),
-         4: protobuf.Varint(c.ScreenLayout),
-         5: protobuf.Varint(c.HasHardKeyboard),
-         6: protobuf.Varint(c.HasFiveWayNavigation),
-         7: protobuf.Varint(c.ScreenDensity),
-         8: protobuf.Varint(c.GlEsVersion),
+         4: protobuf.Varint(c.Screen_Layout),
+         5: protobuf.Varint(c.Hard_Keyboard),
+         6: protobuf.Varint(c.Five_Way_Navigation),
+         7: protobuf.Varint(c.Screen_Density),
+         8: protobuf.Varint(c.GL_ES_Version),
          11: protobuf.String(platform), // nativePlatform
       },
    }
-   for _, library := range c.SystemSharedLibrary {
+   for _, library := range c.Shared_Library {
       // .deviceConfiguration.systemSharedLibrary
-      checkin.Get(18).AddString(9, library)
+      checkin.Get(18).Add_String(9, library)
    }
-   for _, extension := range c.GlExtension {
+   for _, extension := range c.GL_Extension {
       // .deviceConfiguration.glExtension
-      checkin.Get(18).AddString(15, extension)
+      checkin.Get(18).Add_String(15, extension)
    }
-   for _, name := range c.DeviceFeature {
+   for _, name := range c.Device_Feature {
       // .deviceConfiguration.deviceFeature
       checkin.Get(18).Add(26, protobuf.Message{
          1: protobuf.String(name),
@@ -157,9 +157,9 @@ func OpenDevice(name string) (*Device, error) {
    return &dev, nil
 }
 
-type NativePlatform map[int64]string
+type Native_Platform map[int64]string
 
-var Platforms = NativePlatform{
+var Platforms = Native_Platform{
    // com.google.android.youtube
    0: "x86",
    // com.miui.weather2
@@ -168,7 +168,7 @@ var Platforms = NativePlatform{
    2: "arm64-v8a",
 }
 
-func (n NativePlatform) String() string {
+func (n Native_Platform) String() string {
    var buf []byte
    buf = append(buf, "nativePlatform"...)
    for key, val := range n {
@@ -182,15 +182,15 @@ func (n NativePlatform) String() string {
 
 // These can use default values, but they must all be included
 type Config struct {
-   DeviceFeature []string
-   GlEsVersion uint64
-   GlExtension []string
-   HasFiveWayNavigation uint64
-   HasHardKeyboard uint64
+   Device_Feature []string
+   Five_Way_Navigation uint64
+   GL_ES_Version uint64
+   GL_Extension []string
+   Hard_Keyboard uint64
    Keyboard uint64
    Navigation uint64
-   ScreenDensity uint64
-   ScreenLayout uint64
-   SystemSharedLibrary []string
-   TouchScreen uint64
+   Screen_Density uint64
+   Screen_Layout uint64
+   Shared_Library []string
+   Touch_Screen uint64
 }

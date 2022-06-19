@@ -20,9 +20,9 @@ func (h Header) Details(app string) (*Details, error) {
    }
    // half of the apps I test require User-Agent,
    // so just set it for all of them
-   h.SetAgent(req.Header)
-   h.SetAuth(req.Header)
-   h.SetDevice(req.Header)
+   h.Set_Agent(req.Header)
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    LogLevel.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
@@ -32,20 +32,20 @@ func (h Header) Details(app string) (*Details, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errors.New(res.Status)
    }
-   responseWrapper := make(protobuf.Message)
-   responseWrapper.ReadFrom(res.Body)
+   response_wrapper := make(protobuf.Message)
+   response_wrapper.ReadFrom(res.Body)
    // .payload.detailsResponse.docV2
-   docV2 := responseWrapper.Get(1).Get(2).Get(4)
+   docV2 := response_wrapper.Get(1).Get(2).Get(4)
    var det Details
    // The following fields will fail with wrong ABI, so try them first. If the
    // first one passes, then use native error for the rest.
    // .details.appDetails.versionCode
-   det.VersionCode, err = docV2.Get(13).Get(1).GetVarint(3)
+   det.Version_Code, err = docV2.Get(13).Get(1).GetVarint(3)
    if err != nil {
-      return nil, errVersionCode{app}
+      return nil, version_error{app}
    }
    // .details.appDetails.versionString
-   det.VersionString, err = docV2.Get(13).Get(1).GetString(4)
+   det.Version, err = docV2.Get(13).Get(1).GetString(4)
    if err != nil {
       return nil, err
    }
@@ -55,7 +55,7 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    // .details.appDetails.uploadDate
-   det.UploadDate, err = docV2.Get(13).Get(1).GetString(16)
+   det.Upload_Date, err = docV2.Get(13).Get(1).GetString(16)
    if err != nil {
       return nil, err
    }
@@ -85,41 +85,42 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    // .offer.currencyCode
-   det.CurrencyCode, err = docV2.Get(8).GetString(2)
+   det.Currency_Code, err = docV2.Get(8).GetString(2)
    if err != nil {
       return nil, err
    }
    // I dont know the name of field 70
    // .details.appDetails
-   det.NumDownloads, err = docV2.Get(13).Get(1).GetVarint(70)
+   det.Downloads, err = docV2.Get(13).Get(1).GetVarint(70)
    if err != nil {
       return nil, err
    }
    return &det, nil
 }
 
-type errVersionCode struct {
+type version_error struct {
    app string
 }
 
-func (e errVersionCode) Error() string {
+func (v version_error) Error() string {
    var buf strings.Builder
-   buf.WriteString(e.app)
+   buf.WriteString(v.app)
    buf.WriteString(" versionCode missing\n")
    buf.WriteString("Check nativePlatform")
    return buf.String()
 }
+
 type Details struct {
-   Title string
    Creator string
-   UploadDate string // Jun 1, 2021
-   VersionString string
-   VersionCode uint64
-   NumDownloads uint64
-   Size uint64
+   Currency_Code string
+   Downloads uint64
    File []uint64
    Micros uint64
-   CurrencyCode string
+   Size uint64
+   Title string
+   Upload_Date string // Jun 1, 2021
+   Version string
+   Version_Code uint64
 }
 
 func (d Details) String() string {
@@ -129,13 +130,13 @@ func (d Details) String() string {
    buf = append(buf, "\nCreator: "...)
    buf = append(buf, d.Creator...)
    buf = append(buf, "\nUploadDate: "...)
-   buf = append(buf, d.UploadDate...)
+   buf = append(buf, d.Upload_Date...)
    buf = append(buf, "\nVersionString: "...)
-   buf = append(buf, d.VersionString...)
+   buf = append(buf, d.Version...)
    buf = append(buf, "\nVersionCode: "...)
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = strconv.AppendUint(buf, d.Version_Code, 10)
    buf = append(buf, "\nNumDownloads: "...)
-   buf = append(buf, format.LabelNumber(d.NumDownloads)...)
+   buf = append(buf, format.LabelNumber(d.Downloads)...)
    buf = append(buf, "\nSize: "...)
    buf = append(buf, format.LabelSize(d.Size)...)
    buf = append(buf, "\nFile:"...)
@@ -149,12 +150,12 @@ func (d Details) String() string {
    buf = append(buf, "\nOffer: "...)
    buf = strconv.AppendUint(buf, d.Micros, 10)
    buf = append(buf, ' ')
-   buf = append(buf, d.CurrencyCode...)
+   buf = append(buf, d.Currency_Code...)
    return string(buf)
 }
 
 // This only works with English. You can force English with:
 // Accept-Language: en
 func (d Details) Time() (time.Time, error) {
-   return time.Parse("Jan 2, 2006", d.UploadDate)
+   return time.Parse("Jan 2, 2006", d.Upload_Date)
 }

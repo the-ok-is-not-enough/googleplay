@@ -1,5 +1,4 @@
 package googleplay
-// github.com/89z
 
 import (
    "errors"
@@ -23,7 +22,7 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       "doc": {app},
       "vc": {strconv.FormatUint(ver, 10)},
    }.Encode()
-   LogLevel.Dump(req)
+   Log_Level.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -32,10 +31,10 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errors.New(res.Status)
    }
-   responseWrapper := make(protobuf.Message)
-   responseWrapper.ReadFrom(res.Body)
+   response_wrapper := make(protobuf.Message)
+   response_wrapper.ReadFrom(res.Body)
    // .payload.deliveryResponse.status
-   status, err := responseWrapper.Get(1).Get(21).GetVarint(1)
+   status, err := response_wrapper.Get(1).Get(21).Get_Varint(1)
    if err != nil {
       return nil, err
    }
@@ -48,63 +47,64 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       return nil, errors.New("invalid version")
    }
    // .payload.deliveryResponse.appDeliveryData
-   appData := responseWrapper.Get(1).Get(21).Get(2)
+   app_data := response_wrapper.Get(1).Get(21).Get(2)
    var del Delivery
    // .downloadUrl
-   del.DownloadURL, err = appData.GetString(3)
+   del.Download_URL, err = app_data.Get_String(3)
    if err != nil {
       return nil, err
    }
-   del.PackageName = app
-   del.VersionCode = ver
+   del.Package_Name = app
+   del.Version_Code = ver
    // .splitDeliveryData
-   for _, data := range appData.GetMessages(15) {
-      var split SplitDeliveryData
+   for _, data := range app_data.GetMessages(15) {
+      var split Split_Data
       // .id
       split.ID, err = data.GetString(1)
       if err != nil {
          return nil, err
       }
       // .downloadUrl
-      split.DownloadURL, err = data.GetString(5)
+      split.Download_URL, err = data.GetString(5)
       if err != nil {
          return nil, err
       }
-      del.SplitDeliveryData = append(del.SplitDeliveryData, split)
+      del.Split_Data = append(del.Split_Data, split)
    }
    // .additionalFile
-   for _, file := range appData.GetMessages(4) {
-      var app AppFileMetadata
+   for _, file := range app_data.GetMessages(4) {
+      var app File_Metadata
       // .fileType
-      app.FileType, err = file.GetVarint(1)
+      app.File_Type, err = file.GetVarint(1)
       if err != nil {
          return nil, err
       }
       // .downloadUrl
-      app.DownloadURL, err = file.GetString(4)
+      app.Download_URL, err = file.GetString(4)
       if err != nil {
          return nil, err
       }
-      del.AdditionalFile = append(del.AdditionalFile, app)
+      del.Additional_File = append(del.Additional_File, app)
    }
    return &del, nil
 }
 
-type SplitDeliveryData struct {
+type Split_Data struct {
    ID string
-   DownloadURL string
+   Download_URL string
 }
-type AppFileMetadata struct {
-   FileType uint64
-   DownloadURL string
+
+type File_Metadata struct {
+   Download_URL string
+   File_Type uint64
 }
 
 type Delivery struct {
-   DownloadURL string
-   PackageName string
-   SplitDeliveryData []SplitDeliveryData
-   VersionCode uint64
-   AdditionalFile []AppFileMetadata
+   Additional_File []File_Metadata
+   Download_URL string
+   Package_Name string
+   Split_Data []Split_Data
+   Version_Code uint64
 }
 
 func (d Delivery) Additional(typ uint64) string {
@@ -115,29 +115,29 @@ func (d Delivery) Additional(typ uint64) string {
       buf = append(buf, "patch"...)
    }
    buf = append(buf, '.')
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = strconv.AppendUint(buf, d.Version_Code, 10)
    buf = append(buf, '.')
-   buf = append(buf, d.PackageName...)
+   buf = append(buf, d.Package_Name...)
    buf = append(buf, ".obb"...)
    return string(buf)
 }
 
 func (d Delivery) Download() string {
    var buf []byte
-   buf = append(buf, d.PackageName...)
+   buf = append(buf, d.Package_Name...)
    buf = append(buf, '-')
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = strconv.AppendUint(buf, d.Version_Code, 10)
    buf = append(buf, ".apk"...)
    return string(buf)
 }
 
 func (d Delivery) Split(id string) string {
    var buf []byte
-   buf = append(buf, d.PackageName...)
+   buf = append(buf, d.Package_Name...)
    buf = append(buf, '-')
    buf = append(buf, id...)
    buf = append(buf, '-')
-   buf = strconv.AppendUint(buf, d.VersionCode, 10)
+   buf = strconv.AppendUint(buf, d.Version_Code, 10)
    buf = append(buf, ".apk"...)
    return string(buf)
 }
