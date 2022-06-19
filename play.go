@@ -94,6 +94,7 @@ func (h Header) SetAgent(head http.Header) {
    buf = strconv.AppendInt(buf, h.SDK, 10)
    buf = append(buf, ",versionCode="...)
    buf = strconv.AppendInt(buf, h.VersionCode, 10)
+   buf = append(buf, ')')
    head.Set("User-Agent", string(buf))
 }
 
