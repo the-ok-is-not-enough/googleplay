@@ -23,7 +23,7 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       "doc": {app},
       "vc": {strconv.FormatUint(ver, 10)},
    }.Encode()
-   Log_Level.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -72,22 +72,22 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
          return nil, err
       }
       // .downloadUrl
-      split.Download_URL, err = data.GetString(5)
+      split.Download_URL, err = data.Get_String(5)
       if err != nil {
          return nil, err
       }
       del.Split_Data = append(del.Split_Data, split)
    }
    // .additionalFile
-   for _, file := range app_data.GetMessages(4) {
+   for _, file := range app_data.Get_Messages(4) {
       var app File_Metadata
       // .fileType
-      app.File_Type, err = file.GetVarint(1)
+      app.File_Type, err = file.Get_Varint(1)
       if err != nil {
          return nil, err
       }
       // .downloadUrl
-      app.Download_URL, err = file.GetString(4)
+      app.Download_URL, err = file.Get_String(4)
       if err != nil {
          return nil, err
       }

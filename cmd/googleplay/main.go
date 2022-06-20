@@ -2,7 +2,6 @@ package main
 
 import (
    "flag"
-   "github.com/89z/format"
    "github.com/89z/googleplay"
    "os"
    "path/filepath"
@@ -30,8 +29,7 @@ func main() {
    var email string
    flag.StringVar(&email, "email", "", "your email")
    // log
-   var level int
-   flag.IntVar(&level, "log", 0, "log level")
+   flag.IntVar(&googleplay.Log.Level, "log", 0, "log level")
    // p
    var platformID int64
    flag.Int64Var(&platformID, "p", 0, googleplay.Platforms.String())
@@ -53,21 +51,20 @@ func main() {
    var version uint64
    flag.Uint64Var(&version, "v", 0, "app version")
    flag.Parse()
-   googleplay.LogLevel = format.LogLevel(level)
    if email != "" {
-      err := doToken(dir, email, password)
+      err := do_token(dir, email, password)
       if err != nil {
          panic(err)
       }
    } else {
       platform := googleplay.Platforms[platformID]
       if device {
-         err := doDevice(dir, platform)
+         err := do_device(dir, platform)
          if err != nil {
             panic(err)
          }
       } else if app != "" {
-         head, err := doHeader(dir, platform, single)
+         head, err := do_header(dir, platform, single)
          if err != nil {
             panic(err)
          }
@@ -77,12 +74,12 @@ func main() {
                panic(err)
             }
          } else if version >= 1 {
-            err := doDelivery(head, app, version)
+            err := do_delivery(head, app, version)
             if err != nil {
                panic(err)
             }
          } else {
-            err := doDetails(head, app, parse)
+            err := do_details(head, app, parse)
             if err != nil {
                panic(err)
             }

@@ -4,6 +4,7 @@ import (
    "errors"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
+   "io"
    "net/http"
    "net/url"
    "strconv"
@@ -24,7 +25,7 @@ func (h Header) Details(app string) (*Details, error) {
    h.Set_Auth(req.Header)
    h.Set_Device(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   LogLevel.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -32,37 +33,43 @@ func (h Header) Details(app string) (*Details, error) {
    if res.StatusCode != http.StatusOK {
       return nil, errors.New(res.Status)
    }
+   buf, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
    response_wrapper := make(protobuf.Message)
-   response_wrapper.ReadFrom(res.Body)
+   if err := response_wrapper.UnmarshalBinary(buf); err != nil {
+      return nil, err
+   }
    // .payload.detailsResponse.docV2
    docV2 := response_wrapper.Get(1).Get(2).Get(4)
    var det Details
    // The following fields will fail with wrong ABI, so try them first. If the
    // first one passes, then use native error for the rest.
    // .details.appDetails.versionCode
-   det.Version_Code, err = docV2.Get(13).Get(1).GetVarint(3)
+   det.Version_Code, err = docV2.Get(13).Get(1).Get_Varint(3)
    if err != nil {
       return nil, version_error{app}
    }
    // .details.appDetails.versionString
-   det.Version, err = docV2.Get(13).Get(1).GetString(4)
+   det.Version, err = docV2.Get(13).Get(1).Get_String(4)
    if err != nil {
       return nil, err
    }
    // .details.appDetails.installationSize
-   det.Size, err = docV2.Get(13).Get(1).GetVarint(9)
+   det.Size, err = docV2.Get(13).Get(1).Get_Varint(9)
    if err != nil {
       return nil, err
    }
    // .details.appDetails.uploadDate
-   det.Upload_Date, err = docV2.Get(13).Get(1).GetString(16)
+   det.Upload_Date, err = docV2.Get(13).Get(1).Get_String(16)
    if err != nil {
       return nil, err
    }
    // .details.appDetails.file
-   for _, file := range docV2.Get(13).Get(1).GetMessages(17) {
+   for _, file := range docV2.Get(13).Get(1).Get_Messages(17) {
       // .fileType
-      typ, err := file.GetVarint(1)
+      typ, err := file.Get_Varint(1)
       if err != nil {
          return nil, err
       }
@@ -70,28 +77,28 @@ func (h Header) Details(app string) (*Details, error) {
    }
    // The following fields should work with any ABI.
    // .title
-   det.Title, err = docV2.GetString(5)
+   det.Title, err = docV2.Get_String(5)
    if err != nil {
       return nil, err
    }
    // .creator
-   det.Creator, err = docV2.GetString(6)
+   det.Creator, err = docV2.Get_String(6)
    if err != nil {
       return nil, err
    }
    // .offer.micros
-   det.Micros, err = docV2.Get(8).GetVarint(1)
+   det.Micros, err = docV2.Get(8).Get_Varint(1)
    if err != nil {
       return nil, err
    }
    // .offer.currencyCode
-   det.Currency_Code, err = docV2.Get(8).GetString(2)
+   det.Currency_Code, err = docV2.Get(8).Get_String(2)
    if err != nil {
       return nil, err
    }
    // I dont know the name of field 70
    // .details.appDetails
-   det.Downloads, err = docV2.Get(13).Get(1).GetVarint(70)
+   det.Downloads, err = docV2.Get(13).Get(1).Get_Varint(70)
    if err != nil {
       return nil, err
    }
@@ -136,9 +143,9 @@ func (d Details) String() string {
    buf = append(buf, "\nVersionCode: "...)
    buf = strconv.AppendUint(buf, d.Version_Code, 10)
    buf = append(buf, "\nNumDownloads: "...)
-   buf = append(buf, format.LabelNumber(d.Downloads)...)
+   buf = append(buf, format.Label_Number(d.Downloads)...)
    buf = append(buf, "\nSize: "...)
-   buf = append(buf, format.LabelSize(d.Size)...)
+   buf = append(buf, format.Label_Size(d.Size)...)
    buf = append(buf, "\nFile:"...)
    for _, file := range d.File {
       if file == 0 {

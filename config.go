@@ -2,7 +2,6 @@ package googleplay
 
 import (
    "bytes"
-   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "io"
    "net/http"
@@ -182,7 +181,7 @@ func (c Config) Checkin(platform string) (*Device, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-protobuffer")
-   Log_Level.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err

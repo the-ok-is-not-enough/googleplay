@@ -13,6 +13,10 @@ import (
    "time"
 )
 
+const Sleep = 4 * time.Second
+
+var Log format.Log
+
 func (t Token) Create(name string) error {
    file, err := format.Create(name)
    if err != nil {
@@ -32,7 +36,7 @@ func Open_Token(name string) (*Token, error) {
    }
    defer file.Close()
    var tok Token
-   tok.Values = net.NewValues()
+   tok.Values = net.New_Values()
    if _, err := tok.ReadFrom(file); err != nil {
       return nil, err
    }
@@ -54,7 +58,7 @@ func (t Token) Header(device_ID uint64, single bool) (*Header, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   Log_Level.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -71,15 +75,11 @@ func (t Token) Header(device_ID uint64, single bool) (*Header, error) {
    } else {
       head.Version_Code = 9999_9999
    }
-   val := net.NewValues()
+   val := net.New_Values()
    val.ReadFrom(res.Body)
    head.Auth = val.Get("Auth")
    return &head, nil
 }
-
-const Sleep = 4 * time.Second
-
-var Log_Level format.Log_Level
 
 type Header struct {
    Device_ID uint64 // X-DFE-Device-ID
@@ -117,10 +117,10 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   h.SetAuth(req.Header)
-   h.SetDevice(req.Header)
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   Log_Level.Dump(req)
+   Log.Dump(req)
    res, err := new(http.Transport).RoundTrip(req)
    if err != nil {
       return err
@@ -152,11 +152,11 @@ func New_Token(email, password string) (*Token, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   hello, err := crypto.ParseJA3(crypto.AndroidAPI26)
+   hello, err := crypto.Parse_JA3(crypto.Android_API_26)
    if err != nil {
       return nil, err
    }
-   Log_Level.Dump(req)
+   Log.Dump(req)
    res, err := crypto.Transport(hello).RoundTrip(req)
    if err != nil {
       return nil, err
@@ -166,7 +166,7 @@ func New_Token(email, password string) (*Token, error) {
       return nil, errors.New(res.Status)
    }
    var tok Token
-   tok.Values = net.NewValues()
+   tok.Values = net.New_Values()
    if _, err := tok.ReadFrom(res.Body); err != nil {
       return nil, err
    }
