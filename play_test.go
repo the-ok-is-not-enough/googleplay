@@ -6,8 +6,8 @@ import (
    "time"
 )
 
-func TestToken(t *testing.T) {
-   token, err := NewToken(email, password)
+func Test_Token(t *testing.T) {
+   token, err := New_Token(email, password)
    if err != nil {
       t.Fatal(err)
    }
@@ -20,12 +20,12 @@ func TestToken(t *testing.T) {
    }
 }
 
-func TestHeader(t *testing.T) {
+func Test_Header(t *testing.T) {
    home, err := os.UserHomeDir()
    if err != nil {
       t.Fatal(err)
    }
-   token, err := OpenToken(home + "/googleplay/token.txt")
+   token, err := Open_Token(home + "/googleplay/token.txt")
    if err != nil {
       t.Fatal(err)
    }

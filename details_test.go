@@ -8,7 +8,7 @@ import (
    "time"
 )
 
-var apps = []appType{
+var apps = []app_type{
    {"2021-12-08 00:00:00 +0000 UTC",0,"com.amctve.amcfullepisodes"},
    {"2022-02-02 00:00:00 +0000 UTC",2,"com.illumix.fnafar"},
    {"2022-02-14 00:00:00 +0000 UTC",0,"org.videolan.vlc"},
@@ -33,12 +33,12 @@ var apps = []appType{
    {"2022-06-14 00:00:00 +0000 UTC",0,"com.pinterest"},
 }
 
-func TestDetails(t *testing.T) {
+func Test_Details(t *testing.T) {
    home, err := os.UserHomeDir()
    if err != nil {
       t.Fatal(err)
    }
-   token, err := OpenToken(home + "/googleplay/token.txt")
+   token, err := Open_Token(home + "/googleplay/token.txt")
    if err != nil {
       t.Fatal(err)
    }
@@ -48,11 +48,11 @@ func TestDetails(t *testing.T) {
    }
    for _, app := range apps {
       platform := Platforms[app.platform]
-      device, err := OpenDevice(home + "/googleplay/" + platform + ".txt")
+      device, err := Open_Device(home + "/googleplay/" + platform + ".txt")
       if err != nil {
          t.Fatal(err)
       }
-      head.DeviceID, err = device.ID()
+      head.Device_ID, err = device.ID()
       if err != nil {
          t.Fatal(err)
       }
@@ -60,10 +60,10 @@ func TestDetails(t *testing.T) {
       if err != nil {
          t.Fatal(err)
       }
-      if det.CurrencyCode == "" {
+      if det.Currency_Code == "" {
          t.Fatal(det)
       }
-      if det.NumDownloads == 0 {
+      if det.Downloads == 0 {
          t.Fatal(det)
       }
       if det.Size == 0 {
@@ -72,13 +72,13 @@ func TestDetails(t *testing.T) {
       if det.Title == "" {
          t.Fatal(det)
       }
-      if det.VersionCode == 0 {
+      if det.Version_Code == 0 {
          t.Fatal(det)
       }
-      if det.VersionString == "" {
+      if det.Version == "" {
          t.Fatal(det)
       }
-      if det.UploadDate == "" {
+      if det.Upload_Date == "" {
          t.Fatal(det)
       }
       date, err := det.Time()
@@ -91,7 +91,7 @@ func TestDetails(t *testing.T) {
    }
 }
 
-func (a appType) String() string {
+func (a app_type) String() string {
    var b []byte
    b = append(b, '{')
    b = strconv.AppendQuote(b, a.date)
@@ -103,7 +103,7 @@ func (a appType) String() string {
    return string(b)
 }
 
-type appType struct {
+type app_type struct {
    date string
    platform int64 // X-DFE-Device-ID
    id string

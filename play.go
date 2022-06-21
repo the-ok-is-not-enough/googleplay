@@ -23,10 +23,7 @@ func (t Token) Create(name string) error {
       return err
    }
    defer file.Close()
-   if _, err := t.WriteTo(file); err != nil {
-      return err
-   }
-   return nil
+   return net.Encode(file, t.Values)
 }
 
 func Open_Token(name string) (*Token, error) {
@@ -36,8 +33,8 @@ func Open_Token(name string) (*Token, error) {
    }
    defer file.Close()
    var tok Token
-   tok.Values = net.New_Values()
-   if _, err := tok.ReadFrom(file); err != nil {
+   tok.Values, err = net.Decode(file)
+   if err != nil {
       return nil, err
    }
    return &tok, nil
@@ -75,8 +72,10 @@ func (t Token) Header(device_ID uint64, single bool) (*Header, error) {
    } else {
       head.Version_Code = 9999_9999
    }
-   val := net.New_Values()
-   val.ReadFrom(res.Body)
+   val, err := net.Decode(res.Body)
+   if err != nil {
+      return nil, err
+   }
    head.Auth = val.Get("Auth")
    return &head, nil
 }
@@ -166,13 +165,13 @@ func New_Token(email, password string) (*Token, error) {
       return nil, errors.New(res.Status)
    }
    var tok Token
-   tok.Values = net.New_Values()
-   if _, err := tok.ReadFrom(res.Body); err != nil {
+   tok.Values, err = net.Decode(res.Body)
+   if err != nil {
       return nil, err
    }
    return &tok, nil
 }
 
 type Token struct {
-   net.Values
+   url.Values
 }

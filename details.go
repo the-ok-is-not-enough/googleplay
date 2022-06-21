@@ -37,37 +37,37 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   response_wrapper := make(protobuf.Message)
-   if err := response_wrapper.UnmarshalBinary(buf); err != nil {
+   response_wrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
       return nil, err
    }
    // .payload.detailsResponse.docV2
-   docV2 := response_wrapper.Get(1).Get(2).Get(4)
+   doc_V2 := response_wrapper.Get(1).Get(2).Get(4)
    var det Details
    // The following fields will fail with wrong ABI, so try them first. If the
    // first one passes, then use native error for the rest.
    // .details.appDetails.versionCode
-   det.Version_Code, err = docV2.Get(13).Get(1).Get_Varint(3)
+   det.Version_Code, err = doc_V2.Get(13).Get(1).Get_Varint(3)
    if err != nil {
       return nil, version_error{app}
    }
    // .details.appDetails.versionString
-   det.Version, err = docV2.Get(13).Get(1).Get_String(4)
+   det.Version, err = doc_V2.Get(13).Get(1).Get_String(4)
    if err != nil {
       return nil, err
    }
    // .details.appDetails.installationSize
-   det.Size, err = docV2.Get(13).Get(1).Get_Varint(9)
+   det.Size, err = doc_V2.Get(13).Get(1).Get_Varint(9)
    if err != nil {
       return nil, err
    }
    // .details.appDetails.uploadDate
-   det.Upload_Date, err = docV2.Get(13).Get(1).Get_String(16)
+   det.Upload_Date, err = doc_V2.Get(13).Get(1).Get_String(16)
    if err != nil {
       return nil, err
    }
    // .details.appDetails.file
-   for _, file := range docV2.Get(13).Get(1).Get_Messages(17) {
+   for _, file := range doc_V2.Get(13).Get(1).Get_Messages(17) {
       // .fileType
       typ, err := file.Get_Varint(1)
       if err != nil {
@@ -77,28 +77,28 @@ func (h Header) Details(app string) (*Details, error) {
    }
    // The following fields should work with any ABI.
    // .title
-   det.Title, err = docV2.Get_String(5)
+   det.Title, err = doc_V2.Get_String(5)
    if err != nil {
       return nil, err
    }
    // .creator
-   det.Creator, err = docV2.Get_String(6)
+   det.Creator, err = doc_V2.Get_String(6)
    if err != nil {
       return nil, err
    }
    // .offer.micros
-   det.Micros, err = docV2.Get(8).Get_Varint(1)
+   det.Micros, err = doc_V2.Get(8).Get_Varint(1)
    if err != nil {
       return nil, err
    }
    // .offer.currencyCode
-   det.Currency_Code, err = docV2.Get(8).Get_String(2)
+   det.Currency_Code, err = doc_V2.Get(8).Get_String(2)
    if err != nil {
       return nil, err
    }
    // I dont know the name of field 70
    // .details.appDetails
-   det.Downloads, err = docV2.Get(13).Get(1).Get_Varint(70)
+   det.Downloads, err = doc_V2.Get(13).Get(1).Get_Varint(70)
    if err != nil {
       return nil, err
    }
@@ -136,13 +136,13 @@ func (d Details) String() string {
    buf = append(buf, d.Title...)
    buf = append(buf, "\nCreator: "...)
    buf = append(buf, d.Creator...)
-   buf = append(buf, "\nUploadDate: "...)
+   buf = append(buf, "\nDate: "...)
    buf = append(buf, d.Upload_Date...)
-   buf = append(buf, "\nVersionString: "...)
+   buf = append(buf, "\nVersion: "...)
    buf = append(buf, d.Version...)
-   buf = append(buf, "\nVersionCode: "...)
+   buf = append(buf, "\nVersion code: "...)
    buf = strconv.AppendUint(buf, d.Version_Code, 10)
-   buf = append(buf, "\nNumDownloads: "...)
+   buf = append(buf, "\nDownloads: "...)
    buf = append(buf, format.Label_Number(d.Downloads)...)
    buf = append(buf, "\nSize: "...)
    buf = append(buf, format.Label_Size(d.Size)...)

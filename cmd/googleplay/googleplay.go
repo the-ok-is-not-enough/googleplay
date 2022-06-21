@@ -3,22 +3,13 @@ package main
 import (
    "fmt"
    "github.com/89z/format"
+   "github.com/89z/format/net"
    "io"
    "net/http"
    "os"
    "time"
    gp "github.com/89z/googleplay"
 )
-
-func do_device(dir, platform string) error {
-   device, err := gp.Phone.Checkin(platform)
-   if err != nil {
-      return err
-   }
-   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
-   time.Sleep(gp.Sleep)
-   return device.Create(dir + "/" + platform + ".txt")
-}
 
 func do_token(dir, email, password string) error {
    token, err := gp.New_Token(email, password)
@@ -30,10 +21,17 @@ func do_token(dir, email, password string) error {
       return err
    }
    defer file.Close()
-   if _, err := token.WriteTo(file); err != nil {
+   return net.Encode(file, token.Values)
+}
+
+func do_device(dir, platform string) error {
+   device, err := gp.Phone.Checkin(platform)
+   if err != nil {
       return err
    }
-   return nil
+   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
+   time.Sleep(gp.Sleep)
+   return device.Create(dir + "/" + platform + ".txt")
 }
 
 func do_details(head *gp.Header, app string, parse bool) error {

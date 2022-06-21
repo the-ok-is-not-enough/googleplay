@@ -6,16 +6,16 @@ import (
    "testing"
 )
 
-func TestDelivery(t *testing.T) {
+func Test_Delivery(t *testing.T) {
    home, err := os.UserHomeDir()
    if err != nil {
       t.Fatal(err)
    }
-   token, err := OpenToken(home + "/googleplay/token.txt")
+   token, err := Open_Token(home + "/googleplay/token.txt")
    if err != nil {
       t.Fatal(err)
    }
-   device, err := OpenDevice(home + "/googleplay/x86.txt")
+   device, err := Open_Device(home + "/googleplay/x86.txt")
    if err != nil {
       t.Fatal(err)
    }

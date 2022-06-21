@@ -31,8 +31,8 @@ func main() {
    // log
    flag.IntVar(&googleplay.Log.Level, "log", 0, "log level")
    // p
-   var platformID int64
-   flag.Int64Var(&platformID, "p", 0, googleplay.Platforms.String())
+   var platform_ID int64
+   flag.Int64Var(&platform_ID, "p", 0, googleplay.Platforms.String())
    // password
    var password string
    flag.StringVar(&password, "password", "", "your password")
@@ -57,7 +57,7 @@ func main() {
          panic(err)
       }
    } else {
-      platform := googleplay.Platforms[platformID]
+      platform := googleplay.Platforms[platform_ID]
       if device {
          err := do_device(dir, platform)
          if err != nil {

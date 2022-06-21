@@ -18,7 +18,7 @@ const (
 )
 
 // outputs the MD5 "hash" of the certificate subject name
-func subjectHash(buf []byte) ([]byte, error) {
+func subject_hash(buf []byte) ([]byte, error) {
    block, _ := pem.Decode(buf)
    cert, err := x509.ParseCertificate(block.Bytes)
    if err != nil {
@@ -40,7 +40,7 @@ func main() {
    if err != nil {
       panic(err)
    }
-   hash, err := subjectHash(buf)
+   hash, err := subject_hash(buf)
    if err != nil {
       panic(err)
    }

@@ -24,21 +24,21 @@ func checkin(id int64) error {
    return nil
 }
 
-func TestCheckinArmeabi(t *testing.T) {
+func Test_Checkin_ARMEABI(t *testing.T) {
    err := checkin(1)
    if err != nil {
       t.Fatal(err)
    }
 }
 
-func TestCheckinArm64(t *testing.T) {
+func Test_Checkin_ARM64(t *testing.T) {
    err := checkin(2)
    if err != nil {
       t.Fatal(err)
    }
 }
 
-func TestCheckinX86(t *testing.T) {
+func Test_Checkin_X86(t *testing.T) {
    err := checkin(0)
    if err != nil {
       t.Fatal(err)

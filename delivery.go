@@ -36,8 +36,8 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   response_wrapper := make(protobuf.Message)
-   if err := response_wrapper.UnmarshalBinary(buf); err != nil {
+   response_wrapper, err := protobuf.Unmarshal(buf)
+   if err != nil {
       return nil, err
    }
    // .payload.deliveryResponse.status

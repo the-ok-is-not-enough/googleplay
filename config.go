@@ -11,15 +11,11 @@ import (
 )
 
 func (d Device) Create(name string) error {
-   buf, err := d.MarshalBinary()
-   if err != nil {
-      return err
-   }
    os.Stderr.WriteString("Create " + filepath.FromSlash(name) + "\n")
    if err := os.MkdirAll(filepath.Dir(name), os.ModePerm); err != nil {
       return err
    }
-   return os.WriteFile(name, buf, os.ModePerm)
+   return os.WriteFile(name, d.Marshal(), os.ModePerm)
 }
 
 func Open_Device(name string) (*Device, error) {
@@ -28,8 +24,8 @@ func Open_Device(name string) (*Device, error) {
       return nil, err
    }
    var dev Device
-   dev.Message = make(protobuf.Message)
-   if err := dev.UnmarshalBinary(buf); err != nil {
+   dev.Message, err = protobuf.Unmarshal(buf)
+   if err != nil {
       return nil, err
    }
    return &dev, nil
@@ -170,12 +166,9 @@ func (c Config) Checkin(platform string) (*Device, error) {
          1: protobuf.String(name),
       })
    }
-   in, err := checkin.MarshalBinary()
-   if err != nil {
-      return nil, err
-   }
    req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/checkin", bytes.NewReader(in),
+      "POST", "https://android.googleapis.com/checkin",
+      bytes.NewReader(checkin.Marshal()),
    )
    if err != nil {
       return nil, err
@@ -187,13 +180,13 @@ func (c Config) Checkin(platform string) (*Device, error) {
       return nil, err
    }
    defer res.Body.Close()
-   out, err := io.ReadAll(res.Body)
+   buf, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err
    }
    var dev Device
-   dev.Message = make(protobuf.Message)
-   if err := dev.UnmarshalBinary(out); err != nil {
+   dev.Message, err = protobuf.Unmarshal(buf)
+   if err != nil {
       return nil, err
    }
    return &dev, nil
