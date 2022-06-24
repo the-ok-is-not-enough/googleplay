@@ -23,15 +23,11 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       "doc": {app},
       "vc": {strconv.FormatUint(ver, 10)},
    }.Encode()
-   Log.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := Client.Do(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errors.New(res.Status)
-   }
    buf, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err

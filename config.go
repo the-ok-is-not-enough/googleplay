@@ -174,8 +174,7 @@ func (c Config) Checkin(platform string) (*Device, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-protobuffer")
-   Log.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := Client.Do(req)
    if err != nil {
       return nil, err
    }

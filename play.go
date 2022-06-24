@@ -1,7 +1,6 @@
 package googleplay
 
 import (
-   "errors"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
    "github.com/89z/format/net"
@@ -15,7 +14,7 @@ import (
 
 const Sleep = 4 * time.Second
 
-var Log format.Log
+var Client format.Client
 
 func (t Token) Create(name string) error {
    file, err := format.Create(name)
@@ -55,15 +54,11 @@ func (t Token) Header(device_ID uint64, single bool) (*Header, error) {
       return nil, err
    }
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   Log.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := Client.Do(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errors.New(res.Status)
-   }
    var head Header
    head.SDK = 9
    head.Device_ID = device_ID
@@ -119,16 +114,11 @@ func (h Header) Purchase(app string) error {
    h.Set_Auth(req.Header)
    h.Set_Device(req.Header)
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   Log.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := Client.Do(req)
    if err != nil {
       return err
    }
-   defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return errors.New(res.Status)
-   }
-   return nil
+   return res.Body.Close()
 }
 
 func (t Token) Token() string {
@@ -155,15 +145,12 @@ func New_Token(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   Log.Dump(req)
-   res, err := crypto.Transport(hello).RoundTrip(req)
+   Client.Transport = crypto.Transport(hello)
+   res, err := Client.Custom(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
-   if res.StatusCode != http.StatusOK {
-      return nil, errors.New(res.Status)
-   }
    var tok Token
    tok.Values, err = net.Decode(res.Body)
    if err != nil {

@@ -1,7 +1,6 @@
 package googleplay
 
 import (
-   "errors"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "io"
@@ -25,14 +24,11 @@ func (h Header) Details(app string) (*Details, error) {
    h.Set_Auth(req.Header)
    h.Set_Device(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   Log.Dump(req)
-   res, err := new(http.Transport).RoundTrip(req)
+   res, err := Client.Do(req)
    if err != nil {
       return nil, err
    }
-   if res.StatusCode != http.StatusOK {
-      return nil, errors.New(res.Status)
-   }
+   defer res.Body.Close()
    buf, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err

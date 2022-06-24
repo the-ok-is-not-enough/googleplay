@@ -29,7 +29,7 @@ func main() {
    var email string
    flag.StringVar(&email, "email", "", "your email")
    // log
-   flag.IntVar(&googleplay.Log.Level, "log", 0, "log level")
+   flag.IntVar(&googleplay.Client.Log_Level, "log", 0, "log level")
    // p
    var platform_ID int64
    flag.Int64Var(&platform_ID, "p", 0, googleplay.Platforms.String())
