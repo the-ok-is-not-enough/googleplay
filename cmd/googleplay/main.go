@@ -2,10 +2,10 @@ package main
 
 import (
    "flag"
-   "github.com/89z/googleplay"
    "os"
    "path/filepath"
    "strings"
+   gp "github.com/89z/googleplay"
 )
 
 func main() {
@@ -29,10 +29,10 @@ func main() {
    var email string
    flag.StringVar(&email, "email", "", "your email")
    // log
-   flag.IntVar(&googleplay.Client.Log_Level, "log", 0, "log level")
+   flag.IntVar(&gp.Client.Log_Level, "log", gp.Client.Log_Level, "log level")
    // p
    var platform_ID int64
-   flag.Int64Var(&platform_ID, "p", 0, googleplay.Platforms.String())
+   flag.Int64Var(&platform_ID, "p", 0, gp.Platforms.String())
    // password
    var password string
    flag.StringVar(&password, "password", "", "your password")
@@ -57,7 +57,7 @@ func main() {
          panic(err)
       }
    } else {
-      platform := googleplay.Platforms[platform_ID]
+      platform := gp.Platforms[platform_ID]
       if device {
          err := do_device(dir, platform)
          if err != nil {

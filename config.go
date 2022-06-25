@@ -2,29 +2,26 @@ package googleplay
 
 import (
    "bytes"
+   "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "io"
    "net/http"
    "os"
-   "path/filepath"
    "strconv"
 )
 
 func (d Device) Create(name string) error {
-   os.Stderr.WriteString("Create " + filepath.FromSlash(name) + "\n")
-   if err := os.MkdirAll(filepath.Dir(name), os.ModePerm); err != nil {
-      return err
-   }
-   return os.WriteFile(name, d.Marshal(), os.ModePerm)
+   data := d.Marshal()
+   return format.WriteFile(name, data)
 }
 
 func Open_Device(name string) (*Device, error) {
-   buf, err := os.ReadFile(name)
+   data, err := os.ReadFile(name)
    if err != nil {
       return nil, err
    }
    var dev Device
-   dev.Message, err = protobuf.Unmarshal(buf)
+   dev.Message, err = protobuf.Unmarshal(data)
    if err != nil {
       return nil, err
    }

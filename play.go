@@ -1,10 +1,11 @@
 package googleplay
 
 import (
+   "bufio"
    "github.com/89z/format"
    "github.com/89z/format/crypto"
-   "github.com/89z/format/net"
-   "net/http"
+   "github.com/89z/format/http"
+   "io"
    "net/url"
    "os"
    "strconv"
@@ -12,9 +13,51 @@ import (
    "time"
 )
 
+func decode_query(r io.Reader) (url.Values, error) {
+   buf := bufio.NewReader(r)
+   vals := make(url.Values)
+   for {
+      key, err := buf.ReadString('=')
+      if err == io.EOF {
+         break
+      } else if err != nil {
+         return nil, err
+      }
+      val, err := buf.ReadString('\n')
+      key = strings.TrimSuffix(key, "=")
+      val = strings.TrimSuffix(val, "\n")
+      vals.Add(key, val)
+      if err == io.EOF {
+         break
+      } else if err != nil {
+         return nil, err
+      }
+   }
+   return vals, nil
+}
+
+func encode_query(w io.Writer, v url.Values) error {
+   for key := range v {
+      val := v.Get(key)
+      if _, err := io.WriteString(w, key); err != nil {
+         return err
+      }
+      if _, err := io.WriteString(w, "="); err != nil {
+         return err
+      }
+      if _, err := io.WriteString(w, val); err != nil {
+         return err
+      }
+      if _, err := io.WriteString(w, "\n"); err != nil {
+         return err
+      }
+   }
+   return nil
+}
+
 const Sleep = 4 * time.Second
 
-var Client format.Client
+var Client = http.Default_Client
 
 func (t Token) Create(name string) error {
    file, err := format.Create(name)
@@ -22,7 +65,7 @@ func (t Token) Create(name string) error {
       return err
    }
    defer file.Close()
-   return net.Encode(file, t.Values)
+   return encode_query(file, t.Values)
 }
 
 func Open_Token(name string) (*Token, error) {
@@ -32,7 +75,7 @@ func Open_Token(name string) (*Token, error) {
    }
    defer file.Close()
    var tok Token
-   tok.Values, err = net.Decode(file)
+   tok.Values, err = decode_query(file)
    if err != nil {
       return nil, err
    }
@@ -67,7 +110,7 @@ func (t Token) Header(device_ID uint64, single bool) (*Header, error) {
    } else {
       head.Version_Code = 9999_9999
    }
-   val, err := net.Decode(res.Body)
+   val, err := decode_query(res.Body)
    if err != nil {
       return nil, err
    }
@@ -103,10 +146,11 @@ func (h Header) Set_Device(head http.Header) {
 
 // Purchase app. Only needs to be done once per Google account.
 func (h Header) Purchase(app string) error {
-   query := "doc=" + url.QueryEscape(app)
+   body := make(url.Values)
+   body.Set("doc", app)
    req, err := http.NewRequest(
       "POST", "https://android.clients.google.com/fdfe/purchase",
-      strings.NewReader(query),
+      strings.NewReader(body.Encode()),
    )
    if err != nil {
       return err
@@ -145,14 +189,14 @@ func New_Token(email, password string) (*Token, error) {
    if err != nil {
       return nil, err
    }
-   Client.Transport = crypto.Transport(hello)
-   res, err := Client.Custom(req)
+   tr := crypto.Transport(hello)
+   res, err := Client.Transport(tr).Do(req)
    if err != nil {
       return nil, err
    }
    defer res.Body.Close()
    var tok Token
-   tok.Values, err = net.Decode(res.Body)
+   tok.Values, err = decode_query(res.Body)
    if err != nil {
       return nil, err
    }

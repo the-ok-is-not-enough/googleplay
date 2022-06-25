@@ -6,6 +6,30 @@ import (
    "time"
 )
 
+var value_tests = []string{
+   "ignore/eol.txt",
+   "ignore/noeol.txt",
+}
+
+func Test_Values(t *testing.T) {
+   for _, test := range value_tests {
+      file, err := os.Open(test)
+      if err != nil {
+         t.Fatal(err)
+      }
+      val, err := Decode(file)
+      if err != nil {
+         t.Fatal(err)
+      }
+      if err := file.Close(); err != nil {
+         t.Fatal(err)
+      }
+      if err := Encode(os.Stdout, val); err != nil {
+         t.Fatal(err)
+      }
+   }
+}
+
 func Test_Token(t *testing.T) {
    token, err := New_Token(email, password)
    if err != nil {

@@ -3,10 +3,7 @@ package main
 import (
    "fmt"
    "github.com/89z/format"
-   "github.com/89z/format/net"
    "io"
-   "net/http"
-   "os"
    "time"
    gp "github.com/89z/googleplay"
 )
@@ -16,12 +13,7 @@ func do_token(dir, email, password string) error {
    if err != nil {
       return err
    }
-   file, err := format.Create(dir + "/token.txt")
-   if err != nil {
-      return err
-   }
-   defer file.Close()
-   return net.Encode(file, token.Values)
+   return token.Create(dir + "/token.txt")
 }
 
 func do_device(dir, platform string) error {
@@ -52,13 +44,12 @@ func do_details(head *gp.Header, app string, parse bool) error {
 
 func do_delivery(head *gp.Header, app string, ver uint64) error {
    download := func(addr, name string) error {
-      fmt.Println("GET", addr)
-      res, err := http.Get(addr)
+      res, err := gp.Client.Redirect().Get(addr)
       if err != nil {
          return err
       }
       defer res.Body.Close()
-      file, err := os.Create(name)
+      file, err := format.Create(name)
       if err != nil {
          return err
       }
