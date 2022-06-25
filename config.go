@@ -10,24 +10,6 @@ import (
    "strconv"
 )
 
-func (d Device) Create(name string) error {
-   data := d.Marshal()
-   return format.WriteFile(name, data)
-}
-
-func Open_Device(name string) (*Device, error) {
-   data, err := os.ReadFile(name)
-   if err != nil {
-      return nil, err
-   }
-   var dev Device
-   dev.Message, err = protobuf.Unmarshal(data)
-   if err != nil {
-      return nil, err
-   }
-   return &dev, nil
-}
-
 type Native_Platform map[int64]string
 
 var Platforms = Native_Platform{
@@ -51,6 +33,24 @@ func (n Native_Platform) String() string {
    return string(buf)
 }
 
+func (d Device) Create(name string) error {
+   data := d.Marshal()
+   return format.WriteFile(name, data)
+}
+
+func Open_Device(name string) (*Device, error) {
+   data, err := os.ReadFile(name)
+   if err != nil {
+      return nil, err
+   }
+   var dev Device
+   dev.Message, err = protobuf.Unmarshal(data)
+   if err != nil {
+      return nil, err
+   }
+   return &dev, nil
+}
+
 // These can use default values, but they must all be included
 type Config struct {
    Device_Feature []string
@@ -65,6 +65,7 @@ type Config struct {
    Shared_Library []string
    Touch_Screen uint64
 }
+
 var Phone = Config{
    Device_Feature: []string{
       // app.source.getcontact

@@ -9,6 +9,10 @@ import (
    "strconv"
 )
 
+type Delivery struct {
+   protobuf.Message
+}
+
 func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -28,16 +32,19 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
       return nil, err
    }
    defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
+   body, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err
    }
-   response_wrapper, err := protobuf.Unmarshal(buf)
+   // ResponseWrapper
+   response_wrapper, err := protobuf.Unmarshal(body)
    if err != nil {
       return nil, err
    }
-   // .payload.deliveryResponse.status
-   status, err := response_wrapper.Get(1).Get(21).Get_Varint(1)
+   // .payload.deliveryResponse
+   delivery_response := response_wrapper.Get(1).Get(21)
+   // .status
+   status, err := delivery_response.Get_Varint(1)
    if err != nil {
       return nil, err
    }
@@ -49,98 +56,92 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    case 5:
       return nil, errors.New("invalid version")
    }
-   // .payload.deliveryResponse.appDeliveryData
-   app_data := response_wrapper.Get(1).Get(21).Get(2)
    var del Delivery
-   // .downloadUrl
-   del.Download_URL, err = app_data.Get_String(3)
-   if err != nil {
-      return nil, err
-   }
-   del.Package_Name = app
-   del.Version_Code = ver
-   // .splitDeliveryData
-   for _, data := range app_data.Get_Messages(15) {
-      var split Split_Data
-      // .id
-      split.ID, err = data.Get_String(1)
-      if err != nil {
-         return nil, err
-      }
-      // .downloadUrl
-      split.Download_URL, err = data.Get_String(5)
-      if err != nil {
-         return nil, err
-      }
-      del.Split_Data = append(del.Split_Data, split)
-   }
-   // .additionalFile
-   for _, file := range app_data.Get_Messages(4) {
-      var app File_Metadata
-      // .fileType
-      app.File_Type, err = file.Get_Varint(1)
-      if err != nil {
-         return nil, err
-      }
-      // .downloadUrl
-      app.Download_URL, err = file.Get_String(4)
-      if err != nil {
-         return nil, err
-      }
-      del.Additional_File = append(del.Additional_File, app)
-   }
+   // .appDeliveryData
+   del.Message = delivery_response.Get(2)
    return &del, nil
 }
 
+// .downloadUrl
+func (d Delivery) Download_URL() (string, error) {
+   return d.Get_String(3)
+}
+
 type Split_Data struct {
-   ID string
-   Download_URL string
+   protobuf.Message
+}
+
+// .id
+func (s Split_Data) ID() (string, error) {
+   return s.Get_String(1)
+}
+
+// .downloadUrl
+func (s Split_Data) Download_URL() (string, error) {
+   return s.Get_String(5)
+}
+
+func (d Delivery) Split_Data() []Split_Data {
+   var splits []Split_Data
+   // .splitDeliveryData
+   for _, split := range d.Get_Messages(15) {
+      splits = append(splits, Split_Data{split})
+   }
+   return splits
+}
+
+func (d Delivery) Additional_File() []File_Metadata {
+   var files []File_Metadata
+   // .additionalFile
+   for _, file := range d.Get_Messages(4) {
+      files = append(files, File_Metadata{file})
+   }
+   return files
 }
 
 type File_Metadata struct {
-   Download_URL string
-   File_Type uint64
+   protobuf.Message
 }
 
-type Delivery struct {
-   Additional_File []File_Metadata
-   Download_URL string
+// .fileType
+func (f File_Metadata) File_Type() (uint64, error) {
+   return f.Get_Varint(1)
+}
+
+// .downloadUrl
+func (f File_Metadata) Download_URL() (string, error) {
+   return f.Get_String(4)
+}
+
+type File struct {
    Package_Name string
-   Split_Data []Split_Data
    Version_Code uint64
 }
 
-func (d Delivery) Additional(typ uint64) string {
+func (f File) APK(id string) string {
    var buf []byte
-   if typ == 0 {
-      buf = append(buf, "main"...)
-   } else {
+   buf = append(buf, f.Package_Name...)
+   buf = append(buf, '-')
+   if id != "" {
+      buf = append(buf, id...)
+      buf = append(buf, '-')
+   }
+   buf = strconv.AppendUint(buf, f.Version_Code, 10)
+   buf = append(buf, ".apk"...)
+   return string(buf)
+}
+
+func (f File) OBB(file_type uint64) string {
+   var buf []byte
+   if file_type >= 1 {
       buf = append(buf, "patch"...)
+   } else {
+      buf = append(buf, "main"...)
    }
    buf = append(buf, '.')
-   buf = strconv.AppendUint(buf, d.Version_Code, 10)
+   buf = strconv.AppendUint(buf, f.Version_Code, 10)
    buf = append(buf, '.')
-   buf = append(buf, d.Package_Name...)
+   buf = append(buf, f.Package_Name...)
    buf = append(buf, ".obb"...)
-   return string(buf)
-}
-
-func (d Delivery) Download() string {
-   var buf []byte
-   buf = append(buf, d.Package_Name...)
-   buf = append(buf, '-')
-   buf = strconv.AppendUint(buf, d.Version_Code, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
-}
-
-func (d Delivery) Split(id string) string {
-   var buf []byte
-   buf = append(buf, d.Package_Name...)
-   buf = append(buf, '-')
-   buf = append(buf, id...)
-   buf = append(buf, '-')
-   buf = strconv.AppendUint(buf, d.Version_Code, 10)
-   buf = append(buf, ".apk"...)
    return string(buf)
 }

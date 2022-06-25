@@ -8,6 +8,80 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func do_delivery(head *gp.Header, app string, ver uint64) error {
+   download := func(addr, name string) error {
+      res, err := gp.Client.Redirect(nil).Get(addr)
+      if err != nil {
+         return err
+      }
+      defer res.Body.Close()
+      file, err := format.Create(name)
+      if err != nil {
+         return err
+      }
+      defer file.Close()
+      pro := format.Progress_Bytes(file, res.ContentLength)
+      if _, err := io.Copy(pro, res.Body); err != nil {
+         return err
+      }
+      return nil
+   }
+   del, err := head.Delivery(app, ver)
+   if err != nil {
+      return err
+   }
+   for _, split := range del.Split_Data() {
+      addr, err := split.Download_URL()
+      if err != nil {
+         return err
+      }
+      id, err := split.ID()
+      if err != nil {
+         return err
+      }
+      name := gp.File{app, ver}.APK(id)
+      if err := download(addr, name); err != nil {
+         return err
+      }
+   }
+   for _, file := range del.Additional_File() {
+      addr, err := file.Download_URL()
+      if err != nil {
+         return err
+      }
+      typ, err := file.File_Type()
+      if err != nil {
+         return err
+      }
+      name := gp.File{app, ver}.OBB(typ)
+      if err := download(addr, name); err != nil {
+         return err
+      }
+   }
+   addr, err := del.Download_URL()
+   if err != nil {
+      return err
+   }
+   name := gp.File{app, ver}.APK("")
+   return download(addr, name)
+}
+
+func do_header(dir, platform string, single bool) (*gp.Header, error) {
+   token, err := gp.Open_Token(dir + "/token.txt")
+   if err != nil {
+      return nil, err
+   }
+   device, err := gp.Open_Device(dir + "/" + platform + ".txt")
+   if err != nil {
+      return nil, err
+   }
+   id, err := device.ID()
+   if err != nil {
+      return nil, err
+   }
+   return token.Header(id, single)
+}
+
 func do_token(dir, email, password string) error {
    token, err := gp.New_Token(email, password)
    if err != nil {
@@ -40,56 +114,4 @@ func do_details(head *gp.Header, app string, parse bool) error {
    }
    fmt.Println(detail)
    return nil
-}
-
-func do_delivery(head *gp.Header, app string, ver uint64) error {
-   download := func(addr, name string) error {
-      res, err := gp.Client.Redirect().Get(addr)
-      if err != nil {
-         return err
-      }
-      defer res.Body.Close()
-      file, err := format.Create(name)
-      if err != nil {
-         return err
-      }
-      defer file.Close()
-      pro := format.Progress_Bytes(file, res.ContentLength)
-      if _, err := io.Copy(pro, res.Body); err != nil {
-         return err
-      }
-      return nil
-   }
-   del, err := head.Delivery(app, ver)
-   if err != nil {
-      return err
-   }
-   for _, split := range del.Split_Data {
-      err := download(split.Download_URL, del.Split(split.ID))
-      if err != nil {
-         return err
-      }
-   }
-   for _, file := range del.Additional_File {
-      err := download(file.Download_URL, del.Additional(file.File_Type))
-      if err != nil {
-         return err
-      }
-   }
-   return download(del.Download_URL, del.Download())
-}
-func do_header(dir, platform string, single bool) (*gp.Header, error) {
-   token, err := gp.Open_Token(dir + "/token.txt")
-   if err != nil {
-      return nil, err
-   }
-   device, err := gp.Open_Device(dir + "/" + platform + ".txt")
-   if err != nil {
-      return nil, err
-   }
-   id, err := device.ID()
-   if err != nil {
-      return nil, err
-   }
-   return token.Header(id, single)
 }
