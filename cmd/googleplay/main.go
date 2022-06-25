@@ -2,6 +2,7 @@ package main
 
 import (
    "flag"
+   "fmt"
    "os"
    "path/filepath"
    "strings"
@@ -19,9 +20,6 @@ func main() {
    }
    dir = filepath.Join(dir, "googleplay")
    flag.StringVar(&dir, "d", dir, "user dir")
-   // date
-   var parse bool
-   flag.BoolVar(&parse, "date", false, "parse date")
    // device
    var device bool
    flag.BoolVar(&device, "device", false, "create device")
@@ -79,10 +77,11 @@ func main() {
                panic(err)
             }
          } else {
-            err := do_details(head, app, parse)
+            detail, err := do_details(head, app)
             if err != nil {
                panic(err)
             }
+            fmt.Println(detail)
          }
       } else {
          flag.Usage()

@@ -8,6 +8,18 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func do_details(head *gp.Header, app string) (string, error) {
+   detail, err := head.Details(app)
+   if err != nil {
+      return "", err
+   }
+   text, err := detail.MarshalText()
+   if err != nil {
+      return "", err
+   }
+   return string(text), nil
+}
+
 func do_delivery(head *gp.Header, app string, ver uint64) error {
    download := func(addr, name string) error {
       res, err := gp.Client.Redirect(nil).Get(addr)
@@ -98,20 +110,4 @@ func do_device(dir, platform string) error {
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
    return device.Create(dir + "/" + platform + ".txt")
-}
-
-func do_details(head *gp.Header, app string, parse bool) error {
-   detail, err := head.Details(app)
-   if err != nil {
-      return err
-   }
-   if parse {
-      date, err := detail.Time()
-      if err != nil {
-         return err
-      }
-      detail.Upload_Date = date.String()
-   }
-   fmt.Println(detail)
-   return nil
 }

@@ -11,6 +11,89 @@ import (
    "time"
 )
 
+func (d Details) MarshalText() ([]byte, error) {
+   var b []byte
+   b = append(b, "Title: "...)
+   if v, err := d.Title(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nCreator: "...)
+   if v, err := d.Creator(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nUpload Date: "...)
+   if v, err := d.Upload_Date(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nVersion: "...)
+   if v, err := d.Version(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nVersion Code: "...)
+   if v, err := d.Version_Code(); err != nil {
+      return nil, err
+   } else {
+      b = strconv.AppendUint(b, v, 10)
+   }
+   b = append(b, "\nNum Downloads: "...)
+   if v, err := d.Num_Downloads(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, format.Label_Number(v)...)
+   }
+   b = append(b, "\nInstallation Size: "...)
+   if v, err := d.Installation_Size(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, format.Label_Size(v)...)
+   }
+   b = append(b, "\nFile:"...)
+   for _, file := range d.File() {
+      v, err := file.File_Type()
+      if err != nil {
+         return nil, err
+      }
+      if v >= 1 {
+         b = append(b, " OBB"...)
+      } else {
+         b = append(b, " APK"...)
+      }
+   }
+   b = append(b, "\nOffer: "...)
+   if v, err := d.Micros(); err != nil {
+      return nil, err
+   } else {
+      b = strconv.AppendUint(b, v, 10)
+   }
+   b = append(b, ' ')
+   if v, err := d.Currency_Code(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   return b, nil
+}
+
+type version_error struct {
+   app string
+}
+
+func (v version_error) Error() string {
+   var buf strings.Builder
+   buf.WriteString(v.app)
+   buf.WriteString(" versionCode missing\n")
+   buf.WriteString("Check nativePlatform")
+   return buf.String()
+}
+
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
@@ -29,136 +112,97 @@ func (h Header) Details(app string) (*Details, error) {
       return nil, err
    }
    defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
+   body, err := io.ReadAll(res.Body)
    if err != nil {
       return nil, err
    }
-   response_wrapper, err := protobuf.Unmarshal(buf)
+   // ResponseWrapper
+   response_wrapper, err := protobuf.Unmarshal(body)
    if err != nil {
       return nil, err
    }
-   // .payload.detailsResponse.docV2
-   doc_V2 := response_wrapper.Get(1).Get(2).Get(4)
    var det Details
-   // The following fields will fail with wrong ABI, so try them first. If the
-   // first one passes, then use native error for the rest.
-   // .details.appDetails.versionCode
-   det.Version_Code, err = doc_V2.Get(13).Get(1).Get_Varint(3)
-   if err != nil {
-      return nil, version_error{app}
-   }
-   // .details.appDetails.versionString
-   det.Version, err = doc_V2.Get(13).Get(1).Get_String(4)
-   if err != nil {
-      return nil, err
-   }
-   // .details.appDetails.installationSize
-   det.Size, err = doc_V2.Get(13).Get(1).Get_Varint(9)
-   if err != nil {
-      return nil, err
-   }
-   // .details.appDetails.uploadDate
-   det.Upload_Date, err = doc_V2.Get(13).Get(1).Get_String(16)
-   if err != nil {
-      return nil, err
-   }
-   // .details.appDetails.file
-   for _, file := range doc_V2.Get(13).Get(1).Get_Messages(17) {
-      // .fileType
-      typ, err := file.Get_Varint(1)
-      if err != nil {
-         return nil, err
-      }
-      det.File = append(det.File, typ)
-   }
-   // The following fields should work with any ABI.
-   // .title
-   det.Title, err = doc_V2.Get_String(5)
-   if err != nil {
-      return nil, err
-   }
-   // .creator
-   det.Creator, err = doc_V2.Get_String(6)
-   if err != nil {
-      return nil, err
-   }
-   // .offer.micros
-   det.Micros, err = doc_V2.Get(8).Get_Varint(1)
-   if err != nil {
-      return nil, err
-   }
-   // .offer.currencyCode
-   det.Currency_Code, err = doc_V2.Get(8).Get_String(2)
-   if err != nil {
-      return nil, err
-   }
-   // I dont know the name of field 70
-   // .details.appDetails
-   det.Downloads, err = doc_V2.Get(13).Get(1).Get_Varint(70)
-   if err != nil {
-      return nil, err
-   }
+   // .payload.detailsResponse.docV2
+   det.Message = response_wrapper.Get(1).Get(2).Get(4)
    return &det, nil
 }
 
-type version_error struct {
-   app string
-}
-
-func (v version_error) Error() string {
-   var buf strings.Builder
-   buf.WriteString(v.app)
-   buf.WriteString(" versionCode missing\n")
-   buf.WriteString("Check nativePlatform")
-   return buf.String()
-}
-
 type Details struct {
-   Creator string
-   Currency_Code string
-   Downloads uint64
-   File []uint64
-   Micros uint64
-   Size uint64
-   Title string
-   Upload_Date string // Jun 1, 2021
-   Version string
-   Version_Code uint64
+   protobuf.Message
 }
 
-func (d Details) String() string {
-   var buf []byte
-   buf = append(buf, "Title: "...)
-   buf = append(buf, d.Title...)
-   buf = append(buf, "\nCreator: "...)
-   buf = append(buf, d.Creator...)
-   buf = append(buf, "\nDate: "...)
-   buf = append(buf, d.Upload_Date...)
-   buf = append(buf, "\nVersion: "...)
-   buf = append(buf, d.Version...)
-   buf = append(buf, "\nVersion code: "...)
-   buf = strconv.AppendUint(buf, d.Version_Code, 10)
-   buf = append(buf, "\nDownloads: "...)
-   buf = append(buf, format.Label_Number(d.Downloads)...)
-   buf = append(buf, "\nSize: "...)
-   buf = append(buf, format.Label_Size(d.Size)...)
-   buf = append(buf, "\nFile:"...)
-   for _, file := range d.File {
-      if file == 0 {
-         buf = append(buf, " APK"...)
-      } else {
-         buf = append(buf, " OBB"...)
-      }
+// will fail with wrong ABI
+func (d Details) Version_Code() (uint64, error) {
+   // .details.appDetails.versionCode
+   return d.Get(13).Get(1).Get_Varint(3)
+}
+
+// will fail with wrong ABI
+func (d Details) Version() (string, error) {
+   // .details.appDetails.versionString
+   return d.Get(13).Get(1).Get_String(4)
+}
+
+// will fail with wrong ABI
+func (d Details) Installation_Size() (uint64, error) {
+   // .details.appDetails.installationSize
+   return d.Get(13).Get(1).Get_Varint(9)
+}
+
+// will fail with wrong ABI
+func (d Details) Upload_Date() (string, error) {
+   // .details.appDetails.uploadDate
+   return d.Get(13).Get(1).Get_String(16)
+}
+
+// should work with any ABI
+func (d Details) Title() (string, error) {
+   // .title
+   return d.Get_String(5)
+}
+
+// should work with any ABI
+func (d Details) Creator() (string, error) {
+   // .creator
+   return d.Get_String(6)
+}
+
+// should work with any ABI
+func (d Details) Micros() (uint64, error) {
+   // .offer.micros
+   return d.Get(8).Get_Varint(1)
+}
+
+// should work with any ABI
+func (d Details) Currency_Code() (string, error) {
+   // .offer.currencyCode
+   return d.Get(8).Get_String(2)
+}
+
+// should work with any ABI
+func (d Details) Num_Downloads() (uint64, error) {
+   // .details.appDetails
+   // I dont know the name of field 70, but the similar field 13 is called
+   // .numDownloads
+   return d.Get(13).Get(1).Get_Varint(70)
+}
+
+// will fail with wrong ABI
+func (d Details) File() []File_Metadata {
+   var files []File_Metadata
+   // .details.appDetails.file
+   for _, file := range d.Get(13).Get(1).Get_Messages(17) {
+      files = append(files, File_Metadata{file})
    }
-   buf = append(buf, "\nOffer: "...)
-   buf = strconv.AppendUint(buf, d.Micros, 10)
-   buf = append(buf, ' ')
-   buf = append(buf, d.Currency_Code...)
-   return string(buf)
+   return files
 }
 
 // This only works with English. You can force English with:
 // Accept-Language: en
 func (d Details) Time() (time.Time, error) {
-   return time.Parse("Jan 2, 2006", d.Upload_Date)
+   date, err := d.Upload_Date()
+   if err != nil {
+      return time.Time{}, err
+   }
+   return time.Parse("Jan 2, 2006", date)
 }
