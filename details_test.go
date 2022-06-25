@@ -38,11 +38,11 @@ func Test_Details(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   token, err := Open_Token(home + "/googleplay/token.txt")
+   auth, err := Open_Auth(home + "/googleplay/auth.txt")
    if err != nil {
       t.Fatal(err)
    }
-   head, err := token.Header(0, false)
+   head, err := auth.Header(0, false)
    if err != nil {
       t.Fatal(err)
    }

@@ -8,6 +8,26 @@ import (
    gp "github.com/89z/googleplay"
 )
 
+func do_header(dir, platform string, single bool) (*gp.Header, error) {
+   auth, err := gp.Open_Auth(dir + "/auth.txt")
+   if err != nil {
+      return nil, err
+   }
+   if err := auth.Exchange(); err != nil {
+      return nil, err
+   }
+   device, err := gp.Open_Device(dir + "/" + platform + ".txt")
+   if err != nil {
+      return nil, err
+   }
+   id, err := device.ID()
+   if err != nil {
+      return nil, err
+   }
+   head := auth.Header(id, single)
+   return &head, nil
+}
+
 func do_details(head *gp.Header, app string) (string, error) {
    detail, err := head.Details(app)
    if err != nil {
@@ -78,28 +98,12 @@ func do_delivery(head *gp.Header, app string, ver uint64) error {
    return download(addr, name)
 }
 
-func do_header(dir, platform string, single bool) (*gp.Header, error) {
-   token, err := gp.Open_Token(dir + "/token.txt")
-   if err != nil {
-      return nil, err
-   }
-   device, err := gp.Open_Device(dir + "/" + platform + ".txt")
-   if err != nil {
-      return nil, err
-   }
-   id, err := device.ID()
-   if err != nil {
-      return nil, err
-   }
-   return token.Header(id, single)
-}
-
-func do_token(dir, email, password string) error {
-   token, err := gp.New_Token(email, password)
+func do_auth(dir, email, password string) error {
+   auth, err := gp.New_Auth(email, password)
    if err != nil {
       return err
    }
-   return token.Create(dir + "/token.txt")
+   return auth.Create(dir + "/auth.txt")
 }
 
 func do_device(dir, platform string) error {

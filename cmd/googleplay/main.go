@@ -50,7 +50,7 @@ func main() {
    flag.Uint64Var(&version, "v", 0, "app version")
    flag.Parse()
    if email != "" {
-      err := do_token(dir, email, password)
+      err := do_auth(dir, email, password)
       if err != nil {
          panic(err)
       }

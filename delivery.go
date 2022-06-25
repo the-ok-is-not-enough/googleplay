@@ -20,9 +20,7 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    if err != nil {
       return nil, err
    }
-   h.Set_Agent(req.Header)
-   h.Set_Auth(req.Header) // needed for single APK
-   h.Set_Device(req.Header)
+   req.Header = h.Header
    req.URL.RawQuery = url.Values{
       "doc": {app},
       "vc": {strconv.FormatUint(ver, 10)},

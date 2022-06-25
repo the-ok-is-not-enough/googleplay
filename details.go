@@ -11,89 +11,6 @@ import (
    "time"
 )
 
-func (d Details) MarshalText() ([]byte, error) {
-   var b []byte
-   b = append(b, "Title: "...)
-   if v, err := d.Title(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, v...)
-   }
-   b = append(b, "\nCreator: "...)
-   if v, err := d.Creator(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, v...)
-   }
-   b = append(b, "\nUpload Date: "...)
-   if v, err := d.Upload_Date(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, v...)
-   }
-   b = append(b, "\nVersion: "...)
-   if v, err := d.Version(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, v...)
-   }
-   b = append(b, "\nVersion Code: "...)
-   if v, err := d.Version_Code(); err != nil {
-      return nil, err
-   } else {
-      b = strconv.AppendUint(b, v, 10)
-   }
-   b = append(b, "\nNum Downloads: "...)
-   if v, err := d.Num_Downloads(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, format.Label_Number(v)...)
-   }
-   b = append(b, "\nInstallation Size: "...)
-   if v, err := d.Installation_Size(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, format.Label_Size(v)...)
-   }
-   b = append(b, "\nFile:"...)
-   for _, file := range d.File() {
-      v, err := file.File_Type()
-      if err != nil {
-         return nil, err
-      }
-      if v >= 1 {
-         b = append(b, " OBB"...)
-      } else {
-         b = append(b, " APK"...)
-      }
-   }
-   b = append(b, "\nOffer: "...)
-   if v, err := d.Micros(); err != nil {
-      return nil, err
-   } else {
-      b = strconv.AppendUint(b, v, 10)
-   }
-   b = append(b, ' ')
-   if v, err := d.Currency_Code(); err != nil {
-      return nil, err
-   } else {
-      b = append(b, v...)
-   }
-   return b, nil
-}
-
-type version_error struct {
-   app string
-}
-
-func (v version_error) Error() string {
-   var buf strings.Builder
-   buf.WriteString(v.app)
-   buf.WriteString(" versionCode missing\n")
-   buf.WriteString("Check nativePlatform")
-   return buf.String()
-}
-
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
@@ -101,11 +18,7 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   // half of the apps I test require User-Agent,
-   // so just set it for all of them
-   h.Set_Agent(req.Header)
-   h.Set_Auth(req.Header)
-   h.Set_Device(req.Header)
+   req.Header = h.Header
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    res, err := Client.Do(req)
    if err != nil {
@@ -205,4 +118,86 @@ func (d Details) Time() (time.Time, error) {
       return time.Time{}, err
    }
    return time.Parse("Jan 2, 2006", date)
+}
+func (d Details) MarshalText() ([]byte, error) {
+   var b []byte
+   b = append(b, "Title: "...)
+   if v, err := d.Title(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nCreator: "...)
+   if v, err := d.Creator(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nUpload Date: "...)
+   if v, err := d.Upload_Date(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nVersion: "...)
+   if v, err := d.Version(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   b = append(b, "\nVersion Code: "...)
+   if v, err := d.Version_Code(); err != nil {
+      return nil, err
+   } else {
+      b = strconv.AppendUint(b, v, 10)
+   }
+   b = append(b, "\nNum Downloads: "...)
+   if v, err := d.Num_Downloads(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, format.Label_Number(v)...)
+   }
+   b = append(b, "\nInstallation Size: "...)
+   if v, err := d.Installation_Size(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, format.Label_Size(v)...)
+   }
+   b = append(b, "\nFile:"...)
+   for _, file := range d.File() {
+      v, err := file.File_Type()
+      if err != nil {
+         return nil, err
+      }
+      if v >= 1 {
+         b = append(b, " OBB"...)
+      } else {
+         b = append(b, " APK"...)
+      }
+   }
+   b = append(b, "\nOffer: "...)
+   if v, err := d.Micros(); err != nil {
+      return nil, err
+   } else {
+      b = strconv.AppendUint(b, v, 10)
+   }
+   b = append(b, ' ')
+   if v, err := d.Currency_Code(); err != nil {
+      return nil, err
+   } else {
+      b = append(b, v...)
+   }
+   return b, nil
+}
+
+type version_error struct {
+   app string
+}
+
+func (v version_error) Error() string {
+   var buf strings.Builder
+   buf.WriteString(v.app)
+   buf.WriteString(" versionCode missing\n")
+   buf.WriteString("Check nativePlatform")
+   return buf.String()
 }

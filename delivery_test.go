@@ -11,7 +11,7 @@ func Test_Delivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   token, err := Open_Token(home + "/googleplay/token.txt")
+   auth, err := Open_Auth(home + "/googleplay/auth.txt")
    if err != nil {
       t.Fatal(err)
    }
@@ -23,7 +23,7 @@ func Test_Delivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   head, err := token.Header(id, false)
+   head, err := auth.Header(id, false)
    if err != nil {
       t.Fatal(err)
    }
