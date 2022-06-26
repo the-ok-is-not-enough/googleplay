@@ -15,7 +15,7 @@ func Test_Delivery(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   device, err := Open_Device(home + "/googleplay/x86.txt")
+   device, err := Open_Device(home + "/googleplay/x86.bin")
    if err != nil {
       t.Fatal(err)
    }

@@ -119,6 +119,7 @@ func (d Details) Time() (time.Time, error) {
    }
    return time.Parse("Jan 2, 2006", date)
 }
+
 func (d Details) MarshalText() ([]byte, error) {
    var b []byte
    b = append(b, "Title: "...)

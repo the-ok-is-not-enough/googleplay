@@ -48,7 +48,7 @@ func Test_Details(t *testing.T) {
    }
    for _, app := range apps {
       platform := Platforms[app.platform]
-      device, err := Open_Device(home + "/googleplay/" + platform + ".txt")
+      device, err := Open_Device(home + "/googleplay/" + platform + ".bin")
       if err != nil {
          t.Fatal(err)
       }

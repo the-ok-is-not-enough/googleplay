@@ -16,7 +16,7 @@ func checkin(id int64) error {
    if err != nil {
       return err
    }
-   platform += ".txt"
+   platform += ".bin"
    if err := device.Create(home + "/googleplay/" + platform); err != nil {
       return err
    }

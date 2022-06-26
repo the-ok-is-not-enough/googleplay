@@ -16,7 +16,7 @@ func do_header(dir, platform string, single bool) (*gp.Header, error) {
    if err := auth.Exchange(); err != nil {
       return nil, err
    }
-   device, err := gp.Open_Device(dir + "/" + platform + ".txt")
+   device, err := gp.Open_Device(dir + "/" + platform + ".bin")
    if err != nil {
       return nil, err
    }
@@ -113,5 +113,5 @@ func do_device(dir, platform string) error {
    }
    fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
    time.Sleep(gp.Sleep)
-   return device.Create(dir + "/" + platform + ".txt")
+   return device.Create(dir + "/" + platform + ".bin")
 }
