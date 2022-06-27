@@ -28,16 +28,12 @@ func do_header(dir, platform string, single bool) (*gp.Header, error) {
    return &head, nil
 }
 
-func do_details(head *gp.Header, app string) (string, error) {
+func do_details(head *gp.Header, app string) ([]byte, error) {
    detail, err := head.Details(app)
    if err != nil {
-      return "", err
+      return nil, err
    }
-   text, err := detail.MarshalText()
-   if err != nil {
-      return "", err
-   }
-   return string(text), nil
+   return detail.MarshalText()
 }
 
 func do_delivery(head *gp.Header, app string, ver uint64) error {

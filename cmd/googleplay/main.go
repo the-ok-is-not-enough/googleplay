@@ -2,7 +2,6 @@ package main
 
 import (
    "flag"
-   "fmt"
    "os"
    "path/filepath"
    "strings"
@@ -81,7 +80,7 @@ func main() {
             if err != nil {
                panic(err)
             }
-            fmt.Println(detail)
+            os.Stdout.Write(detail)
          }
       } else {
          flag.Usage()

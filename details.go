@@ -188,6 +188,7 @@ func (d Details) MarshalText() ([]byte, error) {
    } else {
       b = append(b, v...)
    }
+   b = append(b, '\n')
    return b, nil
 }
 
