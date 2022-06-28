@@ -7,7 +7,6 @@ import (
    "net/http"
    "net/url"
    "strconv"
-   "strings"
    "time"
 )
 
@@ -192,16 +191,4 @@ func (d Details) MarshalText() ([]byte, error) {
    }
    b = append(b, '\n')
    return b, nil
-}
-
-type version_error struct {
-   app string
-}
-
-func (v version_error) Error() string {
-   var buf strings.Builder
-   buf.WriteString(v.app)
-   buf.WriteString(" versionCode missing\n")
-   buf.WriteString("Check nativePlatform")
-   return buf.String()
 }

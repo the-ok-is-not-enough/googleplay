@@ -1,5 +1,5 @@
 # GooglePlay
 
 ~~~
-go run . -a com.google.android.youtube
+go run . -a com.sygic.aura
 ~~~

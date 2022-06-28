@@ -9,19 +9,15 @@ import (
 )
 
 func do_header(dir, platform string, single bool) (*gp.Header, error) {
-   var (
-      err error
-      head gp.Header
-   )
-   head.Auth, err = gp.Open_Auth(dir + "/auth.txt")
+   var head gp.Header
+   err := head.Open_Auth(dir + "/auth.txt")
    if err != nil {
       return nil, err
    }
    if err := head.Auth.Exchange(); err != nil {
       return nil, err
    }
-   head.Device, err = gp.Open_Device(dir + "/" + platform + ".bin")
-   if err != nil {
+   if err := head.Open_Device(dir + "/" + platform + ".bin"); err != nil {
       return nil, err
    }
    head.Single = single
