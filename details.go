@@ -18,7 +18,11 @@ func (h Header) Details(app string) (*Details, error) {
    if err != nil {
       return nil, err
    }
-   req.Header = h.Header
+   // half of the apps I test require User-Agent,
+   // so just set it for all of them
+   h.Set_Agent(req.Header)
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    res, err := Client.Do(req)
    if err != nil {
@@ -166,11 +170,9 @@ func (d Details) MarshalText() ([]byte, error) {
    }
    b = append(b, "\nFile:"...)
    for _, file := range d.File() {
-      v, err := file.File_Type()
-      if err != nil {
+      if v, err := file.File_Type(); err != nil {
          return nil, err
-      }
-      if v >= 1 {
+      } else if v >= 1 {
          b = append(b, " OBB"...)
       } else {
          b = append(b, " APK"...)

@@ -9,22 +9,22 @@ import (
 )
 
 func do_header(dir, platform string, single bool) (*gp.Header, error) {
-   auth, err := gp.Open_Auth(dir + "/auth.txt")
+   var (
+      err error
+      head gp.Header
+   )
+   head.Auth, err = gp.Open_Auth(dir + "/auth.txt")
    if err != nil {
       return nil, err
    }
-   if err := auth.Exchange(); err != nil {
+   if err := head.Auth.Exchange(); err != nil {
       return nil, err
    }
-   device, err := gp.Open_Device(dir + "/" + platform + ".bin")
+   head.Device, err = gp.Open_Device(dir + "/" + platform + ".bin")
    if err != nil {
       return nil, err
    }
-   id, err := device.ID()
-   if err != nil {
-      return nil, err
-   }
-   head := auth.Header(id, single)
+   head.Single = single
    return &head, nil
 }
 

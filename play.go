@@ -12,14 +12,14 @@ import (
    "time"
 )
 
-func Open_Auth(name string) (*Auth, error) {
+func (h *Header) Open_Auth(name string) error {
    query, err := os.ReadFile(name)
    if err != nil {
-      return nil, err
+      return err
    }
-   var auth Auth
-   auth.Values = parse_query(string(query))
-   return &auth, nil
+   h.Auth = new(Auth)
+   h.Auth.Values = parse_query(string(query))
+   return nil
 }
 
 func (a Auth) Create(name string) error {
@@ -40,15 +40,15 @@ func parse_query(query string) url.Values {
 }
 
 func format_query(vals url.Values) string {
-   var buf strings.Builder
+   var b strings.Builder
    for key := range vals {
       val := vals.Get(key)
-      buf.WriteString(key)
-      buf.WriteByte('=')
-      buf.WriteString(val)
-      buf.WriteByte('\n')
+      b.WriteString(key)
+      b.WriteByte('=')
+      b.WriteString(val)
+      b.WriteByte('\n')
    }
-   return buf.String()
+   return b.String()
 }
 
 const Sleep = 4 * time.Second
@@ -97,7 +97,7 @@ type Auth struct {
 func (a *Auth) Exchange() error {
    // these values take from Android API 28
    body := url.Values{
-      "Token": {a.Token()},
+      "Token": {a.Get_Token()},
       "app": {"com.android.vending"},
       "client_sig": {"38918a453d07199354f8b19af05ec6562ced5788"},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -122,38 +122,43 @@ func (a *Auth) Exchange() error {
    return nil
 }
 
-func (a Auth) Token() string {
+func (a Auth) Get_Token() string {
    return a.Get("Token")
 }
 
-func (a Auth) Auth() string {
+func (a Auth) Get_Auth() string {
    return a.Get("Auth")
 }
 
-type Header struct {
-   http.Header
+func (h Header) Set_Auth(head http.Header) {
+   head.Set("Authorization", "Bearer " + h.Auth.Get_Auth())
 }
 
-func (a Auth) Header(device_id uint64, single bool) Header {
-   var (
-      buf []byte
-      head Header
-   )
-   head.Header = make(http.Header)
-   // Authorization
-   head.Set("Authorization", "Bearer " + a.Auth())
-   // X-DFE-Device-ID
-   head.Set("X-DFE-Device-ID", strconv.FormatUint(device_id, 16))
-   // User-Agent
-   buf = append(buf, "Android-Finsky (sdk=9,versionCode="...)
-   if single {
-      buf = strconv.AppendInt(buf, 8091_9999, 10)
-   } else {
-      buf = strconv.AppendInt(buf, 9999_9999, 10)
+func (h Header) Set_Device(head http.Header) error {
+   id, err := h.Device.ID()
+   if err != nil {
+      return err
    }
-   buf = append(buf, ')')
-   head.Set("User-Agent", string(buf))
-   return head
+   head.Set("X-DFE-Device-ID", strconv.FormatUint(id, 16))
+   return nil
+}
+
+func (h Header) Set_Agent(head http.Header) {
+   var b []byte
+   b = append(b, "Android-Finsky (sdk=9,versionCode="...)
+   if h.Single {
+      b = strconv.AppendInt(b, 8091_9999, 10)
+   } else {
+      b = strconv.AppendInt(b, 9999_9999, 10)
+   }
+   b = append(b, ')')
+   head.Set("User-Agent", string(b))
+}
+
+type Header struct {
+   Auth *Auth // Authorization
+   Device *Device // X-Dfe-Device-Id
+   Single bool
 }
 
 // Purchase app. Only needs to be done once per Google account.
@@ -167,7 +172,8 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   req.Header = h.Header
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
    res, err := Client.Do(req)
    if err != nil {

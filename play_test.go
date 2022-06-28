@@ -25,16 +25,10 @@ func Test_Header(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   auth, err := Open_Auth(home + "/googleplay/auth.txt")
-   if err != nil {
-      t.Fatal(err)
-   }
+   var head Header
+   head.Open_Auth(home + "/googleplay/auth.txt")
    for i := 0; i < 9; i++ {
-      head, err := auth.Header(0, false)
-      if err != nil {
-         t.Fatal(err)
-      }
-      if head.Auth == "" {
+      if head.Auth.Get_Auth() == "" {
          t.Fatalf("%+v", head)
       }
       time.Sleep(time.Second)

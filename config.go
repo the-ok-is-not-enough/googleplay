@@ -10,6 +10,19 @@ import (
    "strconv"
 )
 
+func (h *Header) Open_Device(name string) error {
+   buf, err := os.ReadFile(name)
+   if err != nil {
+      return err
+   }
+   h.Device = new(Device)
+   h.Device.Message, err = protobuf.Unmarshal(buf)
+   if err != nil {
+      return err
+   }
+   return nil
+}
+
 type Native_Platform map[int64]string
 
 var Platforms = Native_Platform{
@@ -36,19 +49,6 @@ func (n Native_Platform) String() string {
 func (d Device) Create(name string) error {
    data := d.Marshal()
    return format.WriteFile(name, data)
-}
-
-func Open_Device(name string) (*Device, error) {
-   data, err := os.ReadFile(name)
-   if err != nil {
-      return nil, err
-   }
-   var dev Device
-   dev.Message, err = protobuf.Unmarshal(data)
-   if err != nil {
-      return nil, err
-   }
-   return &dev, nil
 }
 
 // These can use default values, but they must all be included

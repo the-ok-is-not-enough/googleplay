@@ -38,50 +38,38 @@ func Test_Details(t *testing.T) {
    if err != nil {
       t.Fatal(err)
    }
-   auth, err := Open_Auth(home + "/googleplay/auth.txt")
-   if err != nil {
-      t.Fatal(err)
-   }
-   head, err := auth.Header(0, false)
-   if err != nil {
-      t.Fatal(err)
-   }
+   var head Header
+   head.Open_Auth(home + "/googleplay/auth.txt")
+   head.Auth.Exchange()
    for _, app := range apps {
       platform := Platforms[app.platform]
-      device, err := Open_Device(home + "/googleplay/" + platform + ".bin")
+      head.Open_Device(home + "/googleplay/" + platform + ".bin")
+      d, err := head.Details(app.id)
       if err != nil {
          t.Fatal(err)
       }
-      head.Device_ID, err = device.ID()
-      if err != nil {
+      if _, err := d.Upload_Date(); err != nil {
          t.Fatal(err)
       }
-      det, err := head.Details(app.id)
-      if err != nil {
+      if _, err := d.Version(); err != nil {
          t.Fatal(err)
       }
-      if det.Currency_Code == "" {
-         t.Fatal(det)
+      if _, err := d.Version_Code(); err != nil {
+         t.Fatal(err)
       }
-      if det.Downloads == 0 {
-         t.Fatal(det)
+      if _, err := d.Title(); err != nil {
+         t.Fatal(err)
       }
-      if det.Size == 0 {
-         t.Fatal(det)
+      if _, err := d.Installation_Size(); err != nil {
+         t.Fatal(err)
       }
-      if det.Title == "" {
-         t.Fatal(det)
+      if _, err := d.Num_Downloads(); err != nil {
+         t.Fatal(err)
       }
-      if det.Version_Code == 0 {
-         t.Fatal(det)
+      if _, err := d.Currency_Code(); err != nil {
+         t.Fatal(err)
       }
-      if det.Version == "" {
-         t.Fatal(det)
-      }
-      if det.Upload_Date == "" {
-         t.Fatal(det)
-      }
-      date, err := det.Time()
+      date, err := d.Time()
       if err != nil {
          t.Fatal(err)
       }
