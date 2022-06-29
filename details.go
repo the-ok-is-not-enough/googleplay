@@ -1,6 +1,7 @@
 package googleplay
 
 import (
+   "errors"
    "github.com/89z/format"
    "github.com/89z/format/protobuf"
    "io"
@@ -9,6 +10,15 @@ import (
    "strconv"
    "time"
 )
+
+func (d Details) Upload_Date() (string, error) {
+   // .details.appDetails.uploadDate
+   date, err := d.Get(13).Get(1).Get_String(16)
+   if err != nil {
+      return "", errors.New("uploadDate not found, try another platform")
+   }
+   return date, nil
+}
 
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
@@ -63,12 +73,6 @@ func (d Details) Version() (string, error) {
 func (d Details) Installation_Size() (uint64, error) {
    // .details.appDetails.installationSize
    return d.Get(13).Get(1).Get_Varint(9)
-}
-
-// will fail with wrong ABI
-func (d Details) Upload_Date() (string, error) {
-   // .details.appDetails.uploadDate
-   return d.Get(13).Get(1).Get_String(16)
 }
 
 // should work with any ABI

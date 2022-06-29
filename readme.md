@@ -14,7 +14,7 @@ Download APK from Google Play or send API requests
 ## Issues
 
 Since people have repeatedly abused it, I am now requiring payment for all
-issues. Any issue without payment of at least 9 USD will be closed immediately.
+issues. Any issue without payment of at least 19 USD will be closed immediately.
 Payment can be made to the PayPal link on this page, or if you need to use
 another method, mention that in the issue text. For business opportunities,
 contact me:
