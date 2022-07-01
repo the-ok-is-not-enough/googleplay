@@ -1,12 +1,11 @@
 package googleplay
 
 import (
-   "github.com/89z/format"
    "github.com/89z/format/crypto"
    "github.com/89z/format/http"
+   "github.com/89z/format/os"
    "io"
    "net/url"
-   "os"
    "strconv"
    "strings"
    "time"
@@ -24,7 +23,7 @@ func (h *Header) Open_Auth(name string) error {
 
 func (a Auth) Create(name string) error {
    query := format_query(a.Values)
-   return format.WriteFile(name, []byte(query))
+   return os.WriteFile(name, []byte(query))
 }
 
 // this beats "io.Reader", and also "bytes.Fields"

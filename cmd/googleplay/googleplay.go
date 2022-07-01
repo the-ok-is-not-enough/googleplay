@@ -3,6 +3,7 @@ package main
 import (
    "fmt"
    "github.com/89z/format"
+   "github.com/89z/format/os"
    "io"
    "time"
    gp "github.com/89z/googleplay"
@@ -39,7 +40,7 @@ func do_delivery(head *gp.Header, app string, ver uint64) error {
          return err
       }
       defer res.Body.Close()
-      file, err := format.Create(name)
+      file, err := os.Create(name)
       if err != nil {
          return err
       }

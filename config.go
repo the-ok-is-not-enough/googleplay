@@ -2,11 +2,10 @@ package googleplay
 
 import (
    "bytes"
-   "github.com/89z/format"
+   "github.com/89z/format/os"
    "github.com/89z/format/protobuf"
    "io"
    "net/http"
-   "os"
    "strconv"
 )
 
@@ -48,7 +47,7 @@ func (n Native_Platform) String() string {
 
 func (d Device) Create(name string) error {
    data := d.Marshal()
-   return format.WriteFile(name, data)
+   return os.WriteFile(name, data)
 }
 
 // These can use default values, but they must all be included
