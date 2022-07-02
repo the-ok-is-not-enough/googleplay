@@ -1,9 +1,9 @@
 package googleplay
 
 import (
-   "github.com/89z/format/crypto"
-   "github.com/89z/format/http"
-   "github.com/89z/format/os"
+   "github.com/89z/std/crypto"
+   "github.com/89z/std/http"
+   "github.com/89z/std/os"
    "io"
    "net/url"
    "strconv"

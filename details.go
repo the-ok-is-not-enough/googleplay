@@ -2,12 +2,11 @@ package googleplay
 
 import (
    "errors"
-   "github.com/89z/format"
-   "github.com/89z/format/protobuf"
+   "github.com/89z/std/protobuf"
+   "github.com/89z/std/strconv"
    "io"
    "net/http"
    "net/url"
-   "strconv"
    "time"
 )
 
@@ -163,13 +162,13 @@ func (d Details) MarshalText() ([]byte, error) {
    if v, err := d.Num_Downloads(); err != nil {
       return nil, err
    } else {
-      b = append(b, format.Label_Number(v)...)
+      b = append(b, strconv.Number(v)...)
    }
    b = append(b, "\nInstallation Size: "...)
    if v, err := d.Installation_Size(); err != nil {
       return nil, err
    } else {
-      b = append(b, format.Label_Size(v)...)
+      b = append(b, strconv.Size(v)...)
    }
    b = append(b, "\nFile:"...)
    for _, file := range d.File() {

@@ -2,8 +2,7 @@ package main
 
 import (
    "fmt"
-   "github.com/89z/format"
-   "github.com/89z/format/os"
+   "github.com/89z/std/os"
    "io"
    "time"
    gp "github.com/89z/googleplay"
@@ -45,7 +44,7 @@ func do_delivery(head *gp.Header, app string, ver uint64) error {
          return err
       }
       defer file.Close()
-      pro := format.Progress_Bytes(file, res.ContentLength)
+      pro := os.Progress_Bytes(file, res.ContentLength)
       if _, err := io.Copy(pro, res.Body); err != nil {
          return err
       }
