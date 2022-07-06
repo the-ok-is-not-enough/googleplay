@@ -2,7 +2,7 @@ module github.com/89z/googleplay
 
 go 1.18
 
-require github.com/89z/std v1.45.2
+require github.com/89z/rosso v1.45.5
 
 require (
 	github.com/refraction-networking/utls v1.1.0 // indirect

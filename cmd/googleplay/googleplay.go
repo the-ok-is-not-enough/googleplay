@@ -2,7 +2,7 @@ package main
 
 import (
    "fmt"
-   "github.com/89z/std/os"
+   "github.com/89z/rosso/os"
    "io"
    "time"
    gp "github.com/89z/googleplay"

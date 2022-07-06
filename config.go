@@ -2,8 +2,8 @@ package googleplay
 
 import (
    "bytes"
-   "github.com/89z/std/os"
-   "github.com/89z/std/protobuf"
+   "github.com/89z/rosso/os"
+   "github.com/89z/rosso/protobuf"
    "io"
    "net/http"
    "strconv"
