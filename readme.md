@@ -20,7 +20,7 @@ on this page, or if you want to use another method, mention that in the issue
 text. For business opportunities, contact me:
 
 - Email srpen6@gmail.com
-- Discord 89z#4149
+- Discord srpen6#6983
 
 ## How to install?
 
