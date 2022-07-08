@@ -14,7 +14,6 @@ func (h *Header) Open_Device(name string) error {
    if err != nil {
       return err
    }
-   h.Device = new(Device)
    h.Device.Message, err = protobuf.Unmarshal(buf)
    if err != nil {
       return err

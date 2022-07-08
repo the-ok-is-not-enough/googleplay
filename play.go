@@ -11,19 +11,20 @@ import (
    "time"
 )
 
-func (h *Header) Open_Auth(name string) error {
-   query, err := os.ReadFile(name)
-   if err != nil {
-      return err
-   }
-   h.Auth = new(Auth)
-   h.Auth.Values = parse_query(string(query))
-   return nil
-}
+const Sleep = 4 * time.Second
 
-func (a Auth) Create(name string) error {
-   query := format_query(a.Values)
-   return os.WriteFile(name, []byte(query))
+var Client = http.Default_Client
+
+func format_query(vals url.Values) string {
+   var b strings.Builder
+   for key := range vals {
+      val := vals.Get(key)
+      b.WriteString(key)
+      b.WriteByte('=')
+      b.WriteString(val)
+      b.WriteByte('\n')
+   }
+   return b.String()
 }
 
 // this beats "io.Reader", and also "bytes.Fields"
@@ -38,21 +39,9 @@ func parse_query(query string) url.Values {
    return vals
 }
 
-func format_query(vals url.Values) string {
-   var b strings.Builder
-   for key := range vals {
-      val := vals.Get(key)
-      b.WriteString(key)
-      b.WriteByte('=')
-      b.WriteString(val)
-      b.WriteByte('\n')
-   }
-   return b.String()
+type Auth struct {
+   url.Values
 }
-
-const Sleep = 4 * time.Second
-
-var Client = http.Default_Client
 
 // You can also use host "android.clients.google.com", but it also uses
 // TLS fingerprinting.
@@ -89,8 +78,9 @@ func New_Auth(email, password string) (*Auth, error) {
    return &auth, nil
 }
 
-type Auth struct {
-   url.Values
+func (a Auth) Create(name string) error {
+   query := format_query(a.Values)
+   return os.WriteFile(name, []byte(query))
 }
 
 func (a *Auth) Exchange() error {
@@ -121,43 +111,27 @@ func (a *Auth) Exchange() error {
    return nil
 }
 
-func (a Auth) Get_Token() string {
-   return a.Get("Token")
-}
-
 func (a Auth) Get_Auth() string {
    return a.Get("Auth")
 }
 
-func (h Header) Set_Auth(head http.Header) {
-   head.Set("Authorization", "Bearer " + h.Auth.Get_Auth())
-}
-
-func (h Header) Set_Device(head http.Header) error {
-   id, err := h.Device.ID()
-   if err != nil {
-      return err
-   }
-   head.Set("X-DFE-Device-ID", strconv.FormatUint(id, 16))
-   return nil
-}
-
-func (h Header) Set_Agent(head http.Header) {
-   var b []byte
-   b = append(b, "Android-Finsky (sdk=9,versionCode="...)
-   if h.Single {
-      b = strconv.AppendInt(b, 8091_9999, 10)
-   } else {
-      b = strconv.AppendInt(b, 9999_9999, 10)
-   }
-   b = append(b, ')')
-   head.Set("User-Agent", string(b))
+func (a Auth) Get_Token() string {
+   return a.Get("Token")
 }
 
 type Header struct {
-   Auth *Auth // Authorization
-   Device *Device // X-Dfe-Device-Id
+   Auth Auth // Authorization
+   Device Device // X-Dfe-Device-Id
    Single bool
+}
+
+func (h *Header) Open_Auth(name string) error {
+   query, err := os.ReadFile(name)
+   if err != nil {
+      return err
+   }
+   h.Auth.Values = parse_query(string(query))
+   return nil
 }
 
 // Purchase app. Only needs to be done once per Google account.
@@ -179,4 +153,29 @@ func (h Header) Purchase(app string) error {
       return err
    }
    return res.Body.Close()
+}
+
+func (h Header) Set_Agent(head http.Header) {
+   var b []byte
+   b = append(b, "Android-Finsky (sdk=9,versionCode="...)
+   if h.Single {
+      b = strconv.AppendInt(b, 8091_9999, 10)
+   } else {
+      b = strconv.AppendInt(b, 9999_9999, 10)
+   }
+   b = append(b, ')')
+   head.Set("User-Agent", string(b))
+}
+
+func (h Header) Set_Auth(head http.Header) {
+   head.Set("Authorization", "Bearer " + h.Auth.Get_Auth())
+}
+
+func (h Header) Set_Device(head http.Header) error {
+   id, err := h.Device.ID()
+   if err != nil {
+      return err
+   }
+   head.Set("X-DFE-Device-ID", strconv.FormatUint(id, 16))
+   return nil
 }
