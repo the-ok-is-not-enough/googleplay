@@ -8,7 +8,25 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func do_header(dir, platform string, single bool) (*gp.Header, error) {
+func (f flags) do_auth(dir string) error {
+   auth, err := gp.New_Auth(f.email, f.password)
+   if err != nil {
+      return err
+   }
+   return auth.Create(dir + "/auth.txt")
+}
+
+func do_device(dir, platform string) error {
+   device, err := gp.Phone.Checkin(platform)
+   if err != nil {
+      return err
+   }
+   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
+   time.Sleep(gp.Sleep)
+   return device.Create(dir + "/" + platform + ".bin")
+}
+
+func (f flags) do_header(dir, platform string) (*gp.Header, error) {
    var head gp.Header
    err := head.Open_Auth(dir + "/auth.txt")
    if err != nil {
@@ -20,21 +38,13 @@ func do_header(dir, platform string, single bool) (*gp.Header, error) {
    if err := head.Open_Device(dir + "/" + platform + ".bin"); err != nil {
       return nil, err
    }
-   head.Single = single
+   head.Single = f.single
    return &head, nil
 }
 
-func do_details(head *gp.Header, app string) ([]byte, error) {
-   detail, err := head.Details(app)
-   if err != nil {
-      return nil, err
-   }
-   return detail.MarshalText()
-}
-
-func do_delivery(head *gp.Header, app string, ver uint64) error {
-   download := func(addr, name string) error {
-      res, err := gp.Client.Redirect(nil).Get(addr)
+func (f flags) do_delivery(head *gp.Header) error {
+   download := func(address, name string) error {
+      res, err := gp.Client.Redirect(nil).Get(address)
       if err != nil {
          return err
       }
@@ -50,12 +60,13 @@ func do_delivery(head *gp.Header, app string, ver uint64) error {
       }
       return nil
    }
-   del, err := head.Delivery(app, ver)
+   del, err := head.Delivery(f.app, f.version)
    if err != nil {
       return err
    }
+   file := gp.File{f.app, f.version}
    for _, split := range del.Split_Data() {
-      addr, err := split.Download_URL()
+      address, err := split.Download_URL()
       if err != nil {
          return err
       }
@@ -63,47 +74,34 @@ func do_delivery(head *gp.Header, app string, ver uint64) error {
       if err != nil {
          return err
       }
-      name := gp.File{app, ver}.APK(id)
-      if err := download(addr, name); err != nil {
+      if err := download(address, file.APK(id)); err != nil {
          return err
       }
    }
-   for _, file := range del.Additional_File() {
-      addr, err := file.Download_URL()
+   for _, add := range del.Additional_File() {
+      address, err := add.Download_URL()
       if err != nil {
          return err
       }
-      typ, err := file.File_Type()
+      typ, err := add.File_Type()
       if err != nil {
          return err
       }
-      name := gp.File{app, ver}.OBB(typ)
-      if err := download(addr, name); err != nil {
+      if err := download(address, file.OBB(typ)); err != nil {
          return err
       }
    }
-   addr, err := del.Download_URL()
+   address, err := del.Download_URL()
    if err != nil {
       return err
    }
-   name := gp.File{app, ver}.APK("")
-   return download(addr, name)
+   return download(address, file.APK(""))
 }
 
-func do_auth(dir, email, password string) error {
-   auth, err := gp.New_Auth(email, password)
+func (f flags) do_details(head *gp.Header) ([]byte, error) {
+   detail, err := head.Details(f.app)
    if err != nil {
-      return err
+      return nil, err
    }
-   return auth.Create(dir + "/auth.txt")
-}
-
-func do_device(dir, platform string) error {
-   device, err := gp.Phone.Checkin(platform)
-   if err != nil {
-      return err
-   }
-   fmt.Printf("Sleeping %v for server to process\n", gp.Sleep)
-   time.Sleep(gp.Sleep)
-   return device.Create(dir + "/" + platform + ".bin")
+   return detail.MarshalText()
 }
