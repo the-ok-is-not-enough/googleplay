@@ -3,7 +3,6 @@ package main
 import (
    "flag"
    "os"
-   "strings"
    gp "github.com/89z/googleplay"
 )
 
@@ -31,10 +30,7 @@ func main() {
    // password
    flag.StringVar(&f.password, "password", "", "your password")
    // purchase
-   var b strings.Builder
-   b.WriteString("Purchase app. ")
-   b.WriteString("Only needs to be done once per Google account.")
-   flag.BoolVar(&f.purchase, "purchase", false, b.String())
+   flag.BoolVar(&f.purchase, "purchase", false, "purchase app")
    // s
    flag.BoolVar(&f.single, "s", false, "single APK")
    // v
