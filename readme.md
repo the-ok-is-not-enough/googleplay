@@ -1,13 +1,12 @@
 # GooglePlay
 
-> Fear plays an interesting role in our lives. How dare we let it motivate us?
-> How dare we let it into our decision-making, into our livelihoods, into our
-> relationships?
+> I’m not really sure what the point of this video is but I guess just be
+> generous.
 >
-> It's funny, isn't it, we take a day a year to dress up in costume and
-> celebrate fear?
+> Be kind to people because you never know how much they might need it or how
+> far it’ll go.
 >
-> [Spooked (The Office) (2011)](//youtube.com/watch?v=9Ex4UcLaYNc)
+> [NakeyJakey (2018)](//youtube.com/watch?v=Cr0UYNKmrUs)
 
 Download APK from Google Play or send API requests
 
