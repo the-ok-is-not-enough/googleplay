@@ -10,16 +10,16 @@ import (
    "time"
 )
 
-func (self Details) Upload_Date() (string, error) {
+func (d Details) Upload_Date() (string, error) {
    // .details.appDetails.uploadDate
-   date, err := self.Get(13).Get(1).Get_String(16)
+   date, err := d.Get(13).Get(1).Get_String(16)
    if err != nil {
       return "", errors.New("uploadDate not found, try another platform")
    }
    return date, nil
 }
 
-func (self Header) Details(app string) (*Details, error) {
+func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
    )
@@ -28,9 +28,9 @@ func (self Header) Details(app string) (*Details, error) {
    }
    // half of the apps I test require User-Agent,
    // so just set it for all of them
-   self.Set_Agent(req.Header)
-   self.Set_Auth(req.Header)
-   self.Set_Device(req.Header)
+   h.Set_Agent(req.Header)
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
    req.URL.RawQuery = "doc=" + url.QueryEscape(app)
    res, err := Client.Do(req)
    if err != nil {
@@ -57,60 +57,60 @@ type Details struct {
 }
 
 // will fail with wrong ABI
-func (self Details) Version_Code() (uint64, error) {
+func (d Details) Version_Code() (uint64, error) {
    // .details.appDetails.versionCode
-   return self.Get(13).Get(1).Get_Varint(3)
+   return d.Get(13).Get(1).Get_Varint(3)
 }
 
 // will fail with wrong ABI
-func (self Details) Version() (string, error) {
+func (d Details) Version() (string, error) {
    // .details.appDetails.versionString
-   return self.Get(13).Get(1).Get_String(4)
+   return d.Get(13).Get(1).Get_String(4)
 }
 
 // will fail with wrong ABI
-func (self Details) Installation_Size() (uint64, error) {
+func (d Details) Installation_Size() (uint64, error) {
    // .details.appDetails.installationSize
-   return self.Get(13).Get(1).Get_Varint(9)
+   return d.Get(13).Get(1).Get_Varint(9)
 }
 
 // should work with any ABI
-func (self Details) Title() (string, error) {
+func (d Details) Title() (string, error) {
    // .title
-   return self.Get_String(5)
+   return d.Get_String(5)
 }
 
 // should work with any ABI
-func (self Details) Creator() (string, error) {
+func (d Details) Creator() (string, error) {
    // .creator
-   return self.Get_String(6)
+   return d.Get_String(6)
 }
 
 // should work with any ABI
-func (self Details) Micros() (uint64, error) {
+func (d Details) Micros() (uint64, error) {
    // .offer.micros
-   return self.Get(8).Get_Varint(1)
+   return d.Get(8).Get_Varint(1)
 }
 
 // should work with any ABI
-func (self Details) Currency_Code() (string, error) {
+func (d Details) Currency_Code() (string, error) {
    // .offer.currencyCode
-   return self.Get(8).Get_String(2)
+   return d.Get(8).Get_String(2)
 }
 
 // should work with any ABI
-func (self Details) Num_Downloads() (uint64, error) {
+func (d Details) Num_Downloads() (uint64, error) {
    // .details.appDetails
    // I dont know the name of field 70, but the similar field 13 is called
    // .numDownloads
-   return self.Get(13).Get(1).Get_Varint(70)
+   return d.Get(13).Get(1).Get_Varint(70)
 }
 
 // will fail with wrong ABI
-func (self Details) File() []File_Metadata {
+func (d Details) File() []File_Metadata {
    var files []File_Metadata
    // .details.appDetails.file
-   for _, file := range self.Get(13).Get(1).Get_Messages(17) {
+   for _, file := range d.Get(13).Get(1).Get_Messages(17) {
       files = append(files, File_Metadata{file})
    }
    return files
@@ -118,80 +118,80 @@ func (self Details) File() []File_Metadata {
 
 // This only works with English. You can force English with:
 // Accept-Language: en
-func (self Details) Time() (time.Time, error) {
-   date, err := self.Upload_Date()
+func (d Details) Time() (time.Time, error) {
+   date, err := d.Upload_Date()
    if err != nil {
       return time.Time{}, err
    }
    return time.Parse("Jan 2, 2006", date)
 }
 
-func (self Details) MarshalText() ([]byte, error) {
-   var b []byte
-   b = append(b, "Title: "...)
-   if v, err := self.Title(); err != nil {
+func (d Details) MarshalText() ([]byte, error) {
+   var buf []byte
+   buf = append(buf, "Title: "...)
+   if val, err := d.Title(); err != nil {
       return nil, err
    } else {
-      b = append(b, v...)
+      buf = append(buf, val...)
    }
-   b = append(b, "\nCreator: "...)
-   if v, err := self.Creator(); err != nil {
+   buf = append(buf, "\nCreator: "...)
+   if val, err := d.Creator(); err != nil {
       return nil, err
    } else {
-      b = append(b, v...)
+      buf = append(buf, val...)
    }
-   b = append(b, "\nUpload Date: "...)
-   if v, err := self.Upload_Date(); err != nil {
+   buf = append(buf, "\nUpload Date: "...)
+   if val, err := d.Upload_Date(); err != nil {
       return nil, err
    } else {
-      b = append(b, v...)
+      buf = append(buf, val...)
    }
-   b = append(b, "\nVersion: "...)
-   if v, err := self.Version(); err != nil {
+   buf = append(buf, "\nVersion: "...)
+   if val, err := d.Version(); err != nil {
       return nil, err
    } else {
-      b = append(b, v...)
+      buf = append(buf, val...)
    }
-   b = append(b, "\nVersion Code: "...)
-   if v, err := self.Version_Code(); err != nil {
+   buf = append(buf, "\nVersion Code: "...)
+   if val, err := d.Version_Code(); err != nil {
       return nil, err
    } else {
-      b = strconv.AppendUint(b, v, 10)
+      buf = strconv.AppendUint(buf, val, 10)
    }
-   b = append(b, "\nNum Downloads: "...)
-   if v, err := self.Num_Downloads(); err != nil {
+   buf = append(buf, "\nNum Downloads: "...)
+   if val, err := d.Num_Downloads(); err != nil {
       return nil, err
    } else {
-      b = append(b, strconv.Number(v)...)
+      buf = append(buf, strconv.Number(val)...)
    }
-   b = append(b, "\nInstallation Size: "...)
-   if v, err := self.Installation_Size(); err != nil {
+   buf = append(buf, "\nInstallation Size: "...)
+   if val, err := d.Installation_Size(); err != nil {
       return nil, err
    } else {
-      b = append(b, strconv.Size(v)...)
+      buf = append(buf, strconv.Size(val)...)
    }
-   b = append(b, "\nFile:"...)
-   for _, file := range self.File() {
-      if v, err := file.File_Type(); err != nil {
+   buf = append(buf, "\nFile:"...)
+   for _, file := range d.File() {
+      if val, err := file.File_Type(); err != nil {
          return nil, err
-      } else if v >= 1 {
-         b = append(b, " OBB"...)
+      } else if val >= 1 {
+         buf = append(buf, " OBB"...)
       } else {
-         b = append(b, " APK"...)
+         buf = append(buf, " APK"...)
       }
    }
-   b = append(b, "\nOffer: "...)
-   if v, err := self.Micros(); err != nil {
+   buf = append(buf, "\nOffer: "...)
+   if val, err := d.Micros(); err != nil {
       return nil, err
    } else {
-      b = strconv.AppendUint(b, v, 10)
+      buf = strconv.AppendUint(buf, val, 10)
    }
-   b = append(b, ' ')
-   if v, err := self.Currency_Code(); err != nil {
+   buf = append(buf, ' ')
+   if val, err := d.Currency_Code(); err != nil {
       return nil, err
    } else {
-      b = append(b, v...)
+      buf = append(buf, val...)
    }
-   b = append(b, '\n')
-   return b, nil
+   buf = append(buf, '\n')
+   return buf, nil
 }

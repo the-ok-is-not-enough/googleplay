@@ -79,16 +79,16 @@ func Test_Details(t *testing.T) {
    }
 }
 
-func (self app_type) String() string {
-   var b []byte
-   b = append(b, '{')
-   b = strconv.AppendQuote(b, self.date)
-   b = append(b, ',')
-   b = strconv.AppendInt(b, self.platform, 10)
-   b = append(b, ',')
-   b = strconv.AppendQuote(b, self.id)
-   b = append(b, '}')
-   return string(b)
+func (a app_type) String() string {
+   var buf []byte
+   buf = append(buf, '{')
+   buf = strconv.AppendQuote(buf, a.date)
+   buf = append(buf, ',')
+   buf = strconv.AppendInt(buf, a.platform, 10)
+   buf = append(buf, ',')
+   buf = strconv.AppendQuote(buf, a.id)
+   buf = append(buf, '}')
+   return string(buf)
 }
 
 type app_type struct {
