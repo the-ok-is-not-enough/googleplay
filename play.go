@@ -78,15 +78,15 @@ func New_Auth(email, password string) (*Auth, error) {
    return &auth, nil
 }
 
-func (a Auth) Create(name string) error {
-   query := format_query(a.Values)
+func (self Auth) Create(name string) error {
+   query := format_query(self.Values)
    return os.WriteFile(name, []byte(query))
 }
 
-func (a *Auth) Exchange() error {
+func (self *Auth) Exchange() error {
    // these values take from Android API 28
    body := url.Values{
-      "Token": {a.Get_Token()},
+      "Token": {self.Get_Token()},
       "app": {"com.android.vending"},
       "client_sig": {"38918a453d07199354f8b19af05ec6562ced5788"},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -107,16 +107,16 @@ func (a *Auth) Exchange() error {
    if err != nil {
       return err
    }
-   a.Values = parse_query(string(query))
+   self.Values = parse_query(string(query))
    return nil
 }
 
-func (a Auth) Get_Auth() string {
-   return a.Get("Auth")
+func (self Auth) Get_Auth() string {
+   return self.Get("Auth")
 }
 
-func (a Auth) Get_Token() string {
-   return a.Get("Token")
+func (self Auth) Get_Token() string {
+   return self.Get("Token")
 }
 
 type Header struct {
