@@ -13,16 +13,16 @@ type Delivery struct {
    protobuf.Message
 }
 
-func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
+func (self Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
    )
    if err != nil {
       return nil, err
    }
-   h.Set_Agent(req.Header)
-   h.Set_Auth(req.Header) // needed for single APK
-   h.Set_Device(req.Header)
+   self.Set_Agent(req.Header)
+   self.Set_Auth(req.Header) // needed for single APK
+   self.Set_Device(req.Header)
    req.URL.RawQuery = url.Values{
       "doc": {app},
       "vc": {strconv.FormatUint(ver, 10)},
@@ -63,8 +63,8 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
 }
 
 // .downloadUrl
-func (d Delivery) Download_URL() (string, error) {
-   return d.Get_String(3)
+func (self Delivery) Download_URL() (string, error) {
+   return self.Get_String(3)
 }
 
 type Split_Data struct {
@@ -72,28 +72,28 @@ type Split_Data struct {
 }
 
 // .id
-func (s Split_Data) ID() (string, error) {
-   return s.Get_String(1)
+func (self Split_Data) ID() (string, error) {
+   return self.Get_String(1)
 }
 
 // .downloadUrl
-func (s Split_Data) Download_URL() (string, error) {
-   return s.Get_String(5)
+func (self Split_Data) Download_URL() (string, error) {
+   return self.Get_String(5)
 }
 
-func (d Delivery) Split_Data() []Split_Data {
+func (self Delivery) Split_Data() []Split_Data {
    var splits []Split_Data
    // .splitDeliveryData
-   for _, split := range d.Get_Messages(15) {
+   for _, split := range self.Get_Messages(15) {
       splits = append(splits, Split_Data{split})
    }
    return splits
 }
 
-func (d Delivery) Additional_File() []File_Metadata {
+func (self Delivery) Additional_File() []File_Metadata {
    var files []File_Metadata
    // .additionalFile
-   for _, file := range d.Get_Messages(4) {
+   for _, file := range self.Get_Messages(4) {
       files = append(files, File_Metadata{file})
    }
    return files

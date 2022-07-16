@@ -9,12 +9,12 @@ import (
    "strconv"
 )
 
-func (h *Header) Open_Device(name string) error {
+func (self *Header) Open_Device(name string) error {
    buf, err := os.ReadFile(name)
    if err != nil {
       return err
    }
-   h.Device.Message, err = protobuf.Unmarshal(buf)
+   self.Device.Message, err = protobuf.Unmarshal(buf)
    if err != nil {
       return err
    }
@@ -32,20 +32,20 @@ var Platforms = Native_Platform{
    2: "arm64-v8a",
 }
 
-func (n Native_Platform) String() string {
-   var buf []byte
-   buf = append(buf, "nativePlatform"...)
-   for key, val := range n {
-      buf = append(buf, '\n')
-      buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ": "...)
-      buf = append(buf, val...)
+func (self Native_Platform) String() string {
+   var b []byte
+   b = append(b, "nativePlatform"...)
+   for key, val := range self {
+      b = append(b, '\n')
+      b = strconv.AppendInt(b, key, 10)
+      b = append(b, ": "...)
+      b = append(b, val...)
    }
-   return string(buf)
+   return string(b)
 }
 
-func (d Device) Create(name string) error {
-   data := d.Marshal()
+func (self Device) Create(name string) error {
+   data := self.Marshal()
    return os.WriteFile(name, data)
 }
 
@@ -123,12 +123,12 @@ var Phone = Config{
    },
 }
 
-func (d Device) ID() (uint64, error) {
-   return d.Get_Fixed64(7)
+func (self Device) ID() (uint64, error) {
+   return self.Get_Fixed64(7)
 }
 
 // A Sleep is needed after this.
-func (c Config) Checkin(platform string) (*Device, error) {
+func (self Config) Checkin(platform string) (*Device, error) {
    checkin := protobuf.Message{
       4: protobuf.Message{ // checkin
          1: protobuf.Message{ // build
@@ -137,26 +137,26 @@ func (c Config) Checkin(platform string) (*Device, error) {
       },
       14: protobuf.Varint(3), // version
       18: protobuf.Message{ // deviceConfiguration
-         1: protobuf.Varint(c.Touch_Screen), // touchScreen
-         2: protobuf.Varint(c.Keyboard),
-         3: protobuf.Varint(c.Navigation),
-         4: protobuf.Varint(c.Screen_Layout),
-         5: protobuf.Varint(c.Hard_Keyboard),
-         6: protobuf.Varint(c.Five_Way_Navigation),
-         7: protobuf.Varint(c.Screen_Density),
-         8: protobuf.Varint(c.GL_ES_Version),
+         1: protobuf.Varint(self.Touch_Screen), // touchScreen
+         2: protobuf.Varint(self.Keyboard),
+         3: protobuf.Varint(self.Navigation),
+         4: protobuf.Varint(self.Screen_Layout),
+         5: protobuf.Varint(self.Hard_Keyboard),
+         6: protobuf.Varint(self.Five_Way_Navigation),
+         7: protobuf.Varint(self.Screen_Density),
+         8: protobuf.Varint(self.GL_ES_Version),
          11: protobuf.String(platform), // nativePlatform
       },
    }
-   for _, library := range c.Shared_Library {
+   for _, library := range self.Shared_Library {
       // .deviceConfiguration.systemSharedLibrary
       checkin.Get(18).Add_String(9, library)
    }
-   for _, extension := range c.GL_Extension {
+   for _, extension := range self.GL_Extension {
       // .deviceConfiguration.glExtension
       checkin.Get(18).Add_String(15, extension)
    }
-   for _, name := range c.Device_Feature {
+   for _, name := range self.Device_Feature {
       // .deviceConfiguration.deviceFeature
       checkin.Get(18).Add(26, protobuf.Message{
          1: protobuf.String(name),

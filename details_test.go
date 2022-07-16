@@ -79,14 +79,14 @@ func Test_Details(t *testing.T) {
    }
 }
 
-func (a app_type) String() string {
+func (self app_type) String() string {
    var b []byte
    b = append(b, '{')
-   b = strconv.AppendQuote(b, a.date)
+   b = strconv.AppendQuote(b, self.date)
    b = append(b, ',')
-   b = strconv.AppendInt(b, a.platform, 10)
+   b = strconv.AppendInt(b, self.platform, 10)
    b = append(b, ',')
-   b = strconv.AppendQuote(b, a.id)
+   b = strconv.AppendQuote(b, self.id)
    b = append(b, '}')
    return string(b)
 }

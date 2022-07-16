@@ -8,8 +8,8 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func (f flags) do_auth(dir string) error {
-   auth, err := gp.New_Auth(f.email, f.password)
+func (self flags) do_auth(dir string) error {
+   auth, err := gp.New_Auth(self.email, self.password)
    if err != nil {
       return err
    }
@@ -26,7 +26,7 @@ func do_device(dir, platform string) error {
    return device.Create(dir + "/" + platform + ".bin")
 }
 
-func (f flags) do_header(dir, platform string) (*gp.Header, error) {
+func (self flags) do_header(dir, platform string) (*gp.Header, error) {
    var head gp.Header
    err := head.Open_Auth(dir + "/auth.txt")
    if err != nil {
@@ -38,11 +38,11 @@ func (f flags) do_header(dir, platform string) (*gp.Header, error) {
    if err := head.Open_Device(dir + "/" + platform + ".bin"); err != nil {
       return nil, err
    }
-   head.Single = f.single
+   head.Single = self.single
    return &head, nil
 }
 
-func (f flags) do_delivery(head *gp.Header) error {
+func (self flags) do_delivery(head *gp.Header) error {
    download := func(address, name string) error {
       res, err := gp.Client.Redirect(nil).Get(address)
       if err != nil {
@@ -60,11 +60,11 @@ func (f flags) do_delivery(head *gp.Header) error {
       }
       return nil
    }
-   del, err := head.Delivery(f.app, f.version)
+   del, err := head.Delivery(self.app, self.version)
    if err != nil {
       return err
    }
-   file := gp.File{f.app, f.version}
+   file := gp.File{self.app, self.version}
    for _, split := range del.Split_Data() {
       address, err := split.Download_URL()
       if err != nil {
@@ -98,8 +98,8 @@ func (f flags) do_delivery(head *gp.Header) error {
    return download(address, file.APK(""))
 }
 
-func (f flags) do_details(head *gp.Header) ([]byte, error) {
-   detail, err := head.Details(f.app)
+func (self flags) do_details(head *gp.Header) ([]byte, error) {
+   detail, err := head.Details(self.app)
    if err != nil {
       return nil, err
    }

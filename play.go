@@ -125,17 +125,17 @@ type Header struct {
    Single bool
 }
 
-func (h *Header) Open_Auth(name string) error {
+func (self *Header) Open_Auth(name string) error {
    query, err := os.ReadFile(name)
    if err != nil {
       return err
    }
-   h.Auth.Values = parse_query(string(query))
+   self.Auth.Values = parse_query(string(query))
    return nil
 }
 
 // Purchase app. Only needs to be done once per Google account.
-func (h Header) Purchase(app string) error {
+func (self Header) Purchase(app string) error {
    body := make(url.Values)
    body.Set("doc", app)
    req, err := http.NewRequest(
@@ -145,8 +145,8 @@ func (h Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   h.Set_Auth(req.Header)
-   h.Set_Device(req.Header)
+   self.Set_Auth(req.Header)
+   self.Set_Device(req.Header)
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
    res, err := Client.Do(req)
    if err != nil {
@@ -155,10 +155,10 @@ func (h Header) Purchase(app string) error {
    return res.Body.Close()
 }
 
-func (h Header) Set_Agent(head http.Header) {
+func (self Header) Set_Agent(head http.Header) {
    var b []byte
    b = append(b, "Android-Finsky (sdk=9,versionCode="...)
-   if h.Single {
+   if self.Single {
       b = strconv.AppendInt(b, 8091_9999, 10)
    } else {
       b = strconv.AppendInt(b, 9999_9999, 10)
@@ -167,12 +167,12 @@ func (h Header) Set_Agent(head http.Header) {
    head.Set("User-Agent", string(b))
 }
 
-func (h Header) Set_Auth(head http.Header) {
-   head.Set("Authorization", "Bearer " + h.Auth.Get_Auth())
+func (self Header) Set_Auth(head http.Header) {
+   head.Set("Authorization", "Bearer " + self.Auth.Get_Auth())
 }
 
-func (h Header) Set_Device(head http.Header) error {
-   id, err := h.Device.ID()
+func (self Header) Set_Device(head http.Header) error {
+   id, err := self.Device.ID()
    if err != nil {
       return err
    }
