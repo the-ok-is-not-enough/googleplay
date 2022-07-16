@@ -16,15 +16,15 @@ const Sleep = 4 * time.Second
 var Client = http.Default_Client
 
 func format_query(vals url.Values) string {
-   var b strings.Builder
+   var buf strings.Builder
    for key := range vals {
       val := vals.Get(key)
-      b.WriteString(key)
-      b.WriteByte('=')
-      b.WriteString(val)
-      b.WriteByte('\n')
+      buf.WriteString(key)
+      buf.WriteByte('=')
+      buf.WriteString(val)
+      buf.WriteByte('\n')
    }
-   return b.String()
+   return buf.String()
 }
 
 // this beats "io.Reader", and also "bytes.Fields"
@@ -78,15 +78,15 @@ func New_Auth(email, password string) (*Auth, error) {
    return &auth, nil
 }
 
-func (self Auth) Create(name string) error {
-   query := format_query(self.Values)
+func (a Auth) Create(name string) error {
+   query := format_query(a.Values)
    return os.WriteFile(name, []byte(query))
 }
 
-func (self *Auth) Exchange() error {
+func (a *Auth) Exchange() error {
    // these values take from Android API 28
    body := url.Values{
-      "Token": {self.Get_Token()},
+      "Token": {a.Get_Token()},
       "app": {"com.android.vending"},
       "client_sig": {"38918a453d07199354f8b19af05ec6562ced5788"},
       "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
@@ -107,16 +107,16 @@ func (self *Auth) Exchange() error {
    if err != nil {
       return err
    }
-   self.Values = parse_query(string(query))
+   a.Values = parse_query(string(query))
    return nil
 }
 
-func (self Auth) Get_Auth() string {
-   return self.Get("Auth")
+func (a Auth) Get_Auth() string {
+   return a.Get("Auth")
 }
 
-func (self Auth) Get_Token() string {
-   return self.Get("Token")
+func (a Auth) Get_Token() string {
+   return a.Get("Token")
 }
 
 type Header struct {
@@ -125,17 +125,17 @@ type Header struct {
    Single bool
 }
 
-func (self *Header) Open_Auth(name string) error {
+func (h *Header) Open_Auth(name string) error {
    query, err := os.ReadFile(name)
    if err != nil {
       return err
    }
-   self.Auth.Values = parse_query(string(query))
+   h.Auth.Values = parse_query(string(query))
    return nil
 }
 
 // Purchase app. Only needs to be done once per Google account.
-func (self Header) Purchase(app string) error {
+func (h Header) Purchase(app string) error {
    body := make(url.Values)
    body.Set("doc", app)
    req, err := http.NewRequest(
@@ -145,8 +145,8 @@ func (self Header) Purchase(app string) error {
    if err != nil {
       return err
    }
-   self.Set_Auth(req.Header)
-   self.Set_Device(req.Header)
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
    res, err := Client.Do(req)
    if err != nil {
@@ -155,24 +155,24 @@ func (self Header) Purchase(app string) error {
    return res.Body.Close()
 }
 
-func (self Header) Set_Agent(head http.Header) {
-   var b []byte
-   b = append(b, "Android-Finsky (sdk=9,versionCode="...)
-   if self.Single {
-      b = strconv.AppendInt(b, 8091_9999, 10)
+func (h Header) Set_Agent(head http.Header) {
+   var buf []byte
+   buf = append(buf, "Android-Finsky (sdk=9,versionCode="...)
+   if h.Single {
+      buf = strconv.AppendInt(buf, 8091_9999, 10)
    } else {
-      b = strconv.AppendInt(b, 9999_9999, 10)
+      buf = strconv.AppendInt(buf, 9999_9999, 10)
    }
-   b = append(b, ')')
-   head.Set("User-Agent", string(b))
+   buf = append(buf, ')')
+   head.Set("User-Agent", string(buf))
 }
 
-func (self Header) Set_Auth(head http.Header) {
-   head.Set("Authorization", "Bearer " + self.Auth.Get_Auth())
+func (h Header) Set_Auth(head http.Header) {
+   head.Set("Authorization", "Bearer " + h.Auth.Get_Auth())
 }
 
-func (self Header) Set_Device(head http.Header) error {
-   id, err := self.Device.ID()
+func (h Header) Set_Device(head http.Header) error {
+   id, err := h.Device.ID()
    if err != nil {
       return err
    }

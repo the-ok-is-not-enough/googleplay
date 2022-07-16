@@ -104,13 +104,13 @@ type File_Metadata struct {
 }
 
 // .fileType
-func (f File_Metadata) File_Type() (uint64, error) {
-   return f.Get_Varint(1)
+func (self File_Metadata) File_Type() (uint64, error) {
+   return self.Get_Varint(1)
 }
 
 // .downloadUrl
-func (f File_Metadata) Download_URL() (string, error) {
-   return f.Get_String(4)
+func (self File_Metadata) Download_URL() (string, error) {
+   return self.Get_String(4)
 }
 
 type File struct {
@@ -118,30 +118,30 @@ type File struct {
    Version_Code uint64
 }
 
-func (f File) APK(id string) string {
-   var buf []byte
-   buf = append(buf, f.Package_Name...)
-   buf = append(buf, '-')
+func (self File) APK(id string) string {
+   var b []byte
+   b = append(b, self.Package_Name...)
+   b = append(b, '-')
    if id != "" {
-      buf = append(buf, id...)
-      buf = append(buf, '-')
+      b = append(b, id...)
+      b = append(b, '-')
    }
-   buf = strconv.AppendUint(buf, f.Version_Code, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
+   b = strconv.AppendUint(b, self.Version_Code, 10)
+   b = append(b, ".apk"...)
+   return string(b)
 }
 
-func (f File) OBB(file_type uint64) string {
-   var buf []byte
+func (self File) OBB(file_type uint64) string {
+   var b []byte
    if file_type >= 1 {
-      buf = append(buf, "patch"...)
+      b = append(b, "patch"...)
    } else {
-      buf = append(buf, "main"...)
+      b = append(b, "main"...)
    }
-   buf = append(buf, '.')
-   buf = strconv.AppendUint(buf, f.Version_Code, 10)
-   buf = append(buf, '.')
-   buf = append(buf, f.Package_Name...)
-   buf = append(buf, ".obb"...)
-   return string(buf)
+   b = append(b, '.')
+   b = strconv.AppendUint(b, self.Version_Code, 10)
+   b = append(b, '.')
+   b = append(b, self.Package_Name...)
+   b = append(b, ".obb"...)
+   return string(b)
 }

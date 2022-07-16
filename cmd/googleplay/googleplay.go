@@ -8,8 +8,8 @@ import (
    gp "github.com/89z/googleplay"
 )
 
-func (self flags) do_auth(dir string) error {
-   auth, err := gp.New_Auth(self.email, self.password)
+func (f flags) do_auth(dir string) error {
+   auth, err := gp.New_Auth(f.email, f.password)
    if err != nil {
       return err
    }
@@ -26,7 +26,7 @@ func do_device(dir, platform string) error {
    return device.Create(dir + "/" + platform + ".bin")
 }
 
-func (self flags) do_header(dir, platform string) (*gp.Header, error) {
+func (f flags) do_header(dir, platform string) (*gp.Header, error) {
    var head gp.Header
    err := head.Open_Auth(dir + "/auth.txt")
    if err != nil {
@@ -38,13 +38,13 @@ func (self flags) do_header(dir, platform string) (*gp.Header, error) {
    if err := head.Open_Device(dir + "/" + platform + ".bin"); err != nil {
       return nil, err
    }
-   head.Single = self.single
+   head.Single = f.single
    return &head, nil
 }
 
-func (self flags) do_delivery(head *gp.Header) error {
-   download := func(address, name string) error {
-      res, err := gp.Client.Redirect(nil).Get(address)
+func (f flags) do_delivery(head *gp.Header) error {
+   download := func(ref, name string) error {
+      res, err := gp.Client.Redirect(nil).Get(ref)
       if err != nil {
          return err
       }
@@ -60,13 +60,13 @@ func (self flags) do_delivery(head *gp.Header) error {
       }
       return nil
    }
-   del, err := head.Delivery(self.app, self.version)
+   del, err := head.Delivery(f.app, f.version)
    if err != nil {
       return err
    }
-   file := gp.File{self.app, self.version}
+   file := gp.File{f.app, f.version}
    for _, split := range del.Split_Data() {
-      address, err := split.Download_URL()
+      ref, err := split.Download_URL()
       if err != nil {
          return err
       }
@@ -74,12 +74,12 @@ func (self flags) do_delivery(head *gp.Header) error {
       if err != nil {
          return err
       }
-      if err := download(address, file.APK(id)); err != nil {
+      if err := download(ref, file.APK(id)); err != nil {
          return err
       }
    }
    for _, add := range del.Additional_File() {
-      address, err := add.Download_URL()
+      ref, err := add.Download_URL()
       if err != nil {
          return err
       }
@@ -87,19 +87,19 @@ func (self flags) do_delivery(head *gp.Header) error {
       if err != nil {
          return err
       }
-      if err := download(address, file.OBB(typ)); err != nil {
+      if err := download(ref, file.OBB(typ)); err != nil {
          return err
       }
    }
-   address, err := del.Download_URL()
+   ref, err := del.Download_URL()
    if err != nil {
       return err
    }
-   return download(address, file.APK(""))
+   return download(ref, file.APK(""))
 }
 
-func (self flags) do_details(head *gp.Header) ([]byte, error) {
-   detail, err := head.Details(self.app)
+func (f flags) do_details(head *gp.Header) ([]byte, error) {
+   detail, err := head.Details(f.app)
    if err != nil {
       return nil, err
    }
