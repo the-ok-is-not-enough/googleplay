@@ -127,71 +127,71 @@ func (d Details) Time() (time.Time, error) {
 }
 
 func (d Details) MarshalText() ([]byte, error) {
-   var buf []byte
-   buf = append(buf, "Title: "...)
+   var buf strconv.Buffer
+   buf.WriteString("Title: ")
    if val, err := d.Title(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, val...)
+      buf.WriteString(val)
    }
-   buf = append(buf, "\nCreator: "...)
+   buf.WriteString("\nCreator: ")
    if val, err := d.Creator(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, val...)
+      buf.WriteString(val)
    }
-   buf = append(buf, "\nUpload Date: "...)
+   buf.WriteString("\nUpload Date: ")
    if val, err := d.Upload_Date(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, val...)
+      buf.WriteString(val)
    }
-   buf = append(buf, "\nVersion: "...)
+   buf.WriteString("\nVersion: ")
    if val, err := d.Version(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, val...)
+      buf.WriteString(val)
    }
-   buf = append(buf, "\nVersion Code: "...)
+   buf.WriteString("\nVersion Code: ")
    if val, err := d.Version_Code(); err != nil {
       return nil, err
    } else {
-      buf = strconv.AppendUint(buf, val, 10)
+      buf.AppendUint(val)
    }
-   buf = append(buf, "\nNum Downloads: "...)
+   buf.WriteString("\nNum Downloads: ")
    if val, err := d.Num_Downloads(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, strconv.Number(val)...)
+      buf.WriteString(strconv.Number(val))
    }
-   buf = append(buf, "\nInstallation Size: "...)
+   buf.WriteString("\nInstallation Size: ")
    if val, err := d.Installation_Size(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, strconv.Size(val)...)
+      buf.WriteString(strconv.Size(val))
    }
-   buf = append(buf, "\nFile:"...)
+   buf.WriteString("\nFile:")
    for _, file := range d.File() {
       if val, err := file.File_Type(); err != nil {
          return nil, err
       } else if val >= 1 {
-         buf = append(buf, " OBB"...)
+         buf.WriteString(" OBB")
       } else {
-         buf = append(buf, " APK"...)
+         buf.WriteString(" APK")
       }
    }
-   buf = append(buf, "\nOffer: "...)
+   buf.WriteString("\nOffer: ")
    if val, err := d.Micros(); err != nil {
       return nil, err
    } else {
-      buf = strconv.AppendUint(buf, val, 10)
+      buf.AppendUint(val)
    }
-   buf = append(buf, ' ')
+   buf.WriteByte(' ')
    if val, err := d.Currency_Code(); err != nil {
       return nil, err
    } else {
-      buf = append(buf, val...)
+      buf.WriteString(val)
    }
-   buf = append(buf, '\n')
+   buf.WriteByte('\n')
    return buf, nil
 }

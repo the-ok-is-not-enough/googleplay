@@ -4,10 +4,22 @@ import (
    "bytes"
    "github.com/89z/rosso/os"
    "github.com/89z/rosso/protobuf"
+   "github.com/89z/rosso/strconv"
    "io"
    "net/http"
-   "strconv"
 )
+
+func (n Native_Platform) String() string {
+   var buf strconv.Buffer
+   buf.WriteString("nativePlatform")
+   for key, val := range n {
+      buf.WriteByte('\n')
+      buf.AppendInt(key)
+      buf.WriteString(": ")
+      buf.WriteString(val)
+   }
+   return string(buf)
+}
 
 func (h *Header) Open_Device(name string) error {
    buf, err := os.ReadFile(name)
@@ -30,18 +42,6 @@ var Platforms = Native_Platform{
    1: "armeabi-v7a",
    // com.kakaogames.twodin
    2: "arm64-v8a",
-}
-
-func (n Native_Platform) String() string {
-   var buf []byte
-   buf = append(buf, "nativePlatform"...)
-   for key, val := range n {
-      buf = append(buf, '\n')
-      buf = strconv.AppendInt(buf, key, 10)
-      buf = append(buf, ": "...)
-      buf = append(buf, val...)
-   }
-   return string(buf)
 }
 
 func (d Device) Create(name string) error {
