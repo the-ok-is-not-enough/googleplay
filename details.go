@@ -10,6 +10,67 @@ import (
    "time"
 )
 
+func (d Details) MarshalText() ([]byte, error) {
+   var str string
+   if val, err := d.Title(); err != nil {
+      return nil, err
+   } else {
+      str += "Title: " + val
+   }
+   if val, err := d.Creator(); err != nil {
+      return nil, err
+   } else {
+      str += "\nCreator: " + val
+   }
+   if val, err := d.Upload_Date(); err != nil {
+      return nil, err
+   } else {
+      str += "\nUpload Date: " + val
+   }
+   if val, err := d.Version(); err != nil {
+      return nil, err
+   } else {
+      str += "\nVersion: " + val
+   }
+   if val, err := d.Version_Code(); err != nil {
+      return nil, err
+   } else {
+      str += "\nVersion Code: " + strconv.FormatUint(val, 10)
+   }
+   if val, err := d.Num_Downloads(); err != nil {
+      return nil, err
+   } else {
+      str += "\nNum Downloads: " + strconv.Number(val)
+   }
+   if val, err := d.Installation_Size(); err != nil {
+      return nil, err
+   } else {
+      str += "\nInstallation Size: " + strconv.Size(val)
+   }
+   str += "\nFile:"
+   for _, file := range d.File() {
+      if val, err := file.File_Type(); err != nil {
+         return nil, err
+      } else if val >= 1 {
+         str += " OBB"
+      } else {
+         str += " APK"
+      }
+   }
+   if val, err := d.Micros(); err != nil {
+      return nil, err
+   } else {
+      str += "\nOffer: " + strconv.FormatUint(val, 10)
+   }
+   if val, err := d.Currency_Code(); err != nil {
+      return nil, err
+   } else {
+      str += " " + val
+   }
+   str += "\n"
+   return []byte(str), nil
+}
+
 func (d Details) Upload_Date() (string, error) {
    // .details.appDetails.uploadDate
    date, err := d.Get(13).Get(1).Get_String(16)
@@ -124,74 +185,4 @@ func (d Details) Time() (time.Time, error) {
       return time.Time{}, err
    }
    return time.Parse("Jan 2, 2006", date)
-}
-
-func (d Details) MarshalText() ([]byte, error) {
-   var buf strconv.Buffer
-   buf.WriteString("Title: ")
-   if val, err := d.Title(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(val)
-   }
-   buf.WriteString("\nCreator: ")
-   if val, err := d.Creator(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(val)
-   }
-   buf.WriteString("\nUpload Date: ")
-   if val, err := d.Upload_Date(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(val)
-   }
-   buf.WriteString("\nVersion: ")
-   if val, err := d.Version(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(val)
-   }
-   buf.WriteString("\nVersion Code: ")
-   if val, err := d.Version_Code(); err != nil {
-      return nil, err
-   } else {
-      buf.AppendUint(val)
-   }
-   buf.WriteString("\nNum Downloads: ")
-   if val, err := d.Num_Downloads(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(strconv.Number(val))
-   }
-   buf.WriteString("\nInstallation Size: ")
-   if val, err := d.Installation_Size(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(strconv.Size(val))
-   }
-   buf.WriteString("\nFile:")
-   for _, file := range d.File() {
-      if val, err := file.File_Type(); err != nil {
-         return nil, err
-      } else if val >= 1 {
-         buf.WriteString(" OBB")
-      } else {
-         buf.WriteString(" APK")
-      }
-   }
-   buf.WriteString("\nOffer: ")
-   if val, err := d.Micros(); err != nil {
-      return nil, err
-   } else {
-      buf.AppendUint(val)
-   }
-   buf.WriteByte(' ')
-   if val, err := d.Currency_Code(); err != nil {
-      return nil, err
-   } else {
-      buf.WriteString(val)
-   }
-   buf.WriteByte('\n')
-   return buf, nil
 }

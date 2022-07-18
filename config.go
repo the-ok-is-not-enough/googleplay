@@ -4,21 +4,21 @@ import (
    "bytes"
    "github.com/89z/rosso/os"
    "github.com/89z/rosso/protobuf"
-   "github.com/89z/rosso/strconv"
    "io"
    "net/http"
+   "strconv"
 )
 
 func (n Native_Platform) String() string {
-   var buf strconv.Buffer
-   buf.WriteString("nativePlatform")
+   var str string
+   str += "nativePlatform"
    for key, val := range n {
-      buf.WriteByte('\n')
-      buf.AppendInt(key)
-      buf.WriteString(": ")
-      buf.WriteString(val)
+      str += "\n"
+      str += strconv.Itoa(key)
+      str += ": "
+      str += val
    }
-   return string(buf)
+   return str
 }
 
 func (h *Header) Open_Device(name string) error {
@@ -33,7 +33,7 @@ func (h *Header) Open_Device(name string) error {
    return nil
 }
 
-type Native_Platform map[int64]string
+type Native_Platform map[int]string
 
 var Platforms = Native_Platform{
    // com.google.android.youtube

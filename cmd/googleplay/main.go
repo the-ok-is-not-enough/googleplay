@@ -11,7 +11,7 @@ type flags struct {
    device bool
    email string
    password string
-   platform int64
+   platform int
    purchase bool
    single bool
    version uint64
@@ -26,7 +26,7 @@ func main() {
    // email
    flag.StringVar(&f.email, "email", "", "your email")
    // p
-   flag.Int64Var(&f.platform, "p", 0, gp.Platforms.String())
+   flag.IntVar(&f.platform, "p", 0, gp.Platforms.String())
    // password
    flag.StringVar(&f.password, "password", "", "your password")
    // purchase
