@@ -119,29 +119,28 @@ type File struct {
 }
 
 func (f File) APK(id string) string {
-   var buf []byte
-   buf = append(buf, f.Package_Name...)
-   buf = append(buf, '-')
+   b := []byte(f.Package_Name)
+   b = append(b, '-')
    if id != "" {
-      buf = append(buf, id...)
-      buf = append(buf, '-')
+      b = append(b, id...)
+      b = append(b, '-')
    }
-   buf = strconv.AppendUint(buf, f.Version_Code, 10)
-   buf = append(buf, ".apk"...)
-   return string(buf)
+   b = strconv.AppendUint(b, f.Version_Code, 10)
+   b = append(b, ".apk"...)
+   return string(b)
 }
 
 func (f File) OBB(file_type uint64) string {
-   var buf []byte
+   var b []byte
    if file_type >= 1 {
-      buf = append(buf, "patch"...)
+      b = append(b, "patch"...)
    } else {
-      buf = append(buf, "main"...)
+      b = append(b, "main"...)
    }
-   buf = append(buf, '.')
-   buf = strconv.AppendUint(buf, f.Version_Code, 10)
-   buf = append(buf, '.')
-   buf = append(buf, f.Package_Name...)
-   buf = append(buf, ".obb"...)
-   return string(buf)
+   b = append(b, '.')
+   b = strconv.AppendUint(b, f.Version_Code, 10)
+   b = append(b, '.')
+   b = append(b, f.Package_Name...)
+   b = append(b, ".obb"...)
+   return string(b)
 }

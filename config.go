@@ -10,15 +10,14 @@ import (
 )
 
 func (n Native_Platform) String() string {
-   var str string
-   str += "nativePlatform"
+   b := []byte("nativePlatform")
    for key, val := range n {
-      str += "\n"
-      str += strconv.Itoa(key)
-      str += ": "
-      str += val
+      b = append(b, '\n')
+      b = strconv.AppendInt(b, key, 10)
+      b = append(b, ": "...)
+      b = append(b, val...)
    }
-   return str
+   return string(b)
 }
 
 func (h *Header) Open_Device(name string) error {
@@ -33,7 +32,7 @@ func (h *Header) Open_Device(name string) error {
    return nil
 }
 
-type Native_Platform map[int]string
+type Native_Platform map[int64]string
 
 var Platforms = Native_Platform{
    // com.google.android.youtube

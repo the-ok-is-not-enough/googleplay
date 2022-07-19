@@ -156,15 +156,15 @@ func (h Header) Purchase(app string) error {
 }
 
 func (h Header) Set_Agent(head http.Header) {
-   var buf []byte
-   buf = append(buf, "Android-Finsky (sdk=9,versionCode="...)
+   var b []byte
+   b = append(b, "Android-Finsky (sdk=9,versionCode="...)
    if h.Single {
-      buf = strconv.AppendInt(buf, 8091_9999, 10)
+      b = strconv.AppendInt(b, 8091_9999, 10)
    } else {
-      buf = strconv.AppendInt(buf, 9999_9999, 10)
+      b = strconv.AppendInt(b, 9999_9999, 10)
    }
-   buf = append(buf, ')')
-   head.Set("User-Agent", string(buf))
+   b = append(b, ')')
+   head.Set("User-Agent", string(b))
 }
 
 func (h Header) Set_Auth(head http.Header) {

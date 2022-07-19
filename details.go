@@ -11,64 +11,72 @@ import (
 )
 
 func (d Details) MarshalText() ([]byte, error) {
-   var str string
+   var b []byte
+   b = append(b, "Title: "...)
    if val, err := d.Title(); err != nil {
       return nil, err
    } else {
-      str += "Title: " + val
+      b = append(b, val...)
    }
+   b = append(b, "\nCreator: "...)
    if val, err := d.Creator(); err != nil {
       return nil, err
    } else {
-      str += "\nCreator: " + val
+      b = append(b, val...)
    }
+   b = append(b, "\nUpload Date: "...)
    if val, err := d.Upload_Date(); err != nil {
       return nil, err
    } else {
-      str += "\nUpload Date: " + val
+      b = append(b, val...)
    }
+   b = append(b, "\nVersion: "...)
    if val, err := d.Version(); err != nil {
       return nil, err
    } else {
-      str += "\nVersion: " + val
+      b = append(b, val...)
    }
+   b = append(b, "\nVersion Code: "...)
    if val, err := d.Version_Code(); err != nil {
       return nil, err
    } else {
-      str += "\nVersion Code: " + strconv.FormatUint(val, 10)
+      b = strconv.AppendUint(b, val, 10)
    }
+   b = append(b, "\nNum Downloads: "...)
    if val, err := d.Num_Downloads(); err != nil {
       return nil, err
    } else {
-      str += "\nNum Downloads: " + strconv.Number(val)
+      b = strconv.AppendCardinal(b, val)
    }
+   b = append(b, "\nInstallation Size: "...)
    if val, err := d.Installation_Size(); err != nil {
       return nil, err
    } else {
-      str += "\nInstallation Size: " + strconv.Size(val)
+      b = strconv.AppendSize(b, val)
    }
-   str += "\nFile:"
+   b = append(b, "\nFile:"...)
    for _, file := range d.File() {
       if val, err := file.File_Type(); err != nil {
          return nil, err
       } else if val >= 1 {
-         str += " OBB"
+         b = append(b, " OBB"...)
       } else {
-         str += " APK"
+         b = append(b, " APK"...)
       }
    }
+   b = append(b, "\nOffer: "...)
    if val, err := d.Micros(); err != nil {
       return nil, err
    } else {
-      str += "\nOffer: " + strconv.FormatUint(val, 10)
+      b = strconv.AppendUint(b, val, 10)
    }
+   b = append(b, ' ')
    if val, err := d.Currency_Code(); err != nil {
       return nil, err
    } else {
-      str += " " + val
+      b = append(b, val...)
    }
-   str += "\n"
-   return []byte(str), nil
+   return append(b, '\n'), nil
 }
 
 func (d Details) Upload_Date() (string, error) {
