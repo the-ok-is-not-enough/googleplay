@@ -41,7 +41,7 @@ func main() {
       panic(err)
    }
    dir += "/googleplay"
-   if f.email != "" {
+   if f.password != "" {
       err := f.do_auth(dir)
       if err != nil {
          panic(err)
