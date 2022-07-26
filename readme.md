@@ -14,9 +14,12 @@ Download APK from Google Play or send API requests
 
 During this time I am trying to support myself, so I am requiring payment for
 all issues. That might change at a later date. Any issue without payment of at
-least 19 USD will be closed immediately. Payment can be made to the PayPal link
-on this page, or if you want to use another method, mention that in the issue
-text. For business opportunities, contact me:
+least 19 USD will be closed immediately. Payment can be made to one of:
+
+- https://github.com/sponsors/89z
+- <https://paypal.com/donate?hosted_button_id=UEJBQQTU3VYDY>
+
+For business opportunities, contact me:
 
 - srpen6@gmail.com
 - Discord srpen6#6983
