@@ -9,6 +9,11 @@ import (
    "strconv"
 )
 
+func (d Device) Create(name string) error {
+   data := d.Marshal()
+   return os.WriteFile(name, data)
+}
+
 func (n Native_Platform) String() string {
    b := []byte("nativePlatform")
    for key, val := range n {
@@ -41,11 +46,6 @@ var Platforms = Native_Platform{
    1: "armeabi-v7a",
    // com.kakaogames.twodin
    2: "arm64-v8a",
-}
-
-func (d Device) Create(name string) error {
-   data := d.Marshal()
-   return os.WriteFile(name, data)
 }
 
 // These can use default values, but they must all be included

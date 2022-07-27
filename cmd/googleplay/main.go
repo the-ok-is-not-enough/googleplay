@@ -41,6 +41,7 @@ func main() {
       panic(err)
    }
    dir += "/googleplay"
+   os.Mkdir(dir, os.ModePerm)
    if f.password != "" {
       err := f.do_auth(dir)
       if err != nil {
