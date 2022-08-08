@@ -65,7 +65,8 @@ or check the `cmd/badging` folder.
 
 ## How to get device info?
 
-https://play.google.com/store/apps/details?id=com.liuzh.deviceinfo
+1. https://play.google.com/store/apps/details?id=ru.andr7e.deviceinfohw
+2. https://play.google.com/store/apps/details?id=flar2.devcheck
 
 ## How to get Protocol Buffer fields?
 
