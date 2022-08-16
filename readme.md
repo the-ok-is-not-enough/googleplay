@@ -21,7 +21,7 @@ contact me:
 - Discord srpen6#6983
 
 Also, I only provide paid support for issues. Any issue without payment of at
-least 19 USD will be closed immediately. Payment can be made to one of:
+least 9 USD will be closed immediately. Payment can be made to one of:
 
 - https://github.com/sponsors/89z
 - <https://paypal.com/donate?hosted_button_id=UEJBQQTU3VYDY>
