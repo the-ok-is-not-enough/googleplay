@@ -12,10 +12,8 @@ Download APK from Google Play or send API requests
 
 ## Business
 
-Any business using this software, in its original form or modified, must make
-the source code available to its users. This includes software as a service. If
-you wish to purchase an unrestricted license, or for other business questions,
-contact me:
+Software is not licensed for commercial use. If you wish to purchase a
+commercial license, or for other business questions, contact me:
 
 - srpen6@gmail.com
 - Discord srpen6#6983
