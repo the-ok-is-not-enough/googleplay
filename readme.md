@@ -10,7 +10,7 @@
 
 Download APK from Google Play or send API requests
 
-## Business
+## Money
 
 Software is not licensed for commercial use. If you wish to purchase a
 commercial license, or for other business questions, contact me:
