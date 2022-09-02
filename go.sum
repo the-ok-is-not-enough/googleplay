@@ -1,5 +1,5 @@
-github.com/89z/rosso v1.49.0 h1:/i8QvcSvVFE1sqHZukfgEcKiylw2QGBVKP3CaFcsaGM=
-github.com/89z/rosso v1.49.0/go.mod h1:LSMg88MgRIS6/fYy+axdgjLTUX2tFjYgRGKViel+BJg=
+github.com/89z/rosso v1.49.4 h1:qxLdlFa7QoWY4BV8Yo/Pnv/Kh5qn9zhKx6iNqIIKLFs=
+github.com/89z/rosso v1.49.4/go.mod h1:9OjkcE02rAKGD/v/edDcrTaEsiAkZRy9qeRqzVHzVz4=
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
