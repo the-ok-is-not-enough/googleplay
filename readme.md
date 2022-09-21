@@ -1,9 +1,9 @@
 # GooglePlay
 
-> I’m not really sure what the point of this video is but I guess just be
+> I’m not really sure what the point of this video is, but I guess just be
 > generous.
 >
-> Be kind to people because you never know how much they might need it, or how
+> Be kind to people, because you never know how much they might need it, or how
 > far it’ll go.
 >
 > [NakeyJakey (2018)](//youtube.com/watch?v=Cr0UYNKmrUs)
