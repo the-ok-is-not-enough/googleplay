@@ -10,20 +10,6 @@
 
 Download APK from Google Play or send API requests
 
-## Money
-
-I only provide paid support for issues. Any issue without payment of at least
-9 USD will be closed immediately. Payment can be made to one of:
-
-- https://github.com/sponsors/89z
-- <https://paypal.com/donate?hosted_button_id=UEJBQQTU3VYDY>
-
-Software is not licensed for commercial use. If you wish to purchase a
-commercial license, or for other business questions, contact me:
-
-- srpen6@gmail.com
-- Discord srpen6#6983
-
 ## How to install?
 
 This module works with Windows, macOS or Linux. First, [download Go][2] and
@@ -83,6 +69,16 @@ downloaded:
 googleplay -a com.google.android.youtube -v 1531188672
 ~~~
 
-## API
+## Money
 
-https://github.com/89z/googleplay
+I only provide paid support for issues. Any issue without payment of at least
+9 USD will be closed immediately. Payment can be made to one of:
+
+- https://github.com/sponsors/89z
+- <https://paypal.com/donate?hosted_button_id=UEJBQQTU3VYDY>
+
+Software is not licensed for commercial use. If you wish to purchase a
+commercial license, or for other business questions, contact me:
+
+- srpen6@gmail.com
+- Discord srpen6#6983
