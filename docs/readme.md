@@ -119,7 +119,7 @@ emulator should be `x86_64`.
 
 However note that this will still fail in some cases:
 
-https://issuetracker.google.com/issues/207399356
+https://issuetracker.google.com/issues/253778985
 
 ## Version history
 
