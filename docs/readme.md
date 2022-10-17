@@ -1,13 +1,5 @@
 # Docs
 
-## APK to Java
-
-~~~
-jadx.bat com.google.android.youtube-1528288704.apk
-~~~
-
-https://github.com/skylot/jadx
-
 ## Geo-blocking
 
 Some apps are specific to region. For example, `air.ITVMobilePlayer` is specifc
@@ -134,19 +126,3 @@ websites [2] that host the APKs.
 
 1. https://android.stackexchange.com/questions/163181/how-to-download-old-app
 2. https://apkmirror.com/uploads?appcategory=youtube
-
-## Will you add features?
-
-I created this tool for a very limited use (getting latest version string for
-`com.google.android.youtube`). I am happy to fix bugs or add support for apps,
-but I am not really interested in adding any features at this time. However if
-you want to create an issue to make a suggestion, go ahead, but know that it
-will probably not be implemented. However the module itself is open source [1],
-so people can easily make their own tools using the module.
-
-If you insist that some feature be implemented, I am willing to implement
-features for people who are willing to make a donation to me. If that is your
-situation, make sure to mention that in any communication. Minimum donation is
-99 USD.
-
-1. https://godocs.io/github.com/89z/googleplay
