@@ -15,6 +15,7 @@ type flags struct {
    purchase bool
    single bool
    version uint64
+   verbose bool
 }
 
 func main() {
@@ -35,7 +36,11 @@ func main() {
    flag.BoolVar(&f.single, "s", false, "single APK")
    // v
    flag.Uint64Var(&f.version, "v", 0, "app version")
+   flag.BoolVar(&f.verbose, "verbose", false, "verbose")
    flag.Parse()
+   if f.verbose {
+      gp.Client.Log_Level = 2
+   }
    dir, err := os.UserHomeDir()
    if err != nil {
       panic(err)
