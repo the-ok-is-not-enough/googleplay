@@ -6,7 +6,7 @@ import (
    "time"
 )
 
-func checkin(id int64) error {
+func checkin_create(id int64) error {
    platform := Platforms[id]
    home, err := os.UserHomeDir()
    if err != nil {
@@ -25,21 +25,21 @@ func checkin(id int64) error {
 }
 
 func Test_Checkin_ARMEABI(t *testing.T) {
-   err := checkin(1)
+   err := checkin_create(1)
    if err != nil {
       t.Fatal(err)
    }
 }
 
 func Test_Checkin_ARM64(t *testing.T) {
-   err := checkin(2)
+   err := checkin_create(2)
    if err != nil {
       t.Fatal(err)
    }
 }
 
 func Test_Checkin_X86(t *testing.T) {
-   err := checkin(0)
+   err := checkin_create(0)
    if err != nil {
       t.Fatal(err)
    }

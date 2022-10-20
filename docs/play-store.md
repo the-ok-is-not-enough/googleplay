@@ -1,6 +1,7 @@
 # Google Play Store
 
-First go here:
+If you want API 24 or lower, you can just install user certificate and be done.
+If you need API 25 or higher, first go here:
 
 https://opengapps.org
 

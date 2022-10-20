@@ -131,12 +131,13 @@ func (c Config) Checkin(platform string) (*Device, error) {
    checkin := protobuf.Message{
       4: protobuf.Message{ // checkin
          1: protobuf.Message{ // build
-            10: protobuf.Varint(29), // sdkVersion
+            10: protobuf.Varint(28), // sdkVersion
          },
+         18: protobuf.Varint(1), // com.android.chrome
       },
       14: protobuf.Varint(3), // version
       18: protobuf.Message{ // deviceConfiguration
-         1: protobuf.Varint(c.Touch_Screen), // touchScreen
+         1: protobuf.Varint(c.Touch_Screen),
          2: protobuf.Varint(c.Keyboard),
          3: protobuf.Varint(c.Navigation),
          4: protobuf.Varint(c.Screen_Layout),

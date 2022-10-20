@@ -31,6 +31,7 @@ var apps = []app_type{
    {"2022-06-13 00:00:00 +0000 UTC",0,"com.instagram.android"},
    {"2022-06-13 00:00:00 +0000 UTC",1,"com.axis.drawingdesk.v3"},
    {"2022-06-14 00:00:00 +0000 UTC",0,"com.pinterest"},
+   {"2022-10-13", 0, "com.android.chrome"},
 }
 
 func Test_Details(t *testing.T) {
