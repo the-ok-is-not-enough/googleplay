@@ -70,7 +70,7 @@ versionCode='80441400' versionName='6.1.14'
 ~~~
 
 - https://apkmirror.com/apk/google-inc/google-play-store
-- https://github.com/whyorean/GPlayApi/blob/master/src/main/proto/GooglePlay.proto
+- https://github.com/MCMrARM/Google-Play-API/blob/master/proto/gsf.proto
 
 ## How to install Android App Bundle?
 

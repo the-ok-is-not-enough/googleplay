@@ -50,21 +50,21 @@ var Platforms = Native_Platform{
 
 // These can use default values, but they must all be included
 type Config struct {
-   Device_Feature []string
-   Five_Way_Navigation uint64
    GL_ES_Version uint64
    GL_Extension []string
-   Hard_Keyboard uint64
+   Has_Five_Way_Navigation uint64
+   Has_Hard_Keyboard uint64
    Keyboard uint64
    Navigation uint64
+   New_System_Available_Feature []string
    Screen_Density uint64
    Screen_Layout uint64
-   Shared_Library []string
+   System_Shared_Library []string
    Touch_Screen uint64
 }
 
 var Phone = Config{
-   Device_Feature: []string{
+   New_System_Available_Feature: []string{
       // app.source.getcontact
       "android.hardware.location.gps",
       // br.com.rodrigokolb.realdrum
@@ -104,7 +104,7 @@ var Phone = Config{
       // org.videolan.vlc
       "android.hardware.screen.landscape",
    },
-   Shared_Library: []string{
+   System_Shared_Library: []string{
       // com.amctve.amcfullepisodes
       "org.apache.http.legacy",
       // com.binance.dev
@@ -126,14 +126,16 @@ func (d Device) ID() (uint64, error) {
    return d.Get_Fixed64(7)
 }
 
+///////////////////////////////////////////////
+
 // A Sleep is needed after this.
-func (c Config) Checkin(platform string) (*Device, error) {
+func (c Config) Checkin(native_platform string) (*Device, error) {
    checkin := protobuf.Message{
       4: protobuf.Message{ // checkin
          1: protobuf.Message{ // build
             10: protobuf.Varint(28), // sdkVersion
          },
-         18: protobuf.Varint(1), // com.android.chrome
+         18: protobuf.Varint(1), // voiceCapable
       },
       14: protobuf.Varint(3), // version
       18: protobuf.Message{ // deviceConfiguration
@@ -141,14 +143,14 @@ func (c Config) Checkin(platform string) (*Device, error) {
          2: protobuf.Varint(c.Keyboard),
          3: protobuf.Varint(c.Navigation),
          4: protobuf.Varint(c.Screen_Layout),
-         5: protobuf.Varint(c.Hard_Keyboard),
-         6: protobuf.Varint(c.Five_Way_Navigation),
+         5: protobuf.Varint(c.Has_Hard_Keyboard),
+         6: protobuf.Varint(c.Has_Five_Way_Navigation),
          7: protobuf.Varint(c.Screen_Density),
          8: protobuf.Varint(c.GL_ES_Version),
-         11: protobuf.String(platform), // nativePlatform
+         11: protobuf.String(native_platform),
       },
    }
-   for _, library := range c.Shared_Library {
+   for _, library := range c.System_Shared_Library {
       // .deviceConfiguration.systemSharedLibrary
       checkin.Get(18).Add_String(9, library)
    }
@@ -156,8 +158,8 @@ func (c Config) Checkin(platform string) (*Device, error) {
       // .deviceConfiguration.glExtension
       checkin.Get(18).Add_String(15, extension)
    }
-   for _, name := range c.Device_Feature {
-      // .deviceConfiguration.deviceFeature
+   for _, name := range c.New_System_Available_Feature {
+      // .deviceConfiguration.newSystemAvailableFeature
       checkin.Get(18).Add(26, protobuf.Message{
          1: protobuf.String(name),
       })
