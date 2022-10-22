@@ -63,6 +63,14 @@ type Config struct {
    Touch_Screen uint64
 }
 
+func (d Device) ID() (uint64, error) {
+   return d.Get_Fixed64(7)
+}
+
+type Device struct {
+   protobuf.Message
+}
+
 var Phone = Config{
    New_System_Available_Feature: []string{
       // app.source.getcontact
@@ -112,32 +120,32 @@ var Phone = Config{
       // com.miui.weather2
       "global-miui11-empty.jar",
    },
-   // com.axis.drawingdesk.v3
-   GL_ES_Version: 0x9_9999,
    GL_Extension: []string{
       // com.instagram.android
       "GL_OES_compressed_ETC1_RGB8_texture",
       // com.kakaogames.twodin
       "GL_KHR_texture_compression_astc_ldr",
    },
+   // com.axis.drawingdesk.v3
+   // valid range 0x3_0001 - 0x7FFF_FFFF
+   GL_ES_Version: 0xF_FFFF,
 }
-
-func (d Device) ID() (uint64, error) {
-   return d.Get_Fixed64(7)
-}
-
-///////////////////////////////////////////////
 
 // A Sleep is needed after this.
 func (c Config) Checkin(native_platform string) (*Device, error) {
    checkin := protobuf.Message{
       4: protobuf.Message{ // checkin
          1: protobuf.Message{ // build
-            10: protobuf.Varint(28), // sdkVersion
+            // sdkVersion
+            // multiple APK valid range 14 - 0x7FFF_FFFF
+            // single APK valid range 14 - 28
+            10: protobuf.Varint(28),
          },
          18: protobuf.Varint(1), // voiceCapable
       },
-      14: protobuf.Varint(3), // version
+      // version
+      // valid range 2 - 3
+      14: protobuf.Varint(3),
       18: protobuf.Message{ // deviceConfiguration
          1: protobuf.Varint(c.Touch_Screen),
          2: protobuf.Varint(c.Keyboard),
@@ -187,8 +195,4 @@ func (c Config) Checkin(native_platform string) (*Device, error) {
       return nil, err
    }
    return &dev, nil
-}
-
-type Device struct {
-   protobuf.Message
 }

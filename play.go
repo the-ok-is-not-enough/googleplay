@@ -12,12 +12,16 @@ import (
 )
 
 func (h Header) Set_Agent(head http.Header) {
-   var b []byte
-   b = append(b, "Android-Finsky (sdk=9,versionCode="...)
+   // `sdk` is needed for `/fdfe/delivery`
+   b := []byte("Android-Finsky (sdk=")
+   // valid range 0 - 0x7FFF_FFFF
+   b = strconv.AppendInt(b, 9, 10)
+   b = append(b, ",versionCode="...)
    if h.Single {
-      // sometimes this doesnt work, and you need to fix X-Dfe-Device-Id instead
+      // valid range 8032_0000 - 8091_9999
       b = strconv.AppendInt(b, 8091_9999, 10)
    } else {
+      // valid range 8092_0000 - 0x7FFF_FFFF
       b = strconv.AppendInt(b, 9999_9999, 10)
    }
    b = append(b, ')')
