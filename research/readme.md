@@ -2,7 +2,19 @@
 
 ## GenyMotion
 
-Install Open GApps. Then start proxy:
+Create Virtual device using Android version 6.0.0. Install Open GApps. Then
+click Restart now. If you have trouble at this point, you might need to End
+task:
+
+~~~
+C:\Program Files\Genymobile\Genymotion\tools\adb.exe
+~~~
+
+Then install system certificate:
+
+https://github.com/89z/piccolo/tree/v1.6.1/cmd/mitmproxy-cert
+
+Then start proxy:
 
 ~~~
 mitmproxy
@@ -14,11 +26,8 @@ then set proxy:
 adb shell settings put global http_proxy 192.168.56.1:8080
 ~~~
 
-WebView Browser cannot download, so install certificate like this:
+Note if you restart the device, you need to install system certificate again.
+Make sure you do the above quickly, as the `/checkin` request happens upon
+boot, before Play Store app is even launched.
 
-~~~
-adb push mitmproxy-ca-cert.cer /sdcard/Download
-~~~
-
-- https://support.genymotion.com/hc/articles/360002778137-How-to-connect
-- https://vizz.github.io/blog/2014/01/08/inspect-your-android-device-networking-with-mitmproxy
+https://support.genymotion.com/hc/articles/360002778137-How-to-connect
