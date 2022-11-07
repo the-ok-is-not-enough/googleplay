@@ -46,13 +46,13 @@ func (d Details) MarshalText() ([]byte, error) {
    if val, err := d.Num_Downloads(); err != nil {
       return nil, err
    } else {
-      b = strconv.AppendCardinal(b, val)
+      b = strconv.New_Number(val).Cardinal(b)
    }
    b = append(b, "\nInstallation Size: "...)
    if val, err := d.Installation_Size(); err != nil {
       return nil, err
    } else {
-      b = strconv.AppendSize(b, val)
+      b = strconv.New_Number(val).Size(b)
    }
    b = append(b, "\nFile:"...)
    for _, file := range d.File() {

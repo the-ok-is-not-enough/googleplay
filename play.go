@@ -3,13 +3,18 @@ package googleplay
 import (
    "github.com/89z/rosso/crypto"
    "github.com/89z/rosso/http"
-   "github.com/89z/rosso/os"
    "io"
    "net/url"
+   "os"
    "strconv"
    "strings"
    "time"
 )
+
+func (a Auth) Create(name string) error {
+   query := format_query(a.Values)
+   return os.WriteFile(name, []byte(query), os.ModePerm)
+}
 
 func (h Header) Set_Agent(head http.Header) {
    // `sdk` is needed for `/fdfe/delivery`
@@ -93,11 +98,6 @@ func New_Auth(email, password string) (*Auth, error) {
    var auth Auth
    auth.Values = parse_query(string(query))
    return &auth, nil
-}
-
-func (a Auth) Create(name string) error {
-   query := format_query(a.Values)
-   return os.WriteFile(name, []byte(query))
 }
 
 func (a *Auth) Exchange() error {

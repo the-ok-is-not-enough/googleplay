@@ -2,12 +2,17 @@ package googleplay
 
 import (
    "bytes"
-   "github.com/89z/rosso/os"
    "github.com/89z/rosso/protobuf"
    "io"
    "net/http"
+   "os"
    "strconv"
 )
+
+func (d Device) Create(name string) error {
+   data := d.Marshal()
+   return os.WriteFile(name, data, os.ModePerm)
+}
 
 // A Sleep is needed after this.
 func (c Config) Checkin(native_platform string) (*Device, error) {
@@ -74,11 +79,6 @@ func (c Config) Checkin(native_platform string) (*Device, error) {
       return nil, err
    }
    return &dev, nil
-}
-
-func (d Device) Create(name string) error {
-   data := d.Marshal()
-   return os.WriteFile(name, data)
 }
 
 func (n Native_Platform) String() string {
