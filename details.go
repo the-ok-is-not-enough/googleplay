@@ -10,6 +10,17 @@ import (
    "time"
 )
 
+var err_device = errors.New("your device isn't compatible with this version")
+
+func (d Details) Upload_Date() (string, error) {
+   // .details.appDetails.uploadDate
+   date, err := d.Get(13).Get(1).Get_String(16)
+   if err != nil {
+      return "", err_device
+   }
+   return date, nil
+}
+
 func (d Details) MarshalText() ([]byte, error) {
    var b []byte
    b = append(b, "Title: "...)
@@ -77,15 +88,6 @@ func (d Details) MarshalText() ([]byte, error) {
       b = append(b, val...)
    }
    return append(b, '\n'), nil
-}
-
-func (d Details) Upload_Date() (string, error) {
-   // .details.appDetails.uploadDate
-   date, err := d.Get(13).Get(1).Get_String(16)
-   if err != nil {
-      return "", errors.New("uploadDate not found, try another platform")
-   }
-   return date, nil
 }
 
 func (h Header) Details(app string) (*Details, error) {
