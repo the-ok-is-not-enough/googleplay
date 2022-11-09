@@ -9,8 +9,6 @@ import (
 )
 
 var apps = []app_type{
-   {"2021-12-08 00:00:00 +0000 UTC",0,"com.gaana"},
-   /*
    {"2021-12-08 00:00:00 +0000 UTC",0,"com.amctve.amcfullepisodes"},
    {"2022-02-02 00:00:00 +0000 UTC",2,"com.illumix.fnafar"},
    {"2022-02-14 00:00:00 +0000 UTC",0,"org.videolan.vlc"},
@@ -33,8 +31,6 @@ var apps = []app_type{
    {"2022-06-13 00:00:00 +0000 UTC",0,"com.instagram.android"},
    {"2022-06-13 00:00:00 +0000 UTC",1,"com.axis.drawingdesk.v3"},
    {"2022-06-14 00:00:00 +0000 UTC",0,"com.pinterest"},
-   {"2022-10-13", 0, "com.android.chrome"},
-   */
 }
 
 func Test_Details(t *testing.T) {
@@ -45,10 +41,6 @@ func Test_Details(t *testing.T) {
    var head Header
    head.Open_Auth(home + "/googleplay/auth.txt")
    head.Auth.Exchange()
-   
-   head.Single = true
-   Client.Log_Level = 2
-   
    for _, app := range apps {
       platform := Platforms[app.platform]
       head.Open_Device(home + "/googleplay/" + platform + ".bin")

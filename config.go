@@ -55,7 +55,6 @@ func (c Config) Checkin(native_platform string) (*Device, error) {
          1: protobuf.String(name),
       })
    }
-   // checkin = genymotion
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
       bytes.NewReader(checkin.Marshal()),
