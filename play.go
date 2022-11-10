@@ -72,7 +72,7 @@ func New_Auth(email, password string) (*Auth, error) {
       "Email": {email},
       "Passwd": {password},
       "client_sig": {""},
-      "droidguard_results": {"!"},
+      "droidguard_results": {"."},
    }.Encode()
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/auth", strings.NewReader(body),
