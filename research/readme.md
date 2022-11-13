@@ -9,19 +9,28 @@ com.google.android.gms
 Google Services Framework:
 com.google.android.gsf
 
+pull:
+
+~~~
+adb pull `
+/system/priv-app/GoogleServicesFramework/GoogleServicesFramework.apk `
+GoogleServicesFramework.apk
+
+adb pull `
+/system/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk `
+PrebuiltGmsCore.apk
+
+adb pull `
+/system/priv-app/Phonesky/Phonesky.apk `
+Phonesky.apk
+~~~
+
+push:
+
 ~~~
 adb remount
 adb push GoogleServicesFramework.apk /system/priv-app
 adb push Phonesky.apk /system/priv-app
-adb push PrebuiltGmsCore.apk /system/priv-app
-adb reboot
-~~~
-
-or:
-
-~~~
-adb remount
-adb push GoogleServicesFramework.apk /system/priv-app
 adb push PrebuiltGmsCore.apk /system/priv-app
 adb reboot
 ~~~
