@@ -6,104 +6,132 @@ com.android.vending
 Google Play services:
 com.google.android.gms 
 
+Google Services Framework:
+com.google.android.gsf
+
+~~~
+adb remount
+adb push GoogleServicesFramework.apk /system/priv-app
+adb push Phonesky.apk /system/priv-app
+adb push PrebuiltGmsCore.apk /system/priv-app
+adb reboot
+~~~
+
+or:
+
+~~~
+adb remount
+adb push GoogleServicesFramework.apk /system/priv-app
+adb push PrebuiltGmsCore.apk /system/priv-app
+adb reboot
+~~~
+
 ## API 24
 
-Target: 7
-
-store   | services | result
---------|----------|-------
-6.7.15  | 11.7.43  | pass
-6.7.20  | 11.7.43  | fail
-7.9.90  | 11.7.43  | fail
-8.9.30  | 11.7.43  | fail
-10.0.07 | 11.7.43  | fail
-10.0.07 | 12.8.80  | fail
-10.0.07 | 13.2.83  | fail
-10.0.07 | 16.0.91  | fail
-10.0.07 | 22.43.12 | fail
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=7.0
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=11.7.43 (470-172403884)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=6.7.15.E-all [0] 2987020
+~~~
 
 ## API 25
 
-Target: 7.1.1 
-
-services
-10.2.98 
-
- | Store
- | 6.9.43
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=7.1.1
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=10.2.98 (470-146496160)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=6.9.43.G-all [0] 3363388
+~~~
 
 ## API 26
 
-Target: 8     
-
-services
-11.7.43 
-
- | Store
- | 7.9.66
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=8.0.0
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=11.7.43 (470-172403884)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=7.9.66.Q-all [0] [PR] 163928463
+~~~
 
 ## API 27
 
-Target: 8.1   
-
- | services
- | 11.5.80 
-
- | Store
- | 8.0.62
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=8.1.0
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=11.5.80 (470-175107017)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=8.0.62.R-all [0] [PR] 172052298
+~~~
 
 ## API 28
 
-Target: 9
-
- | services
- | 16.0.89 
-
- | Store
- | 10.1.41
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=9
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=16.0.89 (040700-239467275)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=10.1.41-all [0] [PR] 197615634
+~~~
 
 ## API 29
 
-Target: 10    
-
- | services
- | 17.7.86 
-
- | Store
- | 15.2.67
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=10
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=17.7.86 (040700-256199907)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=15.2.67-all [0] [PR] 256058878
+~~~
 
 ## API 30
 
-Target: 11    
-
- | services
- | 20.18.17
-
- | Store
- | 20.4.33
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=11
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=20.18.17 (040700-311416286)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=20.4.33-all [0] [PR] 319051143
+~~~
 
 ## API 31
 
-Target: 12    
-
- | services
- | 21.24.23
-
- | Store
- | 25.9.49
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=12
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=21.24.23 (190800-396046673)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=25.9.49-21 [0] [PR] 386309911
+~~~
 
 ## API 32
 
- | services
- | 21.24.23
-
- | Store
- | 25.9.50
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=12
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=21.24.23 (190800-396046673)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=25.9.50-21 [0] [PR] 400852117
+~~~
 
 ## API 33
 
- | services
- | 22.18.21
-
- | Store
- | 30.4.17
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=13
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=22.18.21 (190800-453244992)
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=30.4.17-21 [0] [PR] 445549118
+~~~
