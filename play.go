@@ -11,16 +11,12 @@ import (
    "time"
 )
 
-func (a Auth) Create(name string) error {
-   query := format_query(a.Values)
-   return os.WriteFile(name, []byte(query), os.ModePerm)
-}
-
 func (h Header) Set_Agent(head http.Header) {
    // `sdk` is needed for `/fdfe/delivery`
    b := []byte("Android-Finsky (sdk=")
    // valid range 0 - 0x7FFF_FFFF
    b = strconv.AppendInt(b, 9, 10)
+   // com.android.vending
    b = append(b, ",versionCode="...)
    if h.Single {
       // valid range 8032_0000 - 8091_9999
@@ -31,6 +27,11 @@ func (h Header) Set_Agent(head http.Header) {
    }
    b = append(b, ')')
    head.Set("User-Agent", string(b))
+}
+
+func (a Auth) Create(name string) error {
+   query := format_query(a.Values)
+   return os.WriteFile(name, []byte(query), os.ModePerm)
 }
 
 const Sleep = 4 * time.Second

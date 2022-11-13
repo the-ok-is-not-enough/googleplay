@@ -7,19 +7,9 @@ import (
    "io"
    "net/http"
    "net/url"
-   "time"
 )
 
 var err_device = errors.New("your device isn't compatible with this version")
-
-func (d Details) Upload_Date() (string, error) {
-   // .details.appDetails.uploadDate
-   date, err := d.Get(13).Get(1).Get_String(16)
-   if err != nil {
-      return "", err_device
-   }
-   return date, nil
-}
 
 func (d Details) MarshalText() ([]byte, error) {
    var b []byte
@@ -127,72 +117,74 @@ type Details struct {
    protobuf.Message
 }
 
-// will fail with wrong ABI
-func (d Details) Version_Code() (uint64, error) {
-   // .details.appDetails.versionCode
-   return d.Get(13).Get(1).Get_Varint(3)
-}
-
-// will fail with wrong ABI
-func (d Details) Version() (string, error) {
-   // .details.appDetails.versionString
-   return d.Get(13).Get(1).Get_String(4)
-}
-
-// will fail with wrong ABI
-func (d Details) Installation_Size() (uint64, error) {
-   // .details.appDetails.installationSize
-   return d.Get(13).Get(1).Get_Varint(9)
-}
-
-// should work with any ABI
+// .title
 func (d Details) Title() (string, error) {
-   // .title
    return d.Get_String(5)
 }
 
-// should work with any ABI
+// .creator
 func (d Details) Creator() (string, error) {
-   // .creator
    return d.Get_String(6)
 }
 
-// should work with any ABI
+// .offer.micros
 func (d Details) Micros() (uint64, error) {
-   // .offer.micros
    return d.Get(8).Get_Varint(1)
 }
 
-// should work with any ABI
+// .offer.currencyCode
 func (d Details) Currency_Code() (string, error) {
-   // .offer.currencyCode
    return d.Get(8).Get_String(2)
 }
 
-// should work with any ABI
+// .details.appDetails
+// I dont know the name of field 70, but the similar field 13 is called
+// .numDownloads
 func (d Details) Num_Downloads() (uint64, error) {
-   // .details.appDetails
-   // I dont know the name of field 70, but the similar field 13 is called
-   // .numDownloads
    return d.Get(13).Get(1).Get_Varint(70)
 }
 
-// will fail with wrong ABI
+// .details.appDetails.uploadDate
+func (d Details) Upload_Date() (string, error) {
+   value, err := d.Get(13).Get(1).Get_String(16)
+   if err != nil {
+      return "", err_device
+   }
+   return value, nil
+}
+
+// .details.appDetails.versionCode
+func (d Details) Version_Code() (uint64, error) {
+   value, err := d.Get(13).Get(1).Get_Varint(3)
+   if err != nil {
+      return 0, err_device
+   }
+   return value, nil
+}
+
+// .details.appDetails.versionString
+func (d Details) Version() (string, error) {
+   value, err := d.Get(13).Get(1).Get_String(4)
+   if err != nil {
+      return "", err_device
+   }
+   return value, nil
+}
+
+// .details.appDetails.installationSize
+func (d Details) Installation_Size() (uint64, error) {
+   value, err := d.Get(13).Get(1).Get_Varint(9)
+   if err != nil {
+      return 0, err_device
+   }
+   return value, nil
+}
+
+// .details.appDetails.file
 func (d Details) File() []File_Metadata {
    var files []File_Metadata
-   // .details.appDetails.file
    for _, file := range d.Get(13).Get(1).Get_Messages(17) {
       files = append(files, File_Metadata{file})
    }
    return files
-}
-
-// This only works with English. You can force English with:
-// Accept-Language: en
-func (d Details) Time() (time.Time, error) {
-   date, err := d.Upload_Date()
-   if err != nil {
-      return time.Time{}, err
-   }
-   return time.Parse("Jan 2, 2006", date)
 }
