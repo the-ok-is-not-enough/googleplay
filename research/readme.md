@@ -8,19 +8,23 @@ com.google.android.gms
 
 ## API 24
 
-Target:
-7
+Target: 7
 
-services
-11.7.43 
-
- | Store
- | 6.7.15
+store   | services | result
+--------|----------|-------
+6.7.15  | 11.7.43  | pass
+6.7.20  | 11.7.43  | fail
+7.9.90  | 11.7.43  | fail
+8.9.30  | 11.7.43  | fail
+10.0.07 | 11.7.43  | fail
+10.0.07 | 12.8.80  | fail
+10.0.07 | 13.2.83  | fail
+10.0.07 | 16.0.91  | fail
+10.0.07 | 22.43.12 | fail
 
 ## API 25
 
-Target
-7.1.1 
+Target: 7.1.1 
 
 services
 10.2.98 
@@ -30,8 +34,7 @@ services
 
 ## API 26
 
-Target
-8     
+Target: 8     
 
 services
 11.7.43 
@@ -41,8 +44,7 @@ services
 
 ## API 27
 
-Target
-8.1   
+Target: 8.1   
 
  | services
  | 11.5.80 
@@ -52,8 +54,7 @@ Target
 
 ## API 28
 
-Target
-9
+Target: 9
 
  | services
  | 16.0.89 
@@ -63,8 +64,7 @@ Target
 
 ## API 29
 
-Target
-10    
+Target: 10    
 
  | services
  | 17.7.86 
@@ -74,8 +74,7 @@ Target
 
 ## API 30
 
-Target
-11    
+Target: 11    
 
  | services
  | 20.18.17
@@ -85,8 +84,7 @@ Target
 
 ## API 31
 
-Target
-12    
+Target: 12    
 
  | services
  | 21.24.23
@@ -96,9 +94,6 @@ Target
 
 ## API 32
 
-Target
-32    
-
  | services
  | 21.24.23
 
@@ -106,9 +101,6 @@ Target
  | 25.9.50
 
 ## API 33
-
-Target
-33    
 
  | services
  | 22.18.21
