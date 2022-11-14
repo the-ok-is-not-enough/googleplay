@@ -128,10 +128,30 @@ adb reboot
 ~~~
 > adb shell dumpsys package com.google.android.gsf | rg versionName
     versionName=12
+
 > adb shell dumpsys package com.google.android.gms | rg versionName
     versionName=21.24.23 (190800-396046673)
+
 > adb shell dumpsys package com.android.vending | rg versionName
     versionName=25.9.50-21 [0] [PR] 400852117
+> adb shell dumpsys package com.android.vending | rg versionCode
+    versionCode=82595010 minSdk=21 targetSdk=30
+~~~
+
+For some reason, these will not download:
+
+~~~
+8_25_9_50_00
+8_25_9_50_10
+~~~
+
+but these work fine:
+
+~~~
+8_25_9_19_00
+8_25_9_19_10
+8_25_9_29_00
+8_25_9_29_10
 ~~~
 
 ## API 33
@@ -139,8 +159,12 @@ adb reboot
 ~~~
 > adb shell dumpsys package com.google.android.gsf | rg versionName
     versionName=13
+
 > adb shell dumpsys package com.google.android.gms | rg versionName
     versionName=22.18.21 (190800-453244992)
+
 > adb shell dumpsys package com.android.vending | rg versionName
     versionName=30.4.17-21 [0] [PR] 445549118
+> adb shell dumpsys package com.android.vending | rg versionCode
+    versionCode=83041710 minSdk=21 targetSdk=31
 ~~~

@@ -1,17 +1,25 @@
 package main
 
 import (
+   "bytes"
+   "github.com/89z/rosso/protobuf"
    "io"
    "net/http"
    "net/http/httputil"
    "net/url"
    "os"
-   "strings"
 )
 
 func main() {
+   body := protobuf.Message{
+      3:protobuf.Message{
+         1: protobuf.String("Games.optional"),
+      },
+      1:protobuf.String("com.google.android.gms"),
+      2:protobuf.Varint(220920022),
+   }.Marshal()
    var req http.Request
-   req.Body = io.NopCloser(body)
+   req.Body = io.NopCloser(bytes.NewReader(body))
    req.Header = make(http.Header)
    req.Method = "POST"
    req.URL = new(url.URL)
@@ -30,5 +38,3 @@ func main() {
    }
    os.Stdout.Write(buf)
 }
-
-var body = strings.NewReader("\n\x16com.google.android.gms\x10\xd6\xf1\xabi\x1a\x1e\n\x0eGames.optional\x1a\f220920000000 \x01 \x02 \x03 \x05(\x02(\x018\x01")

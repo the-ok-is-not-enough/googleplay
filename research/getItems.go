@@ -42,11 +42,7 @@ func main() {
    if err != nil {
       panic(err)
    }
-   if bytes.Contains(res_body, []byte("Aug 31, 2022")) {
-      fmt.Println("pass")
-   } else {
-      fmt.Println("fail")
-   }
+   fmt.Printf("%q\n", res_body)
 }
 
 func field_mask() string {
