@@ -99,3 +99,6 @@ Google Play device:
 > adb shell dumpsys package com.android.vending | rg versionCode
 versionCode=80671500 minSdk=14 targetSdk=23
 ~~~
+
+we should try pulling from API 33 (Google Play) instead, so that the Play Store
+version matches the one used with Open GApps.
