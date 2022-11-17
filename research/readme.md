@@ -35,17 +35,6 @@ adb push PrebuiltGmsCore.apk /system/priv-app
 adb reboot
 ~~~
 
-## API 24
-
-~~~
-> adb shell dumpsys package com.google.android.gsf | rg versionName
-    versionName=7.0
-> adb shell dumpsys package com.google.android.gms | rg versionName
-    versionName=11.7.43 (470-172403884)
-> adb shell dumpsys package com.android.vending | rg versionName
-    versionName=6.7.15.E-all [0] 2987020
-~~~
-
 ## API 25
 
 ~~~
@@ -167,4 +156,19 @@ but these work fine:
     versionName=30.4.17-21 [0] [PR] 445549118
 > adb shell dumpsys package com.android.vending | rg versionCode
     versionCode=83041710 minSdk=21 targetSdk=31
+~~~
+
+## API 24
+
+~~~
+> adb shell dumpsys package com.google.android.gsf | rg versionName
+    versionName=7.0
+
+> adb shell dumpsys package com.google.android.gms | rg versionName
+    versionName=11.7.43 (470-172403884)
+
+> adb shell dumpsys package com.android.vending | rg versionName
+    versionName=6.7.15.E-all [0] 2987020
+> adb shell dumpsys package com.android.vending | rg versionCode
+    versionCode=80671500 minSdk=14 targetSdk=23
 ~~~
